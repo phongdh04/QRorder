@@ -1,0 +1,153 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Restaurant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  logo_url  String?
+  theme     Json?
+  created_at DateTime @default(now())
+
+  users          User[]
+  tables         Table[]
+  categories     Category[]
+  menu_items     MenuItem[]
+  table_sessions TableSession[]
+  orders         Order[]
+
+  @@map("restaurants")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  restaurant_id String
+  email         String   @unique
+  password_hash String
+  name          String
+  role          String   @default("staff") // "owner" | "staff"
+  created_at    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+
+  @@index([restaurant_id])
+  @@map("users")
+}
+
+model Table {
+  id            String   @id @default(uuid())
+  restaurant_id String
+  name          String
+  token         String   @unique // ngau nhien >= 20 ky tu
+  is_active     Boolean  @default(true)
+
+  restaurant     Restaurant     @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  table_sessions TableSession[]
+  orders         Order[]
+
+  @@index([restaurant_id])
+  @@index([token])
+  @@map("tables")
+}
+
+model Category {
+  id            String   @id @default(uuid())
+  restaurant_id String
+  name          String
+  sort_order    Int      @default(0)
+  is_active     Boolean  @default(true)
+
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  menu_items MenuItem[]
+
+  @@index([restaurant_id])
+  @@map("categories")
+}
+
+model MenuItem {
+  id            String   @id @default(uuid())
+  restaurant_id String
+  category_id   String
+  name          String
+  description   String?
+  price         Int
+  image_url     String?
+  is_available  Boolean  @default(true)
+  sort_order    Int      @default(0)
+
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  category   Category   @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  order_items OrderItem[]
+
+  @@index([restaurant_id])
+  @@index([category_id])
+  @@index([is_available])
+  @@map("menu_items")
+}
+
+model TableSession {
+  id             String    @id @default(uuid())
+  restaurant_id  String
+  table_id       String
+  status         String    @default("open") // "open" | "paid"
+  total          Int       @default(0)
+  payment_method String?   // "cash" | "transfer" | null
+  opened_at      DateTime  @default(now())
+  paid_at        DateTime?
+
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  table      Table      @relation(fields: [table_id], references: [id], onDelete: Cascade)
+  orders     Order[]
+
+  @@index([restaurant_id])
+  @@index([table_id])
+  @@index([status])
+  @@index([paid_at])
+  @@map("table_sessions")
+}
+
+model Order {
+  id            String   @id @default(uuid())
+  session_id    String
+  restaurant_id String
+  table_id      String
+  status        String   @default("pending") // "pending" | "preparing" | "served" | "cancelled"
+  note          String?
+  cancel_reason String?
+  created_at    DateTime @default(now())
+
+  session     TableSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  restaurant  Restaurant   @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  table       Table        @relation(fields: [table_id], references: [id], onDelete: Cascade)
+  order_items OrderItem[]
+
+  @@index([restaurant_id])
+  @@index([session_id])
+  @@index([table_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String  @id @default(uuid())
+  order_id       String
+  menu_item_id   String
+  name_snapshot  String
+  price_snapshot Int
+  quantity       Int
+  note           String?
+
+  order     Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  menu_item MenuItem @relation(fields: [menu_item_id], references: [id], onDelete: Restrict)
+
+  @@index([order_id])
+  @@index([menu_item_id])
+  @@map("order_items")
+}

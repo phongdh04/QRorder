@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: qrorder_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: qrorder
+      POSTGRES_PASSWORD: qrorder_secret
+      POSTGRES_DB: qrorder_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qrorder -d qrorder_db"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+      start_period: 3s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: qrorder_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://qrorder:qrorder_secret@db:5432/qrorder_db?schema=public"
+      SESSION_SECRET: "${SESSION_SECRET:-super-secret-jwt-key-qrorder-bar-32chars-minimum-key}"
+      DOMAIN: "${DOMAIN:-localhost}"
+      UPLOAD_DIR: "/app/public/uploads"
+      PORT: 3000
+      NODE_ENV: "development"
+      NEXT_TELEMETRY_DISABLED: 1
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+      - uploads_data:/app/public/uploads
+    command: sh -c "sh /app/scripts/entrypoint.sh"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+    driver: local
+  uploads_data:
+    driver: local

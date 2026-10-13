@@ -1,0 +1,44 @@
+import type { Metadata, Viewport } from "next";
+import { Playfair_Display, Inter } from "next/font/google";
+import "./globals.css";
+
+const playfair = Playfair_Display({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-serif",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+const inter = Inter({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-sans",
+  display: "swap",
+  weight: ["300", "400", "500", "600"],
+});
+
+export const metadata: Metadata = {
+  title: "The Velvet Lounge • Thực Đơn Bar",
+  description: "Trải nghiệm ẩm thực và đồ uống thủ công tinh tế",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#0B0B0C",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="vi" className={`${playfair.variable} ${inter.variable}`}>
+      <body className="min-h-screen bg-[var(--bg)] text-[var(--text)] font-sans antialiased selection:bg-[var(--accent)] selection:text-[#0B0B0C]">
+        {children}
+      </body>
+    </html>
+  );
+}

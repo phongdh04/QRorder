@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0B0B0C;
+  --surface: #151517;
+  --surface-2: #1D1D20;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #F3EFE6;
+  --muted: #A49F94;
+  --accent: #C9A96A;
+  --accent-soft: rgba(201, 169, 106, 0.14);
+}
+
+html {
+  background-color: var(--bg);
+  color: var(--text);
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans), Inter, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+/* Subtle luxury card effect */
+.luxury-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.luxury-card:hover {
+  border-color: rgba(201, 169, 106, 0.25);
+}
+
+/* Thin champagne decorative line */
+.divider-champagne {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(201, 169, 106, 0.3) 0%, rgba(201, 169, 106, 0.05) 100%);
+}
+
+/* Hide scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Safe area padding for notched mobile displays */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

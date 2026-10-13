@@ -1,0 +1,17 @@
+{$DOMAIN:localhost} {
+    encode gzip zstd
+
+    # Phục vụ thư mục uploads ảnh trực tiếp
+    handle_path /uploads/* {
+        root * /srv/uploads
+        file_server
+    }
+
+    # Reverse proxy toàn bộ ứng dụng Next.js
+    handle {
+        reverse_proxy app:3000 {
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Real-IP {remote_host}
+        }
+    }
+}

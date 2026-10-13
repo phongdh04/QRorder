@@ -1,0 +1,28 @@
+FROM node:20-alpine
+
+# Cài đặt OpenSSL và libc6-compat cần cho Prisma engine trên Alpine
+RUN apk add --no-cache libc6-compat openssl
+
+WORKDIR /app
+
+# Copy dependencies definition
+COPY package*.json ./
+
+# Cài đặt dependencies (bỏ qua postinstall script lúc này)
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Phân quyền thực thi cho entrypoint script
+RUN chmod +x ./scripts/entrypoint.sh
+
+# Sinh Prisma client
+RUN npx prisma generate
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["/app/scripts/entrypoint.sh"]

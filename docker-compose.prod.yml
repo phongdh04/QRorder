@@ -1,0 +1,84 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: qrorder_prod_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-qrorder}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qrorder_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-qrorder_db}
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-qrorder} -d ${POSTGRES_DB:-qrorder_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qrorder_prod_app
+    restart: always
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-qrorder}:${POSTGRES_PASSWORD:-qrorder_secret}@db:5432/${POSTGRES_DB:-qrorder_db}?schema=public"
+      SESSION_SECRET: "${SESSION_SECRET:-super-secret-jwt-key-qrorder-bar-32chars-minimum-key}"
+      DOMAIN: "${DOMAIN:-localhost}"
+      UPLOAD_DIR: "/app/public/uploads"
+      NODE_ENV: "production"
+      NEXT_TELEMETRY_DISABLED: 1
+    volumes:
+      - uploads_data_prod:/app/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: qrorder_prod_caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: "${DOMAIN:-localhost}"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - uploads_data_prod:/srv/uploads:ro
+    depends_on:
+      - app
+
+  backup:
+    image: postgres:16-alpine
+    container_name: qrorder_prod_backup
+    restart: always
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: ${POSTGRES_USER:-qrorder}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-qrorder_secret}
+      PGDATABASE: ${POSTGRES_DB:-qrorder_db}
+      BACKUP_KEEP_COUNT: 14
+    volumes:
+      - backup_data:/backups
+      - ./scripts/backup.sh:/backup.sh:ro
+    entrypoint: ["sh", "/backup.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata_prod:
+    driver: local
+  uploads_data_prod:
+    driver: local
+  backup_data:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
