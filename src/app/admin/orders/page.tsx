@@ -21,7 +21,7 @@ export default function AdminOrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const fetchOrders = async () => {
+  const fetchOrders = React.useCallback(async () => {
     try {
       const url =
         filterStatus === 'all'
@@ -39,7 +39,7 @@ export default function AdminOrdersPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filterStatus]);
 
   useEffect(() => {
     fetchOrders();
@@ -56,7 +56,7 @@ export default function AdminOrdersPage() {
       es.close();
       clearInterval(interval);
     };
-  }, [filterStatus]);
+  }, [fetchOrders]);
 
   const handleUpdateStatus = async (
     orderId: string,
