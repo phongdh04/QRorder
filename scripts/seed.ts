@@ -260,6 +260,84 @@ async function main() {
   }
   console.log('+ Đã tạo 12 món ăn và đồ uống mẫu');
 
+  // 5. Tạo 40 hóa đơn đã thanh toán rải trong 30 ngày cho module doanh thu
+  const allTables = await prisma.table.findMany({ where: { restaurant_id: restaurant.id } });
+  const allMenuItems = await prisma.menuItem.findMany({ where: { restaurant_id: restaurant.id } });
+
+  const existingPaidCount = await prisma.tableSession.count({
+    where: { restaurant_id: restaurant.id, status: 'paid' },
+  });
+
+  if (existingPaidCount < 20) {
+    console.log('+ Đang khởi tạo 40 hóa đơn đã thanh toán rải trong 30 ngày qua...');
+    const nowMs = Date.now();
+    const dayMs = 24 * 3600 * 1000;
+
+    for (let i = 0; i < 40; i++) {
+      let dayOffset = 0;
+      if (i < 8) dayOffset = 0; // 8 bill hôm nay
+      else if (i < 14) dayOffset = 1; // 6 bill hôm qua
+      else dayOffset = Math.floor(Math.random() * 28) + 2; // các ngày còn lại
+
+      const hour = 11 + Math.floor(Math.random() * 12);
+      const minute = Math.floor(Math.random() * 60);
+
+      const paidDate = new Date(nowMs - dayOffset * dayMs);
+      paidDate.setHours(hour, minute, 0, 0);
+
+      const openedDate = new Date(paidDate.getTime() - (30 + Math.floor(Math.random() * 60)) * 60 * 1000);
+      const table = allTables[i % allTables.length];
+      const paymentMethod = i % 3 === 0 ? 'cash' : 'transfer';
+
+      const numItems = 2 + Math.floor(Math.random() * 3);
+      const chosenItems: Array<{ item: (typeof allMenuItems)[0]; qty: number }> = [];
+      for (let j = 0; j < numItems; j++) {
+        const randItem = allMenuItems[(i + j * 3) % allMenuItems.length];
+        chosenItems.push({
+          item: randItem,
+          qty: 1 + Math.floor(Math.random() * 2),
+        });
+      }
+
+      const sessionTotal = chosenItems.reduce((s, c) => s + c.item.price * c.qty, 0);
+
+      const session = await prisma.tableSession.create({
+        data: {
+          restaurant_id: restaurant.id,
+          table_id: table.id,
+          status: 'paid',
+          total: sessionTotal,
+          payment_method: paymentMethod,
+          opened_at: openedDate,
+          paid_at: paidDate,
+        },
+      });
+
+      const order = await prisma.order.create({
+        data: {
+          restaurant_id: restaurant.id,
+          table_id: table.id,
+          session_id: session.id,
+          status: 'served',
+          created_at: openedDate,
+        },
+      });
+
+      for (const ci of chosenItems) {
+        await prisma.orderItem.create({
+          data: {
+            order_id: order.id,
+            menu_item_id: ci.item.id,
+            name_snapshot: ci.item.name,
+            price_snapshot: ci.item.price,
+            quantity: ci.qty,
+          },
+        });
+      }
+    }
+    console.log('+ Đã tạo thành công 40 hóa đơn đã thanh toán mẫu.');
+  }
+
   // In thông tin tài khoản mẫu và liên kết
   console.log('\n================================================================');
   console.log('🎉 SEED DỮ LIỆU THÀNH CÔNG CHO QUÁN "THE VELVET LOUNGE"');

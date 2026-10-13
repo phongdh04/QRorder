@@ -12,6 +12,7 @@ import { FloatingCartBar } from './FloatingCartBar';
 import { CartSheet } from './CartSheet';
 import { TableOrdersSheet } from './TableOrdersSheet';
 import { OrderSuccessModal } from './OrderSuccessModal';
+import { ThankYouModal } from './ThankYouModal';
 import { Footer } from './Footer';
 
 interface CustomerViewProps {
@@ -29,6 +30,7 @@ export function CustomerView({ data }: CustomerViewProps) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isOrdersSheetOpen, setIsOrdersSheetOpen] = useState(false);
   const [orderSuccessData, setOrderSuccessData] = useState<any | null>(null);
+  const [isThankYouOpen, setIsThankYouOpen] = useState(false);
 
   // Dữ liệu đơn hàng & tổng tiền của phiên hiện tại
   const [sessionOrders, setSessionOrders] = useState<any[]>([]);
@@ -88,9 +90,11 @@ export function CustomerView({ data }: CustomerViewProps) {
         // Bàn vừa được thanh toán xong -> bắt đầu phiên mới
         setSessionOrders([]);
         setSessionTotal(0);
+        setIsThankYouOpen(true);
+        cart.clearCart();
       }
     },
-    [fetchTableSessionData]
+    [fetchTableSessionData, cart]
   );
 
   // Kết nối SSE Realtime tự động kết nối lại khi mất mạng và đồng bộ dữ liệu
@@ -297,6 +301,14 @@ export function CustomerView({ data }: CustomerViewProps) {
             setOrderSuccessData(null);
             setIsOrdersSheetOpen(true);
           }}
+        />
+
+        {/* Modal: Cảm ơn khi bàn đã thanh toán */}
+        <ThankYouModal
+          isOpen={isThankYouOpen}
+          onClose={() => setIsThankYouOpen(false)}
+          restaurantName={data.restaurant.name}
+          tableName={data.table.name}
         />
       </div>
     </div>

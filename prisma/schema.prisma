@@ -21,6 +21,7 @@ model Restaurant {
   menu_items     MenuItem[]
   table_sessions TableSession[]
   orders         Order[]
+  audit_logs     AuditLog[]
 
   @@map("restaurants")
 }
@@ -34,7 +35,8 @@ model User {
   role          String   @default("staff") // "owner" | "staff"
   created_at    DateTime @default(now())
 
-  restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  audit_logs    AuditLog[]
 
   @@index([restaurant_id])
   @@map("users")
@@ -104,11 +106,13 @@ model TableSession {
   restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
   table      Table      @relation(fields: [table_id], references: [id], onDelete: Cascade)
   orders     Order[]
+  audit_logs AuditLog[]
 
   @@index([restaurant_id])
   @@index([table_id])
   @@index([status])
   @@index([paid_at])
+  @@index([restaurant_id, status, paid_at])
   @@map("table_sessions")
 }
 
@@ -150,4 +154,24 @@ model OrderItem {
   @@index([order_id])
   @@index([menu_item_id])
   @@map("order_items")
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  restaurant_id String
+  user_id       String
+  action        String
+  session_id    String
+  reason        String
+  created_at    DateTime @default(now())
+
+  restaurant Restaurant   @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  user       User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  session    TableSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([restaurant_id])
+  @@index([session_id])
+  @@index([user_id])
+  @@index([created_at])
+  @@map("audit_logs")
 }

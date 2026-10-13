@@ -49,8 +49,6 @@ export function AdminSidebar({
       href: '/admin/revenue',
       label: 'Doanh thu',
       icon: TrendingUp,
-      disabled: true,
-      badge: 'Sắp có',
     },
     {
       href: '/admin/menu',

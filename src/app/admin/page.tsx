@@ -9,6 +9,7 @@ import { TableItemData } from '@/components/admin/TableCard';
 import { OrderStatusType } from '@/components/admin/StatusBadge';
 import { AdminToastContainer, ToastMessage } from '@/components/admin/AdminToast';
 import { playChimeSound } from '@/lib/sound';
+import { formatVND } from '@/lib/utils';
 
 export default function AdminTablesAndOrdersPage() {
   const { isSoundEnabled, setConnectionStatus } = useAdmin();
@@ -321,6 +322,44 @@ export default function AdminTablesAndOrdersPage() {
     }
   };
 
+  // 7. Thanh toán bàn (Checkout Session)
+  const handlePaySession = async (
+    sessionId: string,
+    paymentMethod: 'cash' | 'transfer'
+  ) => {
+    try {
+      const res = await fetch(`/api/admin/sessions/${sessionId}/pay`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentMethod }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Thanh toán thất bại.');
+      }
+
+      addToast(
+        'success',
+        'Thanh toán thành công',
+        `Đã chốt bill ${formatVND(data.total)} (${paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản'}).`
+      );
+
+      await Promise.all([fetchTables(), fetchKitchenQueue()]);
+
+      // Lấy hóa đơn để in receipt
+      const receiptRes = await fetch(`/api/admin/sessions/${sessionId}/receipt`);
+      if (receiptRes.ok) {
+        const rJson = await receiptRes.json();
+        return rJson.receipt || null;
+      }
+      return null;
+    } catch (err: any) {
+      addToast('error', 'Lỗi thanh toán', err?.message || 'Không thể thanh toán phiên bàn.');
+      return null;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Banner / Heading */}
@@ -365,6 +404,7 @@ export default function AdminTablesAndOrdersPage() {
         onClose={() => setSelectedTableId(null)}
         onUpdateOrderStatus={handleUpdateOrderStatus}
         onBatchConfirm={handleBatchConfirm}
+        onPaySession={handlePaySession}
       />
 
       {/* Toast Notifications container */}
