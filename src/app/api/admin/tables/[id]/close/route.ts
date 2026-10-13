@@ -9,11 +9,10 @@ export async function POST(
 ) {
   try {
     const user = await getCurrentUser();
-    const restaurantId = user?.restaurantId || request.headers.get('x-restaurant-id');
-
-    if (!restaurantId) {
-      return NextResponse.json({ error: 'Không tìm thấy thông tin quán.' }, { status: 401 });
+    if (!user?.restaurantId) {
+      return NextResponse.json({ error: 'Yêu cầu đăng nhập quản trị.' }, { status: 401 });
     }
+    const restaurantId = user.restaurantId;
 
     const body = await request.json();
     const paymentMethod = body.paymentMethod || 'cash';

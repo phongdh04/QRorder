@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     // 1. Xác thực bằng Zod
     const validationResult = orderSchema.safeParse(rawBody);
     if (!validationResult.success) {
-      const firstError = validationResult.error.errors[0]?.message || 'Dữ liệu đơn hàng không hợp lệ';
+      const firstError = validationResult.error.issues[0]?.message || 'Dữ liệu đơn hàng không hợp lệ';
       return NextResponse.json({ error: firstError }, { status: 400 });
     }
 

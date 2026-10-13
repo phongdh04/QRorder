@@ -5,11 +5,10 @@ import { getCurrentUser } from '@/lib/auth';
 export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser();
-    const restaurantId = user?.restaurantId || request.headers.get('x-restaurant-id');
-
-    if (!restaurantId) {
-      return NextResponse.json({ error: 'Không tìm thấy thông tin quán.' }, { status: 401 });
+    if (!user?.restaurantId) {
+      return NextResponse.json({ error: 'Yêu cầu đăng nhập quản trị.' }, { status: 401 });
     }
+    const restaurantId = user.restaurantId;
 
     const tables = await adminGetTables(restaurantId);
     return NextResponse.json({ success: true, tables });

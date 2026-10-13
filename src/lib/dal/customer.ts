@@ -115,3 +115,5 @@ export async function customerGetPublicMenuByToken(
     categories: cleanCategories,
   };
 }
+
+export const customerGetTableAndMenu = customerGetPublicMenuByToken;

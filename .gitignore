@@ -28,6 +28,7 @@ dist/
 build/
 out/
 .next/
+*.tsbuildinfo
 
 # IDE / Editor
 .vscode/

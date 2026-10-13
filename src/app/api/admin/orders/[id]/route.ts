@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { adminUpdateOrderStatus } from '@/lib/dal/admin';
 import { getCurrentUser } from '@/lib/auth';
 import { broadcastQrEvent } from '@/lib/events';
+
+const updateOrderStatusSchema = z.object({
+  status: z.enum(['pending', 'preparing', 'served', 'cancelled']),
+  cancelReason: z.string().max(250).optional(),
+});
 
 export async function PATCH(
   request: NextRequest,
@@ -9,18 +15,20 @@ export async function PATCH(
 ) {
   try {
     const user = await getCurrentUser();
-    const restaurantId = user?.restaurantId || request.headers.get('x-restaurant-id');
+    if (!user?.restaurantId) {
+      return NextResponse.json({ error: 'Yêu cầu đăng nhập quản trị.' }, { status: 401 });
+    }
+    const restaurantId = user.restaurantId;
 
-    if (!restaurantId) {
-      return NextResponse.json({ error: 'Không tìm thấy thông tin quán.' }, { status: 401 });
+    const rawBody = await request.json();
+    const validation = updateOrderStatusSchema.safeParse(rawBody);
+
+    if (!validation.success) {
+      const err = validation.error.issues[0]?.message || 'Dữ liệu không hợp lệ.';
+      return NextResponse.json({ error: err }, { status: 400 });
     }
 
-    const body = await request.json();
-    const { status, cancelReason } = body;
-
-    if (!['pending', 'preparing', 'served', 'cancelled'].includes(status)) {
-      return NextResponse.json({ error: 'Trạng thái đơn không hợp lệ.' }, { status: 400 });
-    }
+    const { status, cancelReason } = validation.data;
 
     const updated = await adminUpdateOrderStatus(
       restaurantId,

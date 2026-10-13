@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Wine, Lock, Mail, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
+import { Wine, Lock, Mail, ArrowRight, AlertCircle, Sparkles, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function AdminLoginPage() {
@@ -11,11 +11,13 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isRateLimited, setIsRateLimited] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg('');
+    setIsRateLimited(false);
 
     try {
       const res = await fetch('/api/auth/login', {
@@ -26,13 +28,20 @@ export default function AdminLoginPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Đăng nhập không thành công.');
+        if (res.status === 429) {
+          setIsRateLimited(true);
+          throw new Error(
+            data.error || 'Bạn đã thử đăng nhập sai quá nhiều lần. Vui lòng thử lại sau.'
+          );
+        }
+        // Thông báo lỗi chung chung theo yêu cầu bảo mật
+        throw new Error('Email hoặc mật khẩu không đúng.');
       }
 
       router.push('/admin');
       router.refresh();
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Lỗi kết nối máy chủ.');
+      setErrorMsg(err?.message || 'Email hoặc mật khẩu không đúng.');
     } finally {
       setIsLoading(false);
     }
@@ -42,93 +51,110 @@ export default function AdminLoginPage() {
     setEmail('owner@demobar.vn');
     setPassword('Admin@123456');
     setErrorMsg('');
+    setIsRateLimited(false);
   };
 
   return (
-    <div className="min-h-screen bg-[#07090E] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] bg-amber-500/10 blur-[120px] pointer-events-none" />
-
-      <div className="relative z-10 w-full max-w-md">
-        <div className="glass-panel p-8 rounded-3xl border border-slate-800 shadow-2xl space-y-6">
+    <div className="min-h-screen bg-[#F7F7F8] dark:bg-[#090D16] text-slate-900 dark:text-slate-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Card */}
+        <div className="bg-white dark:bg-slate-900/90 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-xl space-y-6">
           {/* Logo & title */}
-          <div className="text-center space-y-2">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-slate-950 font-bold mx-auto shadow-lg shadow-amber-500/20">
-              <Wine className="w-6 h-6 text-slate-950" />
+          <div className="text-center space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center mx-auto shadow-md shadow-blue-500/20">
+              <Wine className="w-7 h-7" />
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Quản Trị Quầy Bar</h1>
-            <p className="text-xs text-slate-400">Đăng nhập tài khoản quản lý / nhân viên quầy</p>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                The Velvet Lounge
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Khu Vực Quản Lý Quầy Bar & Gọi Món
+              </p>
+            </div>
           </div>
 
           {/* Quick Demo Fill button */}
-          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 flex items-center justify-between text-xs">
             <div className="space-y-0.5">
-              <span className="font-semibold text-amber-400 flex items-center gap-1">
+              <div className="font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
-                Tài khoản mẫu:
-              </span>
-              <p className="text-[11px] text-slate-400">owner@demobar.vn (Admin@123456)</p>
+                <span>Tài khoản mẫu:</span>
+              </div>
+              <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                owner@demobar.vn <span className="opacity-70">(Admin@123456)</span>
+              </p>
             </div>
             <button
               type="button"
               onClick={handleFillDemo}
-              className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all shadow-sm"
+              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all shadow-sm active:scale-95"
             >
               Điền nhanh
             </button>
           </div>
 
+          {/* Error / Rate limit notification */}
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errorMsg}</span>
+            <div
+              className={`p-3.5 rounded-xl text-xs flex items-start gap-2.5 ${
+                isRateLimited
+                  ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300'
+                  : 'bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 text-rose-700 dark:text-rose-300'
+              }`}
+            >
+              {isRateLimited ? (
+                <ShieldAlert className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+              ) : (
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
+              )}
+              <span className="leading-relaxed font-medium">{errorMsg}</span>
             </div>
           )}
 
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Email quản trị viên
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@bar.com"
-                  className="w-full text-xs bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  className="w-full text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Mật khẩu
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full text-xs bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  className="w-full text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
                 />
               </div>
             </div>
 
             <Button
               type="submit"
-              variant="gold"
-              className="w-full h-12 text-sm font-bold gap-2 mt-2"
+              className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl gap-2 shadow-sm transition-all"
               disabled={isLoading}
             >
               {isLoading ? (
-                <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
                   <span>Đăng Nhập Quản Trị</span>

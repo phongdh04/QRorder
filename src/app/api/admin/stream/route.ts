@@ -5,16 +5,14 @@ import { initPgListener, orderEventBus, QrOrderEvent } from '@/lib/events';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  // 1. Kiểm tra xác thực admin
   const user = await getCurrentUser();
-  const restaurantId = user?.restaurantId || request.headers.get('x-restaurant-id');
-
-  if (!restaurantId) {
-    return new Response(JSON.stringify({ error: 'Chưa đăng nhập' }), {
+  if (!user?.restaurantId) {
+    return new Response(JSON.stringify({ error: 'Chưa đăng nhập quản trị.' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
   }
+  const restaurantId = user.restaurantId;
 
   // 2. Khởi tạo listener Postgres
   await initPgListener();
