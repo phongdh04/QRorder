@@ -2,7 +2,9 @@ node_modules
 .next
 .git
 .gitignore
-.env*.local
+.env
+.env.*
+!.env.example
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -12,3 +14,6 @@ caddy/data
 caddy/config
 backups
 pgdata
+uploads
+*.tar.gz
+*.sql.gz

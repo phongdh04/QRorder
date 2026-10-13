@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:16-alpine
     container_name: qrorder_prod_db
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-qrorder}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qrorder_secret}
@@ -15,13 +15,18 @@ services:
       timeout: 5s
       retries: 5
       start_period: 5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: qrorder_prod_app
-    restart: always
+    restart: unless-stopped
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER:-qrorder}:${POSTGRES_PASSWORD:-qrorder_secret}@db:5432/${POSTGRES_DB:-qrorder_db}?schema=public"
       SESSION_SECRET: "${SESSION_SECRET:-super-secret-jwt-key-qrorder-bar-32chars-minimum-key}"
@@ -34,11 +39,22 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   caddy:
     image: caddy:2-alpine
     container_name: qrorder_prod_caddy
-    restart: always
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
@@ -50,26 +66,46 @@ services:
       - caddy_config:/config
       - uploads_data_prod:/srv/uploads:ro
     depends_on:
-      - app
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "caddy version || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   backup:
     image: postgres:16-alpine
     container_name: qrorder_prod_backup
-    restart: always
+    restart: unless-stopped
     environment:
       PGHOST: db
       PGPORT: 5432
       PGUSER: ${POSTGRES_USER:-qrorder}
       PGPASSWORD: ${POSTGRES_PASSWORD:-qrorder_secret}
       PGDATABASE: ${POSTGRES_DB:-qrorder_db}
+      UPLOADS_SOURCE: /uploads
       BACKUP_KEEP_COUNT: 14
     volumes:
       - backup_data:/backups
+      - uploads_data_prod:/uploads:ro
       - ./scripts/backup.sh:/backup.sh:ro
+      - ./scripts/restore.sh:/scripts/restore.sh:ro
     entrypoint: ["sh", "/backup.sh"]
     depends_on:
       db:
         condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   pgdata_prod:

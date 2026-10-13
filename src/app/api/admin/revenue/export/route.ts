@@ -3,6 +3,8 @@ import { adminExportRevenueCsv } from '@/lib/dal/revenue';
 import { getCurrentUser } from '@/lib/auth';
 import { RevenueRangeType } from '@/lib/tz';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser();

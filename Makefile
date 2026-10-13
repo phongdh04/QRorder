@@ -1,7 +1,7 @@
-.PHONY: up down restart migrate seed logs build prod-up prod-down prod-logs shell
+.PHONY: up down restart migrate seed logs build prod-up prod-down prod-logs prod-backup prod-restore shell
 
 up:
-	docker compose up --build
+	docker compose up --build -d
 
 down:
 	docker compose down
@@ -29,3 +29,9 @@ prod-down:
 
 prod-logs:
 	docker compose -f docker-compose.prod.yml logs -f
+
+prod-backup:
+	docker compose -f docker-compose.prod.yml exec backup sh /backup.sh
+
+prod-restore:
+	docker compose -f docker-compose.prod.yml exec backup sh /scripts/restore.sh
