@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { SkeletonImage } from './SkeletonImage';
 import { formatVND } from '@/lib/utils';
@@ -11,6 +11,7 @@ interface MenuCardProps {
   isFeatured?: boolean;
   priority?: boolean;
   onSelect: (item: CustomerPublicItem) => void;
+  onQuickAdd?: (item: CustomerPublicItem) => void;
 }
 
 export function MenuCard({
@@ -18,10 +19,25 @@ export function MenuCard({
   isFeatured = false,
   priority = false,
   onSelect,
+  onQuickAdd,
 }: MenuCardProps) {
   const isAvailable = item.isAvailable;
+  const [justAdded, setJustAdded] = useState(false);
 
-  // DẠNG 1: THẺ NỔI BẬT LỚN (FEATURED CARD) - Dành cho món đầu danh mục
+  const handleAddClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isAvailable) return;
+
+    if (onQuickAdd) {
+      onQuickAdd(item);
+      setJustAdded(true);
+      setTimeout(() => setJustAdded(false), 800);
+    } else {
+      onSelect(item);
+    }
+  };
+
+  // DẠNG 1: THẺ NỔI BẬT LỚN (FEATURED CARD) - Món đầu danh mục
   if (isFeatured) {
     return (
       <motion.div
@@ -81,29 +97,40 @@ export function MenuCard({
             </div>
           </div>
 
-          {/* Action "+" button (visual only for this stage) */}
+          {/* Action "+" button */}
           <button
             type="button"
             disabled={!isAvailable}
             aria-label={`Thêm ${item.name}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(item);
-            }}
+            onClick={handleAddClick}
             className={`shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition-all ${
               isAvailable
-                ? 'bg-[var(--surface-2)] text-[var(--accent)] border border-[var(--accent)]/30 group-hover:bg-[var(--accent)] group-hover:text-[#0B0B0C]'
+                ? justAdded
+                  ? 'bg-emerald-600 text-white scale-110'
+                  : 'bg-[var(--surface-2)] text-[var(--accent)] border border-[var(--accent)]/30 group-hover:bg-[var(--accent)] group-hover:text-[#0B0B0C]'
                 : 'bg-transparent text-[var(--muted)]/40 border border-[var(--border)] cursor-not-allowed'
             }`}
           >
-            <span className="text-lg leading-none font-light select-none">+</span>
+            {justAdded ? (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className="w-4 h-4"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <span className="text-lg leading-none font-light select-none">+</span>
+            )}
           </button>
         </div>
       </motion.div>
     );
   }
 
-  // DẠNG 2: THẺ HÀNG NGANG (ROW CARD) - Dành cho các món tiếp theo
+  // DẠNG 2: THẺ HÀNG NGANG (ROW CARD) - Các món tiếp theo
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -150,17 +177,28 @@ export function MenuCard({
             type="button"
             disabled={!isAvailable}
             aria-label={`Thêm ${item.name}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(item);
-            }}
+            onClick={handleAddClick}
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
               isAvailable
-                ? 'bg-[var(--surface-2)] text-[var(--accent)] border border-[var(--accent)]/25 group-hover:bg-[var(--accent)] group-hover:text-[#0B0B0C]'
+                ? justAdded
+                  ? 'bg-emerald-600 text-white scale-110'
+                  : 'bg-[var(--surface-2)] text-[var(--accent)] border border-[var(--accent)]/25 group-hover:bg-[var(--accent)] group-hover:text-[#0B0B0C]'
                 : 'bg-transparent text-[var(--muted)]/40 border border-[var(--border)] cursor-not-allowed'
             }`}
           >
-            <span className="text-base leading-none font-light select-none">+</span>
+            {justAdded ? (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className="w-3.5 h-3.5"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <span className="text-base leading-none font-light select-none">+</span>
+            )}
           </button>
         </div>
       </div>

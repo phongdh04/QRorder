@@ -18,6 +18,7 @@ export interface CustomerPublicCategory {
 export interface CustomerPublicMenuData {
   table: {
     name: string;
+    token: string;
   };
   restaurant: {
     name: string;
@@ -103,6 +104,7 @@ export async function customerGetPublicMenuByToken(
   return {
     table: {
       name: table.name,
+      token: table.token,
     },
     restaurant: {
       name: table.restaurant.name,

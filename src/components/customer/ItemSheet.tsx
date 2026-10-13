@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { SkeletonImage } from './SkeletonImage';
 import { formatVND } from '@/lib/utils';
@@ -9,9 +9,23 @@ import { CustomerPublicItem } from '@/lib/dal/customer';
 interface ItemSheetProps {
   item: CustomerPublicItem | null;
   onClose: () => void;
+  onAddToCart?: (item: CustomerPublicItem, quantity: number, note?: string) => void;
 }
 
-export function ItemSheet({ item, onClose }: ItemSheetProps) {
+export function ItemSheet({ item, onClose, onAddToCart }: ItemSheetProps) {
+  const [quantity, setQuantity] = useState(1);
+  const [note, setNote] = useState('');
+  const [isAddedFeedback, setIsAddedFeedback] = useState(false);
+
+  // Reset state mỗi khi mở món mới
+  useEffect(() => {
+    if (item) {
+      setQuantity(1);
+      setNote('');
+      setIsAddedFeedback(false);
+    }
+  }, [item]);
+
   // Khóa cuộn trang khi bottom sheet mở & hỗ trợ phím Escape
   useEffect(() => {
     if (item) {
@@ -31,10 +45,18 @@ export function ItemSheet({ item, onClose }: ItemSheetProps) {
   }, [item, onClose]);
 
   const handleDragEnd = (_: any, info: PanInfo) => {
-    // Nếu kéo xuống quá 70px hoặc vận tốc kéo xuống nhanh -> đóng sheet
     if (info.offset.y > 70 || info.velocity.y > 400) {
       onClose();
     }
+  };
+
+  const handleAdd = () => {
+    if (!item || !item.isAvailable || !onAddToCart) return;
+    onAddToCart(item, quantity, note);
+    setIsAddedFeedback(true);
+    setTimeout(() => {
+      onClose();
+    }, 400);
   };
 
   return (
@@ -143,15 +165,97 @@ export function ItemSheet({ item, onClose }: ItemSheetProps) {
                 </p>
               )}
 
-              {/* Action Button (Disabled for Phase 1 as requested) */}
+              {/* Quantity modifier and note input if item is available */}
+              {item.isAvailable && (
+                <div className="space-y-3 pt-2">
+                  {/* Quantity selector */}
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-[var(--surface-2)] border border-[var(--border)]">
+                    <span className="text-xs uppercase tracking-wider text-[var(--muted)] font-medium">
+                      Số lượng phần:
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        disabled={quantity <= 1}
+                        className="w-8 h-8 rounded-full bg-[var(--surface)] text-[var(--text)] flex items-center justify-center font-bold text-sm disabled:opacity-30 transition-opacity"
+                      >
+                        -
+                      </button>
+                      <span className="w-6 text-center font-bold font-sans text-sm text-[var(--text)]">
+                        {quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => Math.min(20, q + 1))}
+                        disabled={quantity >= 20}
+                        className="w-8 h-8 rounded-full bg-[var(--surface)] text-[var(--accent)] flex items-center justify-center font-bold text-sm disabled:opacity-30 transition-opacity"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Note input */}
+                  <div>
+                    <label className="block text-[11px] uppercase tracking-[0.15em] text-[var(--muted)] font-medium mb-1">
+                      Ghi chú riêng cho món này (tùy chọn):
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="vd: ít ngọt, nhiều đá, kèm chanh..."
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      maxLength={150}
+                      className="w-full text-xs bg-[var(--surface-2)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--text)] placeholder-[var(--muted)]/60 focus:outline-none focus:border-[var(--accent)]"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Action Button */}
               <div className="pt-2">
-                <button
-                  type="button"
-                  disabled
-                  className="w-full h-12 rounded-xl bg-[var(--surface-2)] text-[var(--muted)] border border-[var(--border)] text-xs font-medium uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-not-allowed opacity-80"
-                >
-                  <span>Chức năng gọi món sẽ mở ở bước tiếp theo</span>
-                </button>
+                {item.isAvailable ? (
+                  <button
+                    type="button"
+                    onClick={handleAdd}
+                    disabled={isAddedFeedback}
+                    className={`w-full h-12 rounded-xl text-xs uppercase tracking-[0.2em] font-semibold flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.99] ${
+                      isAddedFeedback
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-[var(--accent)] text-[#0B0B0C] hover:brightness-105 shadow-[var(--accent)]/15'
+                    }`}
+                  >
+                    {isAddedFeedback ? (
+                      <>
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          className="w-4 h-4"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <span>Đã Thêm Vào Giỏ</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Thêm Vào Giỏ Hàng</span>
+                        <span>•</span>
+                        <span className="font-sans font-bold">{formatVND(item.price * quantity)}</span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className="w-full h-12 rounded-xl bg-[var(--surface-2)] text-[var(--muted)] border border-[var(--border)] text-xs font-medium uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-not-allowed opacity-80"
+                  >
+                    <span>Món hiện đang tạm hết</span>
+                  </button>
+                )}
               </div>
             </div>
           </motion.div>

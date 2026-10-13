@@ -8,12 +8,14 @@ interface MenuSectionProps {
   category: CustomerPublicCategory;
   isFirstCategory: boolean;
   onSelectItem: (item: CustomerPublicItem) => void;
+  onQuickAdd?: (item: CustomerPublicItem) => void;
 }
 
 export function MenuSection({
   category,
   isFirstCategory,
   onSelectItem,
+  onQuickAdd,
 }: MenuSectionProps) {
   return (
     <section
@@ -55,6 +57,7 @@ export function MenuSection({
                 isFeatured={isFeatured}
                 priority={priority}
                 onSelect={onSelectItem}
+                onQuickAdd={onQuickAdd}
               />
             );
           })}

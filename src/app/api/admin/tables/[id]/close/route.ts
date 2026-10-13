@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminCloseTableSession } from '@/lib/dal/admin';
 import { getCurrentUser } from '@/lib/auth';
+import { broadcastQrEvent } from '@/lib/events';
 
 export async function POST(
   request: NextRequest,
@@ -22,6 +23,16 @@ export async function POST(
       params.id,
       paymentMethod
     );
+
+    // Phát sự kiện Realtime qua Postgres NOTIFY tới SSE
+    await broadcastQrEvent({
+      type: 'session_closed',
+      restaurantId,
+      tableId: params.id,
+      sessionId: closedSession.id,
+      status: 'paid',
+      total: closedSession.total,
+    });
 
     return NextResponse.json({
       success: true,

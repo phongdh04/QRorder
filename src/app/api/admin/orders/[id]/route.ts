@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminUpdateOrderStatus } from '@/lib/dal/admin';
 import { getCurrentUser } from '@/lib/auth';
+import { broadcastQrEvent } from '@/lib/events';
 
 export async function PATCH(
   request: NextRequest,
@@ -27,6 +28,19 @@ export async function PATCH(
       status,
       cancelReason
     );
+
+    // Phát sự kiện Realtime qua Postgres NOTIFY tới SSE
+    await broadcastQrEvent({
+      type: 'order_status_changed',
+      restaurantId,
+      tableId: updated.table_id,
+      sessionId: updated.session_id,
+      orderId: updated.id,
+      status: updated.status,
+      data: {
+        cancelReason: updated.cancel_reason,
+      },
+    });
 
     return NextResponse.json({ success: true, order: updated });
   } catch (error: any) {

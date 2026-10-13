@@ -43,8 +43,19 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, 3000);
-    return () => clearInterval(interval);
+
+    // Kết nối SSE Realtime để cập nhật đơn tức thì khi khách gửi
+    const es = new EventSource('/api/admin/stream');
+    es.addEventListener('order_created', () => fetchOrders());
+    es.addEventListener('order_status_changed', () => fetchOrders());
+    es.addEventListener('session_closed', () => fetchOrders());
+
+    // Dự phòng tải lại mỗi 10s
+    const interval = setInterval(fetchOrders, 10000);
+    return () => {
+      es.close();
+      clearInterval(interval);
+    };
   }, [filterStatus]);
 
   const handleUpdateStatus = async (

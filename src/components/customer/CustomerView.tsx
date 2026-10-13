@@ -1,11 +1,17 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CustomerPublicMenuData, CustomerPublicItem } from '@/lib/dal/customer';
+import { useCart } from '@/hooks/useCart';
+import { useTableRealtime } from '@/hooks/useTableRealtime';
 import { Header } from './Header';
 import { CategoryNav } from './CategoryNav';
 import { MenuSection } from './MenuSection';
 import { ItemSheet } from './ItemSheet';
+import { FloatingCartBar } from './FloatingCartBar';
+import { CartSheet } from './CartSheet';
+import { TableOrdersSheet } from './TableOrdersSheet';
+import { OrderSuccessModal } from './OrderSuccessModal';
 import { Footer } from './Footer';
 
 interface CustomerViewProps {
@@ -14,13 +20,87 @@ interface CustomerViewProps {
 
 export function CustomerView({ data }: CustomerViewProps) {
   const categories = data.categories;
+  const tableToken = data.table.token;
+
   const [activeCategoryId, setActiveCategoryId] = useState<string>(
     categories[0]?.id || ''
   );
   const [selectedItem, setSelectedItem] = useState<CustomerPublicItem | null>(null);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isOrdersSheetOpen, setIsOrdersSheetOpen] = useState(false);
+  const [orderSuccessData, setOrderSuccessData] = useState<any | null>(null);
+
+  // Dữ liệu đơn hàng & tổng tiền của phiên hiện tại
+  const [sessionOrders, setSessionOrders] = useState<any[]>([]);
+  const [sessionTotal, setSessionTotal] = useState<number>(0);
+
   const isClickScrollingRef = useRef(false);
 
-  // IntersectionObserver: Tự động cập nhật chip danh mục đang xem khi cuộn trang
+  // 1. Quản lý giỏ hàng lưu trong localStorage theo token bàn
+  const cart = useCart(tableToken);
+
+  // 2. Tải danh sách đơn hàng & tổng tiền của bàn từ database
+  const fetchTableSessionData = useCallback(async () => {
+    if (!tableToken) return;
+    try {
+      const res = await fetch(`/api/customer/table?token=${encodeURIComponent(tableToken)}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          setSessionOrders(json.data.activeSession?.orders || []);
+          setSessionTotal(json.data.activeSession?.total || 0);
+        }
+      }
+    } catch (err) {
+      console.warn('Lỗi tải dữ liệu phiên bàn:', err);
+    }
+  }, [tableToken]);
+
+  // Tải dữ liệu ban đầu
+  useEffect(() => {
+    fetchTableSessionData();
+  }, [fetchTableSessionData]);
+
+  // 3. Xử lý sự kiện Realtime qua SSE (Server-Sent Events)
+  const handleRealtimeEvent = useCallback(
+    (event: any) => {
+      if (event.type === 'order_created') {
+        // Đơn hàng mới được tạo -> cập nhật tổng tiền và tải lại danh sách đơn
+        if (typeof event.total === 'number') {
+          setSessionTotal(event.total);
+        }
+        fetchTableSessionData();
+      } else if (event.type === 'order_status_changed') {
+        // Trạng thái đơn thay đổi (đang pha chế / đã phục vụ / đã hủy)
+        setSessionOrders((prev) =>
+          prev.map((order) => {
+            if (order.id === event.orderId) {
+              return {
+                ...order,
+                status: event.status,
+                cancel_reason: event.data?.cancelReason || order.cancel_reason,
+              };
+            }
+            return order;
+          })
+        );
+      } else if (event.type === 'session_closed') {
+        // Bàn vừa được thanh toán xong -> bắt đầu phiên mới
+        setSessionOrders([]);
+        setSessionTotal(0);
+      }
+    },
+    [fetchTableSessionData]
+  );
+
+  // Kết nối SSE Realtime tự động kết nối lại khi mất mạng và đồng bộ dữ liệu
+  const { isConnected, isReconnecting } = useTableRealtime(
+    tableToken,
+    handleRealtimeEvent,
+    fetchTableSessionData
+  );
+
+  // 4. IntersectionObserver: Tự động cập nhật chip danh mục đang xem khi cuộn trang
   useEffect(() => {
     if (typeof window === 'undefined' || categories.length === 0) return;
 
@@ -30,7 +110,6 @@ export function CustomerView({ data }: CustomerViewProps) {
 
         const visibleEntries = entries.filter((e) => e.isIntersecting);
         if (visibleEntries.length > 0) {
-          // Lấy section gần với cạnh trên màn hình nhất
           const topEntry = visibleEntries.reduce((prev, curr) => {
             return Math.abs(curr.boundingClientRect.top) <
               Math.abs(prev.boundingClientRect.top)
@@ -68,13 +147,50 @@ export function CustomerView({ data }: CustomerViewProps) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // Tắt cờ tạm ngưng observer sau khi hiệu ứng cuộn mượt kết thúc
     setTimeout(() => {
       isClickScrollingRef.current = false;
     }, 600);
   };
 
-  // Hỗ trợ ghi đè bảng màu từ restaurants.theme nếu có cấu hình
+  // Thêm nhanh từ nút "+" trên thẻ món
+  const handleQuickAdd = (item: CustomerPublicItem) => {
+    cart.addItem({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      imageUrl: item.imageUrl,
+    });
+  };
+
+  // Thêm từ chi tiết món kèm số lượng và ghi chú
+  const handleDetailAdd = (
+    item: CustomerPublicItem,
+    quantity: number,
+    note?: string
+  ) => {
+    for (let i = 0; i < quantity; i++) {
+      cart.addItem(
+        {
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          imageUrl: item.imageUrl,
+        },
+        note
+      );
+    }
+  };
+
+  // Xử lý khi đặt đơn thành công
+  const handleOrderSuccess = (orderResult: any) => {
+    setOrderSuccessData(orderResult);
+    if (typeof orderResult.sessionTotal === 'number') {
+      setSessionTotal(orderResult.sessionTotal);
+    }
+    fetchTableSessionData();
+  };
+
+  // Hỗ trợ ghi đè màu từ theme quán nếu có
   const theme = data.restaurant.theme || {};
   const customStyles: React.CSSProperties = {
     ...(theme.bg ? { '--bg': theme.bg } : {}),
@@ -85,16 +201,18 @@ export function CustomerView({ data }: CustomerViewProps) {
   return (
     <div
       style={customStyles}
-      className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex justify-center selection:bg-[var(--accent)] selection:text-[#0B0B0C]"
+      className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex justify-center selection:bg-[var(--accent)] selection:text-[#0B0B0C] pb-24"
     >
-      {/* Mobile container: Tối ưu 360-430px, giới hạn max 480px trên desktop căn giữa */}
+      {/* Mobile container: Tối ưu 360-430px, max 480px trên desktop */}
       <div className="w-full max-w-[480px] bg-[var(--bg)] min-h-screen relative flex flex-col shadow-2xl border-x border-[var(--border)]">
-        {/* Header quán bar & tên bàn */}
+        {/* Header quán bar & phím tắt xem đơn của bàn */}
         <Header
           restaurantName={data.restaurant.name}
           tableName={data.table.name}
           logoUrl={data.restaurant.logoUrl}
           coverImageUrl={data.restaurant.coverImageUrl}
+          ordersCount={sessionOrders.length}
+          onOpenOrders={() => setIsOrdersSheetOpen(true)}
         />
 
         {/* Sticky Category Navigation */}
@@ -122,6 +240,7 @@ export function CustomerView({ data }: CustomerViewProps) {
                 category={cat}
                 isFirstCategory={idx === 0}
                 onSelectItem={(item) => setSelectedItem(item)}
+                onQuickAdd={handleQuickAdd}
               />
             ))
           )}
@@ -130,8 +249,55 @@ export function CustomerView({ data }: CustomerViewProps) {
         {/* Footer */}
         <Footer restaurantName={data.restaurant.name} />
 
-        {/* Bottom Sheet Modal Chi tiết món */}
-        <ItemSheet item={selectedItem} onClose={() => setSelectedItem(null)} />
+        {/* Thanh giỏ hàng nổi ở đáy màn hình */}
+        <FloatingCartBar
+          totalCount={cart.totalCount}
+          totalAmount={cart.totalAmount}
+          onOpenCart={() => setIsCartOpen(true)}
+        />
+
+        {/* Bottom Sheet: Chi tiết món */}
+        <ItemSheet
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+          onAddToCart={handleDetailAdd}
+        />
+
+        {/* Bottom Sheet: Giỏ hàng */}
+        <CartSheet
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          tableToken={tableToken}
+          items={cart.items}
+          generalNote={cart.generalNote}
+          onUpdateQuantity={cart.updateQuantity}
+          onUpdateNote={cart.updateItemNote}
+          onSetGeneralNote={cart.setGeneralNote}
+          onClearCart={cart.clearCart}
+          onOrderSuccess={handleOrderSuccess}
+        />
+
+        {/* Bottom Sheet: Đơn của bàn tôi (Realtime) */}
+        <TableOrdersSheet
+          isOpen={isOrdersSheetOpen}
+          onClose={() => setIsOrdersSheetOpen(false)}
+          tableName={data.table.name}
+          sessionTotal={sessionTotal}
+          orders={sessionOrders}
+          isLiveConnected={isConnected}
+          isReconnecting={isReconnecting}
+          onRefresh={fetchTableSessionData}
+        />
+
+        {/* Modal: Xác nhận sau khi gửi đơn thành công */}
+        <OrderSuccessModal
+          orderData={orderSuccessData}
+          onClose={() => setOrderSuccessData(null)}
+          onViewOrders={() => {
+            setOrderSuccessData(null);
+            setIsOrdersSheetOpen(true);
+          }}
+        />
       </div>
     </div>
   );

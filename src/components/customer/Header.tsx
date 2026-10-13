@@ -8,6 +8,8 @@ interface HeaderProps {
   tableName: string;
   logoUrl?: string | null;
   coverImageUrl?: string | null;
+  ordersCount?: number;
+  onOpenOrders?: () => void;
 }
 
 export function Header({
@@ -15,6 +17,8 @@ export function Header({
   tableName,
   logoUrl,
   coverImageUrl,
+  ordersCount = 0,
+  onOpenOrders,
 }: HeaderProps) {
   return (
     <header className="relative w-full overflow-hidden bg-[var(--surface)] border-b border-[var(--border)]">
@@ -37,6 +41,35 @@ export function Header({
 
         {/* Dark vignette gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface)] via-[var(--surface)]/60 to-transparent" />
+
+        {/* Top bar right button for table orders */}
+        {onOpenOrders && (
+          <div className="absolute top-3 right-3 z-20">
+            <button
+              type="button"
+              onClick={onOpenOrders}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0B0B0C]/75 backdrop-blur-md border border-[var(--border)] hover:border-[var(--accent)]/40 text-[var(--text)] text-[11px] uppercase tracking-wider font-medium transition-all shadow-md"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="w-3.5 h-3.5 text-[var(--accent)]"
+              >
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                <path d="M3 6h18" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
+              <span>Đơn của bàn</span>
+              {ordersCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-[var(--accent)] text-[#0B0B0C] text-[10px] font-bold flex items-center justify-center font-sans">
+                  {ordersCount}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Content wrapper */}
