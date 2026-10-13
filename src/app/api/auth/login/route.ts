@@ -58,6 +58,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Kiểm tra trạng thái kích hoạt tài khoản
+    if (!user.is_active) {
+      return NextResponse.json(
+        {
+          error: 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản lý quán để được hỗ trợ.',
+        },
+        { status: 403 }
+      );
+    }
+
     // Reset lịch sử đăng nhập sai sau khi thành công
     resetLoginAttempts(rateLimitKey);
 

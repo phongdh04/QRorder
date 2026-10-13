@@ -33,6 +33,7 @@ model User {
   password_hash String
   name          String
   role          String   @default("staff") // "owner" | "staff"
+  is_active     Boolean  @default(true)
   created_at    DateTime @default(now())
 
   restaurant    Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)

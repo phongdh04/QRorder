@@ -64,15 +64,11 @@ export function AdminSidebar({
       href: '/admin/store',
       label: 'Thông tin quán',
       icon: Store,
-      disabled: true,
-      badge: 'Sắp có',
     },
     {
       href: '/admin/staff',
       label: 'Nhân viên',
       icon: Users,
-      disabled: true,
-      badge: 'Sắp có',
     },
   ];
 
