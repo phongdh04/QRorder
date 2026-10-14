@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import {
   ZoomIn,
   ZoomOut,
@@ -46,6 +46,43 @@ export function FloorPlanMap({
   const [hoveredTableId, setHoveredTableId] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Xử lý hover mượt mà có thời gian đệm (grace period) ngăn chặn hoàn toàn hiện tượng nhấp nháy
+  const handleTablePointerEnter = useCallback((tableId: string) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setHoveredTableId(tableId);
+  }, []);
+
+  const handleTablePointerLeave = useCallback((tableId: string) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    // Độ trễ 80ms giúp chuột di chuyển qua mép hoặc giữa các bàn cực kỳ mượt mà, không giật
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredTableId((prev) => (prev === tableId ? null : prev));
+      hoverTimeoutRef.current = null;
+    }, 80);
+  }, []);
+
+  const handleSvgPointerLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setHoveredTableId(null);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Ánh xạ danh sách bàn DB với dữ liệu tọa độ Blueprint
   const mappedTables = useMemo(() => {
@@ -107,6 +144,32 @@ export function FloorPlanMap({
     if (!hoveredTableId) return null;
     return mappedTables.find((t) => t.id === hoveredTableId) || null;
   }, [hoveredTableId, mappedTables]);
+
+  const handleTableClick = useCallback(
+    (item: (typeof mappedTables)[0]) => {
+      if (item.dbTable) {
+        onSelectTable(item.dbTable);
+      } else {
+        onSelectTable({
+          id: item.id,
+          name: item.name,
+          token: `sample_${item.code}`,
+          is_active: true,
+          statusType: 'empty',
+          unservedCount: 0,
+          totalAmount: 0,
+          openedAt: null,
+          activeSession: null,
+          zone: item.zone,
+          pos_x: item.x,
+          pos_y: item.y,
+          shape: item.shape,
+          capacity: item.capacity,
+        });
+      }
+    },
+    [onSelectTable]
+  );
 
   // Lọc theo Khu vực và theo Trạng thái
   const visibleTables = useMemo(() => {
@@ -324,6 +387,7 @@ export function FloorPlanMap({
             viewBox="0 0 1000 1100"
             className="w-full h-full select-none"
             style={{ filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
+            onPointerLeave={handleSvgPointerLeave}
           >
             <defs>
               {/* Pattern lưới sàn vũ trường */}
@@ -712,20 +776,15 @@ export function FloorPlanMap({
               const tableWidth = isStool ? 28 : 34;
               const tableHeight = isStool ? 28 : 34;
 
-              // Hit box cố định 52x52 px để bắt chuột mượt mà, bao trùm toàn bộ bàn + ghế
-              const hitBoxSize = 52;
-
               // Màu sắc theo trạng thái
               let fillColor = '#181C26';
               let strokeColor = '#334155';
               let textColor = '#94A3B8';
-              let glowFilter = '';
 
               if (isPending) {
                 fillColor = '#C2410C';
                 strokeColor = '#FB923C';
                 textColor = '#FFFFFF';
-                glowFilter = 'url(#pendingGlow)';
               } else if (isPreparing) {
                 fillColor = '#B45309';
                 strokeColor = '#FBBF24';
@@ -736,60 +795,65 @@ export function FloorPlanMap({
                 textColor = '#DBEAFE';
               }
 
-              // Khi hover: Đổi màu viền sáng và áp bộ lọc neon, không co giãn vật lý để không bị rung giật
+              // Khi hover hoặc select: Đổi viền neon sắc nét
               if (isSelected) {
                 strokeColor = '#F59E0B';
               } else if (isHovered) {
                 strokeColor = '#38BDF8';
-                glowFilter = 'url(#hoverGlow)';
                 if (!isOccupied && !isPending && !isPreparing) {
                   fillColor = '#1E293B';
                 }
               }
 
               return (
-                <g
-                  key={item.id}
-                  transform={`translate(${item.x}, ${item.y})`}
-                  className="cursor-pointer"
-                  onClick={() => {
-                    if (item.dbTable) {
-                      onSelectTable(item.dbTable);
-                    } else {
-                      onSelectTable({
-                        id: item.id,
-                        name: item.name,
-                        token: `sample_${item.code}`,
-                        is_active: true,
-                        statusType: 'empty',
-                        unservedCount: 0,
-                        totalAmount: 0,
-                        openedAt: null,
-                        activeSession: null,
-                        zone: item.zone,
-                        pos_x: item.x,
-                        pos_y: item.y,
-                        shape: item.shape,
-                        capacity: item.capacity,
-                      });
-                    }
-                  }}
-                  onMouseEnter={() => setHoveredTableId(item.id)}
-                  onMouseLeave={() => setHoveredTableId((prev) => (prev === item.id ? null : prev))}
-                >
-                  {/* Vùng cảm ứng chuột cố định (Hit-Box SVG): dùng fill đen mờ 0.001 với pointerEvents="all"
-                      theo đúng chuẩn W3C SVG để bắt sự kiện chuột vững chắc 100%, không bị lọt xuyên */}
+                <g key={item.id} transform={`translate(${item.x}, ${item.y})`}>
+                  {/* Vòng hào quang sáng nét (Vector Accent) khi hover - 100% vector mượt mà, không lag filter */}
+                  {isHovered &&
+                    (isStool ? (
+                      <circle
+                        cx="0"
+                        cy="0"
+                        r={tableWidth / 2 + 3}
+                        fill="none"
+                        stroke="#38BDF8"
+                        strokeWidth="2"
+                        strokeOpacity="0.85"
+                        pointerEvents="none"
+                      />
+                    ) : (
+                      <rect
+                        x={-tableWidth / 2 - 3}
+                        y={-tableHeight / 2 - 3}
+                        width={tableWidth + 6}
+                        height={tableHeight + 6}
+                        rx="9"
+                        fill="none"
+                        stroke="#38BDF8"
+                        strokeWidth="2"
+                        strokeOpacity="0.85"
+                        pointerEvents="none"
+                      />
+                    ))}
+
+                  {/* Vùng cảm ứng chuột chuẩn xác theo kích thước ô bàn - Tuyệt đối không bị chồng lấn */}
                   <rect
-                    x={-hitBoxSize / 2}
-                    y={-hitBoxSize / 2}
-                    width={hitBoxSize}
-                    height={hitBoxSize}
+                    x={-tableWidth / 2}
+                    y={-tableHeight / 2}
+                    width={tableWidth}
+                    height={tableHeight}
+                    rx={isStool ? 14 : 7}
                     fill="#000000"
                     opacity="0.001"
-                    pointerEvents="all"
+                    style={{ cursor: 'pointer', pointerEvents: 'all' }}
+                    onPointerEnter={() => handleTablePointerEnter(item.id)}
+                    onPointerLeave={() => handleTablePointerLeave(item.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTableClick(item);
+                    }}
                   />
 
-                  {/* Toàn bộ đồ họa đặt trong nhóm pointerEvents="none" và KHÔNG scale để giữ vững tọa độ tuyệt đối */}
+                  {/* Toàn bộ hình khối đồ họa bàn ghế là pointerEvents="none" thuần túy */}
                   <g pointerEvents="none">
                     {/* Vòng lan tỏa (ping ring) nếu có đơn mới */}
                     {isPending && (
@@ -813,8 +877,8 @@ export function FloorPlanMap({
                         r={tableWidth / 2}
                         fill={fillColor}
                         stroke={strokeColor}
-                        strokeWidth={isSelected ? 3.5 : isHovered ? 3 : 2}
-                        style={{ filter: glowFilter }}
+                        strokeWidth={isSelected ? 3.5 : isHovered ? 2.5 : 2}
+                        style={{ filter: isPending ? 'url(#pendingGlow)' : undefined }}
                         pointerEvents="none"
                       />
                     ) : (
@@ -826,8 +890,8 @@ export function FloorPlanMap({
                         rx="7"
                         fill={fillColor}
                         stroke={strokeColor}
-                        strokeWidth={isSelected ? 3.5 : isHovered ? 3 : 2}
-                        style={{ filter: glowFilter }}
+                        strokeWidth={isSelected ? 3.5 : isHovered ? 2.5 : 2}
+                        style={{ filter: isPending ? 'url(#pendingGlow)' : undefined }}
                         pointerEvents="none"
                       />
                     )}
@@ -885,84 +949,238 @@ export function FloorPlanMap({
                 </g>
               );
             })}
-          </svg>
 
-          {/* Hover Tooltip Popup trên Canvas */}
-          {activeHovered && (
-            <div
-              style={{
-                left: `${(activeHovered.x / 1000) * 100}%`,
-                top: `${(activeHovered.y / 1100) * 100}%`,
-                pointerEvents: 'none',
-              }}
-              className={`absolute -translate-x-1/2 select-none z-30 transition-opacity duration-150 ${
-                activeHovered.y < 180 ? 'translate-y-7' : '-translate-y-[calc(100%+16px)]'
-              }`}
-            >
-              <div
-                style={{ pointerEvents: 'none' }}
-                className="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl p-3 shadow-2xl text-xs w-48 space-y-1.5 text-slate-200"
+            {/* ======================================================== */}
+            {/* 7. NATIVE SVG TOOLTIP (Hoàn toàn trong SVG, không chèn DOM HTML) */}
+            {/* ======================================================== */}
+            {activeHovered && (
+              <g
+                transform={`translate(${activeHovered.x}, ${activeHovered.y})`}
+                pointerEvents="none"
               >
-                <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
-                  <span className="font-extrabold text-white text-sm">
-                    {activeHovered.dbTable?.name || activeHovered.blueprint?.name}
-                  </span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-800 font-mono text-slate-400">
-                    {activeHovered.blueprint?.code}
-                  </span>
-                </div>
+                {(() => {
+                  const showBelow = activeHovered.y < 190;
+                  const boxWidth = 200;
+                  const boxHeight = 118;
+                  let boxX = -boxWidth / 2;
 
-                <div className="text-[11px] space-y-1">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span>Phân khu:</span>
-                    <span className="font-semibold text-slate-300">
-                      {activeHovered.blueprint?.zone === 'outdoor'
-                        ? '🌿 Ngoài trời'
-                        : activeHovered.blueprint?.zone === 'dj'
-                        ? '🎵 Cạnh DJ'
-                        : activeHovered.blueprint?.zone === 'bar'
-                        ? '🍸 Quầy Bar'
-                        : '👑 VIP / Trong nhà'}
-                    </span>
-                  </div>
+                  // Đảm bảo không tràn viền trái hoặc viền phải viewBox
+                  if (activeHovered.x + boxX < 20) {
+                    boxX = 20 - activeHovered.x;
+                  } else if (activeHovered.x + boxX + boxWidth > 980) {
+                    boxX = 980 - activeHovered.x - boxWidth;
+                  }
 
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span>Trạng thái:</span>
-                    <span
-                      className={`font-bold ${
-                        activeHovered.dbTable?.statusType === 'pending'
-                          ? 'text-orange-400 animate-pulse'
-                          : activeHovered.dbTable?.statusType === 'occupied'
-                          ? 'text-blue-400'
-                          : 'text-slate-400'
-                      }`}
-                    >
-                      {activeHovered.dbTable?.statusType === 'pending'
-                        ? 'Có đơn mới gọi'
-                        : activeHovered.dbTable?.statusType === 'preparing'
-                        ? 'Đang làm đồ'
-                        : activeHovered.dbTable?.statusType === 'occupied'
-                        ? 'Đang phục vụ'
-                        : 'Bàn trống'}
-                    </span>
-                  </div>
+                  // Khoảng cách an toàn tuyệt đối, không đè lên bàn
+                  const boxY = showBelow ? 28 : -28 - boxHeight;
 
-                  {activeHovered.dbTable && activeHovered.dbTable.totalAmount > 0 && (
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-800/80 font-bold">
-                      <span className="text-slate-400">Tạm tính:</span>
-                      <span className="text-amber-400 font-mono">
-                        {formatVND(activeHovered.dbTable.totalAmount)}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                  const zoneLabel =
+                    activeHovered.blueprint?.zone === 'outdoor'
+                      ? '🌿 Ngoài trời'
+                      : activeHovered.blueprint?.zone === 'dj'
+                      ? '🎵 Cạnh DJ'
+                      : activeHovered.blueprint?.zone === 'bar'
+                      ? '🍸 Quầy Bar'
+                      : '👑 VIP / Trong nhà';
 
-                <div className="text-[10px] text-slate-500 pt-1 text-center font-medium">
-                  Bấm để mở hóa đơn & gọi món
-                </div>
-              </div>
-            </div>
-          )}
+                  const statusLabel =
+                    activeHovered.dbTable?.statusType === 'pending'
+                      ? 'Có đơn mới gọi'
+                      : activeHovered.dbTable?.statusType === 'preparing'
+                      ? 'Đang làm đồ'
+                      : activeHovered.dbTable?.statusType === 'occupied'
+                      ? 'Đang phục vụ'
+                      : 'Bàn trống';
+
+                  const statusColor =
+                    activeHovered.dbTable?.statusType === 'pending'
+                      ? '#FB923C'
+                      : activeHovered.dbTable?.statusType === 'occupied'
+                      ? '#60A5FA'
+                      : activeHovered.dbTable?.statusType === 'preparing'
+                      ? '#FBBF24'
+                      : '#94A3B8';
+
+                  return (
+                    <g pointerEvents="none">
+                      {/* Đổ bóng Vector (thay thế CSS drop-shadow để triệt tiêu mọi rung giật) */}
+                      <rect
+                        x={boxX + 3}
+                        y={boxY + 4}
+                        width={boxWidth}
+                        height={boxHeight}
+                        rx="12"
+                        fill="#000000"
+                        opacity="0.65"
+                        pointerEvents="none"
+                      />
+
+                      {/* Khung nền Tooltip */}
+                      <rect
+                        x={boxX}
+                        y={boxY}
+                        width={boxWidth}
+                        height={boxHeight}
+                        rx="12"
+                        fill="#0D1117"
+                        stroke="#38BDF8"
+                        strokeWidth="1.5"
+                        opacity="0.98"
+                        pointerEvents="none"
+                      />
+
+                      {/* Mũi tên hướng về bàn (không chạm vào viền bàn) */}
+                      {showBelow ? (
+                        <polygon
+                          points="-6,28 6,28 0,22"
+                          fill="#0D1117"
+                          stroke="#38BDF8"
+                          strokeWidth="1.5"
+                          pointerEvents="none"
+                        />
+                      ) : (
+                        <polygon
+                          points="-6,-28 6,-28 0,-22"
+                          fill="#0D1117"
+                          stroke="#38BDF8"
+                          strokeWidth="1.5"
+                          pointerEvents="none"
+                        />
+                      )}
+
+                      {/* Tiêu đề: Tên bàn */}
+                      <text
+                        x={boxX + 14}
+                        y={boxY + 24}
+                        fill="#FFFFFF"
+                        fontSize="13"
+                        fontWeight="900"
+                        pointerEvents="none"
+                      >
+                        {activeHovered.dbTable?.name || activeHovered.blueprint?.name}
+                      </text>
+
+                      {/* Badge mã code */}
+                      <rect
+                        x={boxX + boxWidth - 54}
+                        y={boxY + 11}
+                        width="42"
+                        height="18"
+                        rx="9"
+                        fill="#1E293B"
+                        pointerEvents="none"
+                      />
+                      <text
+                        x={boxX + boxWidth - 33}
+                        y={boxY + 24}
+                        textAnchor="middle"
+                        fill="#94A3B8"
+                        fontSize="9.5"
+                        fontFamily="monospace"
+                        fontWeight="bold"
+                        pointerEvents="none"
+                      >
+                        {activeHovered.blueprint?.code}
+                      </text>
+
+                      {/* Đường phân cách */}
+                      <line
+                        x1={boxX + 12}
+                        y1={boxY + 36}
+                        x2={boxX + boxWidth - 12}
+                        y2={boxY + 36}
+                        stroke="#1E293B"
+                        strokeWidth="1"
+                        pointerEvents="none"
+                      />
+
+                      {/* Phân khu */}
+                      <text x={boxX + 14} y={boxY + 54} fill="#64748B" fontSize="10.5" pointerEvents="none">
+                        Khu vực:
+                      </text>
+                      <text
+                        x={boxX + boxWidth - 14}
+                        y={boxY + 54}
+                        textAnchor="end"
+                        fill="#CBD5E1"
+                        fontSize="10.5"
+                        fontWeight="600"
+                        pointerEvents="none"
+                      >
+                        {zoneLabel}
+                      </text>
+
+                      {/* Trạng thái */}
+                      <text x={boxX + 14} y={boxY + 73} fill="#64748B" fontSize="10.5" pointerEvents="none">
+                        Trạng thái:
+                      </text>
+                      <text
+                        x={boxX + boxWidth - 14}
+                        y={boxY + 73}
+                        textAnchor="end"
+                        fill={statusColor}
+                        fontSize="10.5"
+                        fontWeight="bold"
+                        pointerEvents="none"
+                      >
+                        {statusLabel}
+                      </text>
+
+                      {/* Tạm tính hoặc Sức chứa */}
+                      {activeHovered.dbTable && activeHovered.dbTable.totalAmount > 0 ? (
+                        <>
+                          <text x={boxX + 14} y={boxY + 92} fill="#64748B" fontSize="10.5" pointerEvents="none">
+                            Tạm tính:
+                          </text>
+                          <text
+                            x={boxX + boxWidth - 14}
+                            y={boxY + 92}
+                            textAnchor="end"
+                            fill="#FBBF24"
+                            fontSize="11"
+                            fontWeight="bold"
+                            fontFamily="monospace"
+                            pointerEvents="none"
+                          >
+                            {formatVND(activeHovered.dbTable.totalAmount)}
+                          </text>
+                        </>
+                      ) : (
+                        <>
+                          <text x={boxX + 14} y={boxY + 92} fill="#64748B" fontSize="10.5" pointerEvents="none">
+                            Sức chứa:
+                          </text>
+                          <text
+                            x={boxX + boxWidth - 14}
+                            y={boxY + 92}
+                            textAnchor="end"
+                            fill="#94A3B8"
+                            fontSize="10.5"
+                            pointerEvents="none"
+                          >
+                            {activeHovered.capacity} chỗ ngồi
+                          </text>
+                        </>
+                      )}
+
+                      {/* Gợi ý bấm */}
+                      <text
+                        x={boxX + boxWidth / 2}
+                        y={boxY + 109}
+                        textAnchor="middle"
+                        fill="#64748B"
+                        fontSize="8.5"
+                        fontWeight="600"
+                        pointerEvents="none"
+                      >
+                        Bấm để mở chi tiết & gọi món
+                      </text>
+                    </g>
+                  );
+                })()}
+              </g>
+            )}
+          </svg>
         </div>
       </div>
 
