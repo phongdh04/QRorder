@@ -75,7 +75,7 @@ export function FloorPlanMap({
         return false;
       });
 
-      // Nếu là NT-01 đến NT-10 thì ánh xạ tương ứng "Bàn 01" đến "Bàn 10" hiện có
+      // Nếu là NT-01 đến NT-33 thì ánh xạ tương ứng "Bàn 01" đến "Bàn 33" hiện có
       if (!matchedDbTable && bp.zone === 'outdoor') {
         const num = parseInt(bp.code.replace('NT-', ''), 10);
         if (!isNaN(num)) {
@@ -86,30 +86,18 @@ export function FloorPlanMap({
         }
       }
 
-      // Nếu bàn trong DB có pos_x, pos_y riêng thì dùng tọa độ đó
-      const layout = resolveTableLayout({
-        id: matchedDbTable?.id || bp.code,
-        name: matchedDbTable?.name || bp.name,
-        zone: matchedDbTable?.zone || bp.zone,
-        pos_x: matchedDbTable?.pos_x ?? bp.x,
-        pos_y: matchedDbTable?.pos_y ?? bp.y,
-        shape: matchedDbTable?.shape || bp.shape,
-        capacity: matchedDbTable?.capacity || bp.capacity,
-      });
-
       return {
         blueprint: bp,
-        layout,
         dbTable: matchedDbTable || null,
-        // Dữ liệu hiển thị
+        // Dữ liệu hiển thị chuẩn tuyệt đối theo Blueprint mặt bằng
         id: matchedDbTable?.id || `virtual-${bp.code}`,
         name: matchedDbTable?.name || bp.name,
         code: bp.code,
-        zone: layout.zone,
-        x: layout.x,
-        y: layout.y,
-        shape: layout.shape,
-        capacity: layout.capacity,
+        zone: bp.zone,
+        x: bp.x,
+        y: bp.y,
+        shape: bp.shape,
+        capacity: bp.capacity,
         statusType: matchedDbTable?.statusType || 'empty',
         unservedCount: matchedDbTable?.unservedCount || 0,
         totalAmount: matchedDbTable?.totalAmount || 0,
@@ -329,10 +317,10 @@ export function FloorPlanMap({
             transformOrigin: 'center center',
             transition: 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)',
           }}
-          className="w-full max-w-[880px] aspect-square relative"
+          className="w-full max-w-[880px] aspect-[1000/1100] relative"
         >
           <svg
-            viewBox="0 0 1000 1000"
+            viewBox="0 0 1000 1100"
             className="w-full h-full select-none"
             style={{ filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
           >
@@ -379,20 +367,20 @@ export function FloorPlanMap({
               x="5"
               y="5"
               width="990"
-              height="990"
+              height="1090"
               rx="32"
               fill="#0D0E12"
               stroke="#1E293B"
               strokeWidth="2"
             />
-            <rect x="5" y="5" width="990" height="990" rx="32" fill="url(#venueGrid)" />
+            <rect x="5" y="5" width="990" height="1090" rx="32" fill="url(#venueGrid)" />
 
             {/* Viền chu vi sàn quán */}
             <rect
               x="20"
               y="20"
               width="960"
-              height="960"
+              height="1060"
               rx="24"
               fill="none"
               stroke="rgba(255, 255, 255, 0.05)"
@@ -422,14 +410,14 @@ export function FloorPlanMap({
 
               {/* Vòng đệm mờ phía trong lục giác tạo chiều sâu */}
               <polygon
-                points="500,200 750,320 750,615 500,740 250,615 250,320"
+                points={HEXAGON_CONFIG.innerPoints}
                 fill="none"
                 stroke="rgba(16, 185, 129, 0.12)"
                 strokeWidth="1"
               />
 
               {/* Huy hiệu & Tiêu đề Khu Ngoài Trời */}
-              <g transform="translate(500, 198)">
+              <g transform="translate(500, 186)">
                 <rect
                   x="-125"
                   y="-14"
@@ -457,12 +445,12 @@ export function FloorPlanMap({
 
               {/* Biểu tượng cây trang trí tại 6 góc lục giác */}
               {[
-                { x: 500, y: 180 },
-                { x: 770, y: 310 },
-                { x: 770, y: 630 },
-                { x: 500, y: 760 },
-                { x: 230, y: 630 },
-                { x: 230, y: 310 },
+                { x: 500, y: 170 },
+                { x: 780, y: 310 },
+                { x: 780, y: 600 },
+                { x: 500, y: 710 },
+                { x: 220, y: 600 },
+                { x: 220, y: 310 },
               ].map((pt, idx) => (
                 <circle
                   key={`hex-corner-${idx}`}

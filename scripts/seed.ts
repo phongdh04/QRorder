@@ -66,6 +66,14 @@ async function main() {
   }
 
   // 2. Khởi tạo & Đồng bộ tất cả bàn theo sơ đồ mặt bằng quán (Khu Ngoài trời, VIP, DJ, Quầy Bar)
+  // Xóa các bàn cũ lỗi thời (như Ghế Bar 01..06) nếu có
+  await prisma.table.deleteMany({
+    where: {
+      restaurant_id: restaurant.id,
+      name: { startsWith: 'Ghế Bar' },
+    },
+  });
+
   const existingTables = await prisma.table.findMany({
     where: { restaurant_id: restaurant.id },
   });
