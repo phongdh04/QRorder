@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-import { generateTableToken } from '@/lib/utils';
 
 /**
  * DATA ACCESS LAYER (DAL) CHO ADMIN / STAFF
@@ -226,16 +225,17 @@ export async function adminGetTables(restaurantId: string) {
   return tables.map((t) => {
     const activeSession = t.table_sessions[0] || null;
 
+    const tAny = t as any;
     const baseTableData = {
       id: t.id,
       name: t.name,
       token: t.token,
       is_active: t.is_active,
-      zone: t.zone || 'outdoor',
-      pos_x: t.pos_x,
-      pos_y: t.pos_y,
-      shape: t.shape || 'square',
-      capacity: t.capacity || 4,
+      zone: (tAny.zone as string) || 'outdoor',
+      pos_x: (tAny.pos_x as number | null) ?? null,
+      pos_y: (tAny.pos_y as number | null) ?? null,
+      shape: (tAny.shape as string) || 'square',
+      capacity: (tAny.capacity as number) || 4,
     };
 
     if (!activeSession) {
