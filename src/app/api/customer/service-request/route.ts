@@ -115,6 +115,23 @@ export async function POST(request: NextRequest) {
 
     const typeDesc = type === 'call_staff' ? 'Gọi nhân viên' : 'Yêu cầu thanh toán';
 
+    // 8. Gửi thông báo Web Push + In-App cho nhân viên & quản lý
+    try {
+      const { findRecipientsForTable } = await import('@/lib/service-requests');
+      const { notificationDispatcher } = await import('@/lib/notifications');
+      const recipients = await findRecipientsForTable(restaurantId, table.id);
+      notificationDispatcher.dispatchAsync(recipients, {
+        title: `${table.name} – ${typeDesc}`,
+        body: `Khách tại ${table.name} đang cần hỗ trợ phục vụ.`,
+        tag: serviceRequest.id,
+        url: `/staff?request=${serviceRequest.id}`,
+        priority: 'normal',
+        restaurantId,
+      });
+    } catch (notifErr) {
+      console.error('Lỗi dispatch thông báo gọi nhân viên:', notifErr);
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Nhân viên sẽ đến ngay!',

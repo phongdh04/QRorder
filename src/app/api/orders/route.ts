@@ -234,6 +234,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // 7. Gửi thông báo qua NotificationDispatcher (Web Push + In-App)
+    try {
+      const { findRecipientsForTable } = await import('@/lib/service-requests');
+      const { notificationDispatcher } = await import('@/lib/notifications');
+      const recipients = await findRecipientsForTable(restaurantId, table.id);
+      notificationDispatcher.dispatchAsync(recipients, {
+        title: `${table.name} – Đơn mới`,
+        body: `${items.length} món (${new Intl.NumberFormat('vi-VN').format(result.orderTotalAmount)}đ)`,
+        tag: result.requestId,
+        url: `/staff?request=${result.requestId}`,
+        priority: 'normal',
+        restaurantId,
+      });
+    } catch (notifErr) {
+      console.error('Lỗi dispatch thông báo đơn hàng:', notifErr);
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Gửi đơn gọi món thành công tới quầy bar!',

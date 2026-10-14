@@ -35,3 +35,6 @@ prod-backup:
 
 prod-restore:
 	docker compose -f docker-compose.prod.yml exec backup sh /scripts/restore.sh
+
+vapid:
+	docker compose exec app npx tsx scripts/generate-vapid.ts

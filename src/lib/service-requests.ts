@@ -532,6 +532,23 @@ export async function checkAndEscalateRequests(): Promise<any[]> {
           escalatedAt: item.escalated_at,
         },
       });
+
+      // Gửi thông báo Web Push mức khẩn cấp
+      try {
+        const { notificationDispatcher } = await import('./notifications');
+        const recipients = await findRecipientsForTable(item.restaurant_id, item.table_id);
+        notificationDispatcher.dispatchAsync(recipients, {
+          title: `[KHẨN CẤP] Bàn cần tiếp nhận ngay!`,
+          body: `Yêu cầu đã quá hạn chờ tiếp nhận. Vui lòng kiểm tra ngay!`,
+          tag: item.id,
+          url: `/staff?request=${item.id}`,
+          priority: 'urgent',
+          requireInteraction: true,
+          restaurantId: item.restaurant_id,
+        });
+      } catch (pushErr) {
+        console.error('Lỗi dispatch push khi leo thang:', pushErr);
+      }
     }
 
     return escalated;
