@@ -22,13 +22,15 @@ export function CategoryNav({
   const containerRef = useRef<HTMLDivElement>(null);
   const activeBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Tự động cuộn chip đang active vào giữa thanh điều hướng
+  // Tự động cuộn ngang thanh danh mục để chip active nằm giữa (chỉ cuộn container ngang, KHÔNG tác động tới cuộn dọc của trang)
   useEffect(() => {
     if (activeBtnRef.current && containerRef.current) {
-      activeBtnRef.current.scrollIntoView({
+      const container = containerRef.current;
+      const btn = activeBtnRef.current;
+      const targetLeft = btn.offsetLeft - container.offsetWidth / 2 + btn.offsetWidth / 2;
+      container.scrollTo({
+        left: targetLeft,
         behavior: 'smooth',
-        inline: 'center',
-        block: 'nearest',
       });
     }
   }, [activeId]);

@@ -16,7 +16,6 @@
 html {
   background-color: var(--bg);
   color: var(--text);
-  scroll-behavior: smooth;
   scroll-padding-top: 5rem;
 }
 
@@ -27,7 +26,14 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
-  overflow-x: hidden;
+  overflow-x: clip;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Tối ưu hiệu năng render cuộn mượt cho danh sách món ăn */
+.menu-card-optimized {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 120px;
 }
 
 /* Subtle luxury card effect */

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { SkeletonImage } from './SkeletonImage';
 import { formatVND } from '@/lib/utils';
 import { CustomerPublicItem } from '@/lib/dal/customer';
@@ -49,11 +48,7 @@ export function MenuCard({
   // =========================================================================
   if (isTextOnly) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-20px' }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
+      <div
         onClick={() => onSelect(item)}
         role="button"
         tabIndex={0}
@@ -63,7 +58,7 @@ export function MenuCard({
             onSelect(item);
           }
         }}
-        className="group relative cursor-pointer p-4 rounded-2xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)]/40 transition-all duration-300 shadow-xs hover:shadow-md hover:shadow-black/20 focus:outline-hidden focus:ring-1 focus:ring-[var(--accent)] overflow-hidden"
+        className="menu-card-optimized group relative cursor-pointer p-4 rounded-2xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)]/40 transition-all duration-200 shadow-xs hover:shadow-md hover:shadow-black/20 focus:outline-hidden focus:ring-1 focus:ring-[var(--accent)] overflow-hidden"
       >
         {/* Subtle decorative gold left border highlight */}
         <div className="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-[var(--accent)]/60 via-[var(--accent)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -123,7 +118,7 @@ export function MenuCard({
             )}
           </button>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
@@ -136,11 +131,7 @@ export function MenuCard({
     const blurDataUrl = item.image?.blurDataUrl;
 
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-20px' }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
+      <div
         onClick={() => onSelect(item)}
         role="button"
         tabIndex={0}
@@ -150,7 +141,7 @@ export function MenuCard({
             onSelect(item);
           }
         }}
-        className="group relative cursor-pointer overflow-hidden rounded-2xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)]/30 transition-all duration-300 shadow-md shadow-black/40 focus:outline-hidden focus:ring-1 focus:ring-[var(--accent)]"
+        className="menu-card-optimized group relative cursor-pointer overflow-hidden rounded-2xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)]/30 transition-all duration-200 shadow-md shadow-black/40 focus:outline-hidden focus:ring-1 focus:ring-[var(--accent)]"
       >
         {/* Large Image with gradient overlay and fixed 4:3 aspect ratio */}
         <div className="relative w-full aspect-[4/3] overflow-hidden">
@@ -224,7 +215,7 @@ export function MenuCard({
             )}
           </button>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
@@ -236,11 +227,7 @@ export function MenuCard({
   const blurDataUrl = item.image?.blurDataUrl;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-20px' }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
+    <div
       onClick={() => onSelect(item)}
       role="button"
       tabIndex={0}
@@ -250,7 +237,7 @@ export function MenuCard({
           onSelect(item);
         }
       }}
-      className="group cursor-pointer p-3.5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)]/25 transition-all duration-300 flex items-center justify-between gap-3 shadow-xs focus:outline-hidden focus:ring-1 focus:ring-[var(--accent)]"
+      className="menu-card-optimized group cursor-pointer p-3.5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)]/25 transition-all duration-200 flex items-center justify-between gap-3 shadow-xs focus:outline-hidden focus:ring-1 focus:ring-[var(--accent)]"
     >
       {/* Left text column */}
       <div className="flex-1 min-w-0 pr-1">
@@ -319,6 +306,6 @@ export function MenuCard({
           grayscale={!isAvailable}
         />
       </div>
-    </motion.div>
+    </div>
   );
 }

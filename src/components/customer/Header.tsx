@@ -37,7 +37,7 @@ export function Header({
         )}
 
         {/* Champagne subtle ambient light */}
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-80 h-44 bg-[var(--accent)]/10 blur-3xl pointer-events-none" />
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-80 h-44 bg-[radial-gradient(ellipse_at_center,_rgba(201,169,106,0.18)_0%,_transparent_70%)] pointer-events-none" />
 
         {/* Dark vignette gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface)] via-[var(--surface)]/60 to-transparent" />

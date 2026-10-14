@@ -69,8 +69,8 @@ export function SkeletonImage({
           setHasError(true);
           setIsLoaded(true);
         }}
-        className={`object-cover transition-all duration-700 ease-out ${
-          isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.02]'
+        className={`object-cover transition-opacity duration-300 ease-out ${
+          isLoaded ? 'opacity-100' : 'opacity-0'
         } ${grayscale ? 'grayscale contrast-75 brightness-75' : ''} ${className}`}
       />
     </div>

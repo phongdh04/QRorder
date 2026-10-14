@@ -140,13 +140,13 @@ export function CustomerView({ data }: CustomerViewProps) {
 
           const catId = topEntry.target.getAttribute('data-category-id');
           if (catId) {
-            setActiveCategoryId(catId);
+            setActiveCategoryId((prev) => (prev !== catId ? catId : prev));
           }
         }
       },
       {
-        rootMargin: '-120px 0px -60% 0px',
-        threshold: [0, 0.25, 0.5, 0.75, 1],
+        rootMargin: '-80px 0px -70% 0px',
+        threshold: 0,
       }
     );
 
