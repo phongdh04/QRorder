@@ -258,6 +258,9 @@ describe('Part 3 - Service Requests & Table Status Engine', () => {
       const updated = await prisma.serviceRequest.findUnique({ where: { id: req.id } });
       expect(updated?.status).toBe('claimed');
       expect(updated?.claimed_by).toBe(staff1Id);
+
+      // Dọn dẹp dữ liệu test để không ảnh hưởng dữ liệu màn hình
+      await prisma.serviceRequest.delete({ where: { id: req.id } });
     });
 
     it('escalation query chỉ chạy đúng 1 lần cho mỗi request quá hạn', async () => {
@@ -289,6 +292,9 @@ describe('Part 3 - Service Requests & Table Status Engine', () => {
       const foundInRes2 = res2.find((r) => r.id === oldReq.id);
       // Đã leo thang rồi thì không bị escalate lặp lại
       expect(foundInRes2).toBeUndefined();
+
+      // Dọn dẹp
+      await prisma.serviceRequest.delete({ where: { id: oldReq.id } });
     });
   });
 });

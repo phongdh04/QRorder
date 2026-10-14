@@ -59,22 +59,27 @@ export async function GET(request: NextRequest) {
           // Lọc theo vai trò và phân khu:
           // Manager/Owner nhận mọi sự kiện
           if (!isManagerOrOwner) {
+            // Nếu sự kiện có chỉ định danh sách người nhận đích danh (từ InAppChannel)
+            if (event.data?.recipients && Array.isArray(event.data.recipients)) {
+              if (!event.data.recipients.includes(userId)) {
+                return;
+              }
+            }
+
             // Sự kiện liên quan trực tiếp đến nhân viên này (được phân công, hoàn thành, v.v.)
             const isMyClaim = event.data?.claimedBy === userId || event.data?.targetUserId === userId;
 
-            // Sự kiện khẩn cấp leo thang (toàn quán) hoặc ca làm việc
-            const isGlobalEvent =
-              event.urgent === true ||
-              event.type === 'request_escalated' ||
+            // Sự kiện toàn hệ thống (đổi ca làm việc, trạng thái hoạt động)
+            const isSystemEvent =
               event.type === 'shift_changed' ||
               event.type === 'presence_changed';
 
             // Phân khu của bàn
             const eventZoneId = event.data?.zoneId;
-            const isMyZone = isFlexible || !eventZoneId || assignedZoneIds.has(eventZoneId);
+            const isMyZone = isFlexible || (eventZoneId ? assignedZoneIds.has(eventZoneId) : assignedZoneIds.size === 0);
 
-            if (!isMyClaim && !isGlobalEvent && !isMyZone) {
-              // Bỏ qua sự kiện thuộc khu khác chưa leo thang
+            if (!isMyClaim && !isSystemEvent && !isMyZone) {
+              // Bỏ qua sự kiện thuộc khu khác
               return;
             }
           }

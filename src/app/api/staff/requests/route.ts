@@ -156,17 +156,17 @@ export async function GET(request: NextRequest) {
 
     const pendingForMe = consolidatedRequests.filter((r) => {
       if (r.status !== 'pending') return false;
-      if (isManagerOrOwner || isFlexibleStaff || r.isEscalated) return true;
+      if (isManagerOrOwner || isFlexibleStaff) return true;
       if (r.zoneId && assignedZoneIds.has(r.zoneId)) return true;
-      if (!r.zoneId) return true; // Bàn không phân khu
+      if (!r.zoneId && assignedZoneIds.size === 0) return true; // Bàn không phân khu
       return false;
     });
 
     const otherZones = consolidatedRequests.filter((r) => {
       // Đang được ai khác nhận
       if (r.status === 'claimed' && r.claimedBy !== user.userId) return true;
-      // Hoặc pending ở khu khác mà mình không phụ trách (và chưa escalate)
-      if (r.status === 'pending' && !isManagerOrOwner && !isFlexibleStaff && !r.isEscalated) {
+      // Hoặc pending ở khu khác mà mình không phụ trách
+      if (r.status === 'pending' && !isManagerOrOwner && !isFlexibleStaff) {
         if (r.zoneId && !assignedZoneIds.has(r.zoneId)) return true;
       }
       return false;

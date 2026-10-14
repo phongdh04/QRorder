@@ -209,6 +209,11 @@ export async function POST(request: NextRequest) {
         url: `/staff?request=${serviceRequest.id}`,
         priority: 'normal',
         restaurantId,
+        data: {
+          tableId: table.id,
+          tableName: table.name,
+          zoneId: table.zone_id,
+        },
       });
     } catch (notifErr) {
       console.error('Lỗi dispatch thông báo gọi nhân viên:', notifErr);

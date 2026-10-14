@@ -54,6 +54,10 @@ export function StaffPortalView({ user }: StaffPortalProps) {
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [actionNotice, setActionNotice] = useState<{ message: string; type: 'info' | 'error' } | null>(null);
 
+  // Thông tin phân công ca & khu vực của nhân viên
+  const [userAssignment, setUserAssignment] = useState<any | null>(null);
+  const userAssignmentRef = useRef<any | null>(null);
+
   // Modal nhả việc
   const [releaseModalItem, setReleaseModalItem] = useState<RequestItem | null>(null);
   const [releaseReason, setReleaseReason] = useState('Bận phục vụ bàn khác');
@@ -79,6 +83,11 @@ export function StaffPortalView({ user }: StaffPortalProps) {
       if (!res.ok) return;
       const json = await res.json();
       if (json.success && json.data) {
+        if (json.data.userAssignment !== undefined) {
+          setUserAssignment(json.data.userAssignment);
+          userAssignmentRef.current = json.data.userAssignment;
+        }
+
         const newPending: RequestItem[] = json.data.pending || [];
         const newMyClaimed: RequestItem[] = json.data.myClaimed || [];
         const newOther: RequestItem[] = json.data.otherZones || [];
@@ -137,16 +146,43 @@ export function StaffPortalView({ user }: StaffPortalProps) {
     (event: any) => {
       fetchRequests();
 
+      // Kiểm tra quyền nhận cảnh báo theo vai trò và khu vực của nhân viên
+      const isManagerOrOwner = user.role === 'manager' || user.role === 'owner';
+      const myZoneId = userAssignmentRef.current?.zone_id;
+      const isFlexible = userAssignmentRef.current ? userAssignmentRef.current.zone_id === null : false;
+      const eventZoneId = event.data?.zoneId || event.zoneId;
+
+      // Nếu sự kiện có chỉ định danh sách người nhận cụ thể (từ InAppChannel)
+      if (event.data?.recipients && Array.isArray(event.data.recipients)) {
+        if (!event.data.recipients.includes(user.userId)) {
+          return;
+        }
+      }
+
+      // Xác định xem bàn phát sinh sự kiện có thuộc khu vực mình phụ trách không
+      let isMyZone = isManagerOrOwner || isFlexible;
+      if (!isMyZone) {
+        if (eventZoneId && myZoneId && eventZoneId === myZoneId) {
+          isMyZone = true;
+        } else if (!eventZoneId && !myZoneId) {
+          isMyZone = true;
+        }
+      }
+
+      // Nếu bàn thuộc khu vực khác: TUYỆT ĐỐI KHÔNG hú còi, KHÔNG rung, KHÔNG flash màn hình
+      if (!isMyZone) {
+        return;
+      }
+
       if (event.type === 'request_created') {
         triggerNewRequestAlert('normal');
       } else if (event.type === 'request_escalated') {
         triggerNewRequestAlert('urgent');
       } else if (event.type === 'request_claimed' || event.type === 'request_done') {
-        // Nếu việc đã được nhận, tắt chuông lặp nếu không còn việc nào khác
         fetchRequests();
       }
     },
-    [fetchRequests, triggerNewRequestAlert]
+    [fetchRequests, triggerNewRequestAlert, user.role, user.userId]
   );
 
   // Hook realtime kết nối SSE với tự động kết nối lại và polling dự phòng
@@ -331,7 +367,18 @@ export function StaffPortalView({ user }: StaffPortalProps) {
                 </span>
               </div>
               <p className="text-[10px] text-[#A49F94] leading-tight mt-0.5">
-                {isOnDuty ? '🟢 Đang trực ca' : '⚪ Chưa vào ca'}
+                {isOnDuty ? (
+                  <>
+                    <span className="text-emerald-400 font-medium">🟢 Đang trực ca</span>
+                    {userAssignment?.zone?.name ? (
+                      <span className="ml-1 text-[#C9A96A] font-medium">• {userAssignment.zone.name}</span>
+                    ) : userAssignment && userAssignment.zone_id === null ? (
+                      <span className="ml-1 text-[#C9A96A] font-medium">• Phụ trách chung</span>
+                    ) : null}
+                  </>
+                ) : (
+                  '⚪ Chưa vào ca'
+                )}
               </p>
             </div>
           </div>

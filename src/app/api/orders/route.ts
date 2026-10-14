@@ -213,6 +213,7 @@ export async function POST(request: NextRequest) {
       data: {
         tableName: table.name,
         orderAmount: result.orderTotalAmount,
+        zoneId: table.zone_id,
       },
     });
 
@@ -246,6 +247,11 @@ export async function POST(request: NextRequest) {
         url: `/staff?request=${result.requestId}`,
         priority: 'normal',
         restaurantId,
+        data: {
+          tableId: table.id,
+          tableName: table.name,
+          zoneId: table.zone_id,
+        },
       });
     } catch (notifErr) {
       console.error('Lỗi dispatch thông báo đơn hàng:', notifErr);

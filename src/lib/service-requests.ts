@@ -528,6 +528,8 @@ export async function checkAndEscalateRequests(): Promise<any[]> {
         id: string;
         restaurant_id: string;
         table_id: string;
+        table_name: string;
+        zone_id: string | null;
         type: string;
         created_at: Date;
         escalated_at: Date;
@@ -535,12 +537,13 @@ export async function checkAndEscalateRequests(): Promise<any[]> {
     >`
       UPDATE service_requests sr
       SET escalated_at = NOW()
-      FROM restaurants r
+      FROM restaurants r, tables t
       WHERE sr.restaurant_id = r.id
+        AND sr.table_id = t.id
         AND sr.escalated_at IS NULL
         AND sr.status = 'pending'
         AND sr.created_at < (NOW() - (r.escalation_seconds || ' seconds')::interval)
-      RETURNING sr.id, sr.restaurant_id, sr.table_id, sr.type, sr.created_at, sr.escalated_at
+      RETURNING sr.id, sr.restaurant_id, sr.table_id, t.name as table_name, t.zone_id, sr.type, sr.created_at, sr.escalated_at
     `;
 
     for (const item of escalated) {
@@ -554,7 +557,7 @@ export async function checkAndEscalateRequests(): Promise<any[]> {
         },
       });
 
-      // Broadcast sự kiện khẩn cấp tới toàn bộ nhân viên và quản lý
+      // Broadcast sự kiện khẩn cấp tới nhân viên phụ trách và quản lý
       await broadcastQrEvent({
         type: 'request_escalated',
         restaurantId: item.restaurant_id,
@@ -564,6 +567,8 @@ export async function checkAndEscalateRequests(): Promise<any[]> {
         urgent: true,
         data: {
           type: item.type,
+          tableName: item.table_name,
+          zoneId: item.zone_id,
           escalatedAt: item.escalated_at,
         },
       });
@@ -573,13 +578,18 @@ export async function checkAndEscalateRequests(): Promise<any[]> {
         const { notificationDispatcher } = await import('./notifications');
         const recipients = await findRecipientsForTable(item.restaurant_id, item.table_id);
         notificationDispatcher.dispatchAsync(recipients, {
-          title: `[KHẨN CẤP] Bàn cần tiếp nhận ngay!`,
-          body: `Yêu cầu đã quá hạn chờ tiếp nhận. Vui lòng kiểm tra ngay!`,
+          title: `[KHẨN CẤP] ${item.table_name || 'Bàn'} cần tiếp nhận ngay!`,
+          body: `Yêu cầu tại ${item.table_name || 'bàn'} đã quá hạn chờ tiếp nhận. Vui lòng kiểm tra ngay!`,
           tag: item.id,
           url: `/staff?request=${item.id}`,
           priority: 'urgent',
           requireInteraction: true,
           restaurantId: item.restaurant_id,
+          data: {
+            tableId: item.table_id,
+            tableName: item.table_name,
+            zoneId: item.zone_id,
+          },
         });
       } catch (pushErr) {
         console.error('Lỗi dispatch push khi leo thang:', pushErr);

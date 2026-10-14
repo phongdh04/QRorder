@@ -11,6 +11,7 @@ export class InAppChannel implements NotificationChannel {
       await broadcastQrEvent({
         type: 'request_created',
         restaurantId: payload.restaurantId,
+        tableId: payload.data?.tableId,
         requestId: payload.tag,
         urgent: payload.priority === 'urgent',
         data: {
@@ -19,6 +20,7 @@ export class InAppChannel implements NotificationChannel {
           url: payload.url,
           recipients,
           priority: payload.priority,
+          zoneId: payload.data?.zoneId,
           ...payload.data,
         },
       });
