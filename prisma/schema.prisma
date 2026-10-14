@@ -13,12 +13,17 @@ model Restaurant {
   slug      String   @unique
   logo_url  String?
   theme     Json?
-  created_at DateTime @default(now())
+  plan              String   @default("basic") // "basic" | "pro"
+  image_quota_count Int      @default(30)
+  image_quota_bytes BigInt   @default(20971520) // 20MB
+  menu_display_mode String   @default("photo") // "photo" | "minimal"
+  created_at        DateTime @default(now())
 
   users          User[]
   tables         Table[]
   categories     Category[]
   menu_items     MenuItem[]
+  menu_images    MenuImage[]
   table_sessions TableSession[]
   orders         Order[]
   audit_logs     AuditLog[]
@@ -92,12 +97,47 @@ model MenuItem {
 
   restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
   category   Category   @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  image      MenuImage?
   order_items OrderItem[]
 
   @@index([restaurant_id])
   @@index([category_id])
   @@index([is_available])
   @@map("menu_items")
+}
+
+model MenuImage {
+  id               String   @id @default(uuid())
+  restaurant_id    String
+  menu_item_id     String   @unique
+  key_thumb        String
+  key_medium       String
+  key_large        String
+  width            Int
+  height           Int
+  blur_data_url    String   @db.Text
+  size_bytes_total Int
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  menu_item  MenuItem   @relation(fields: [menu_item_id], references: [id], onDelete: Cascade)
+
+  @@index([restaurant_id])
+  @@index([menu_item_id])
+  @@map("menu_images")
+}
+
+model StorageCleanupQueue {
+  id            String   @id @default(uuid())
+  restaurant_id String
+  storage_key   String
+  attempts      Int      @default(0)
+  last_error    String?
+  created_at    DateTime @default(now())
+
+  @@index([restaurant_id])
+  @@map("storage_cleanup_queue")
 }
 
 model TableSession {

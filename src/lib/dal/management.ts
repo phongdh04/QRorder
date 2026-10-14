@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { generateTableToken } from '@/lib/utils';
 import { deleteUploadedImage } from '@/lib/upload';
+import { deleteImageKeysFromStorage } from '@/lib/image/cleanup';
 import { hashPassword } from '@/lib/auth';
 
 /**
@@ -48,13 +49,23 @@ export async function adminUpdateCategory(
 export async function adminDeleteCategory(restaurantId: string, categoryId: string) {
   const cat = await prisma.category.findFirst({
     where: { id: categoryId, restaurant_id: restaurantId },
-    include: { menu_items: true },
+    include: {
+      menu_items: {
+        include: { image: true },
+      },
+    },
   });
   if (!cat) throw new Error('Danh mục không tồn tại.');
 
   // Dọn dẹp ảnh các món thuộc danh mục này
   for (const item of cat.menu_items) {
-    if (item.image_url) {
+    if (item.image) {
+      await deleteImageKeysFromStorage(restaurantId, [
+        item.image.key_thumb,
+        item.image.key_medium,
+        item.image.key_large,
+      ]);
+    } else if (item.image_url) {
       deleteUploadedImage(item.image_url);
     }
   }
@@ -130,6 +141,7 @@ export async function adminUpdateMenuItem(
 ) {
   const item = await prisma.menuItem.findFirst({
     where: { id: menuItemId, restaurant_id: restaurantId },
+    include: { image: true },
   });
   if (!item) throw new Error('Món không tồn tại.');
 
@@ -141,8 +153,17 @@ export async function adminUpdateMenuItem(
   }
 
   // Xóa ảnh cũ nếu đổi ảnh hoặc gỡ ảnh
-  if (data.image_url !== undefined && data.image_url !== item.image_url && item.image_url) {
-    deleteUploadedImage(item.image_url);
+  if (data.image_url !== undefined && data.image_url !== item.image_url) {
+    if (item.image) {
+      await deleteImageKeysFromStorage(restaurantId, [
+        item.image.key_thumb,
+        item.image.key_medium,
+        item.image.key_large,
+      ]);
+      await prisma.menuImage.delete({ where: { id: item.image.id } }).catch(() => {});
+    } else if (item.image_url) {
+      deleteUploadedImage(item.image_url);
+    }
   }
 
   return prisma.menuItem.update({
@@ -162,10 +183,17 @@ export async function adminUpdateMenuItem(
 export async function adminDeleteMenuItem(restaurantId: string, menuItemId: string) {
   const item = await prisma.menuItem.findFirst({
     where: { id: menuItemId, restaurant_id: restaurantId },
+    include: { image: true },
   });
   if (!item) throw new Error('Món không tồn tại.');
 
-  if (item.image_url) {
+  if (item.image) {
+    await deleteImageKeysFromStorage(restaurantId, [
+      item.image.key_thumb,
+      item.image.key_medium,
+      item.image.key_large,
+    ]);
+  } else if (item.image_url) {
     deleteUploadedImage(item.image_url);
   }
 

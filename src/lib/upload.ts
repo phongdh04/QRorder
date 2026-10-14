@@ -1,89 +1,92 @@
-import fs from 'fs';
-import path from 'path';
 import crypto from 'crypto';
 import sharp from 'sharp';
+import { getStorageAdapter } from '@/lib/storage';
 
-export const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-
-export function getUploadDirectory(): string {
-  const dir = path.resolve(
-    process.env.UPLOAD_DIR || path.join(process.cwd(), 'public', 'uploads')
-  );
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  return dir;
-}
+export const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
+export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
 /**
- * Xử lý file ảnh bằng sharp, chuyển đổi sang định dạng WebP với 3 kích thước
+ * Xử lý file ảnh bằng sharp và lưu trữ qua Storage Adapter (Local hoặc S3/R2/MinIO)
  */
 export async function processAndSaveImage(
-  buffer: Buffer
+  buffer: Buffer,
+  restaurantId?: string
 ): Promise<{ url: string; thumbUrl: string; largeUrl: string; filename: string }> {
-  const uploadDir = getUploadDirectory();
-  const randomId = crypto.randomBytes(16).toString('hex');
-  const baseName = `img_${Date.now()}_${randomId}`;
+  const storage = getStorageAdapter();
+  const randomId = crypto.randomUUID();
+  const prefix = restaurantId
+    ? `restaurants/${restaurantId}/general/${randomId}`
+    : `general/${randomId}`;
 
-  const standardFilename = `${baseName}.webp`;
-  const thumbFilename = `${baseName}_thumb.webp`;
-  const largeFilename = `${baseName}_large.webp`;
+  const standardKey = `${prefix}/standard.webp`;
+  const thumbKey = `${prefix}/thumb.webp`;
+  const largeKey = `${prefix}/large.webp`;
 
-  const standardPath = path.join(uploadDir, standardFilename);
-  const thumbPath = path.join(uploadDir, thumbFilename);
-  const largePath = path.join(uploadDir, largeFilename);
+  // Xoay EXIF, xóa metadata và nén WebP 3 kích thước
+  const [standardBuf, thumbBuf, largeBuf] = await Promise.all([
+    sharp(buffer)
+      .rotate()
+      .resize(800, 600, { fit: 'cover', position: 'center' })
+      .webp({ quality: 75 })
+      .toBuffer(),
+    sharp(buffer)
+      .rotate()
+      .resize(320, 240, { fit: 'cover', position: 'center' })
+      .webp({ quality: 70 })
+      .toBuffer(),
+    sharp(buffer)
+      .rotate()
+      .resize(1200, 900, { fit: 'cover', position: 'center' })
+      .webp({ quality: 78 })
+      .toBuffer(),
+  ]);
 
-  // 1. Ảnh tiêu chuẩn (medium / 800x800)
-  await sharp(buffer)
-    .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
-    .webp({ quality: 82 })
-    .toFile(standardPath);
-
-  // 2. Thumbnail (300x300 cover vuông đẹp mắt)
-  await sharp(buffer)
-    .resize(300, 300, { fit: 'cover', position: 'center' })
-    .webp({ quality: 80 })
-    .toFile(thumbPath);
-
-  // 3. Ảnh lớn (large / 1200x1200)
-  await sharp(buffer)
-    .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-    .webp({ quality: 85 })
-    .toFile(largePath);
+  await Promise.all([
+    storage.put(standardKey, standardBuf, 'image/webp'),
+    storage.put(thumbKey, thumbBuf, 'image/webp'),
+    storage.put(largeKey, largeBuf, 'image/webp'),
+  ]);
 
   return {
-    url: `/uploads/${standardFilename}`,
-    thumbUrl: `/uploads/${thumbFilename}`,
-    largeUrl: `/uploads/${largeFilename}`,
-    filename: standardFilename,
+    url: storage.getPublicUrl(standardKey),
+    thumbUrl: storage.getPublicUrl(thumbKey),
+    largeUrl: storage.getPublicUrl(largeKey),
+    filename: `${randomId}.webp`,
   };
 }
 
 /**
- * Xóa file ảnh cũ khi người dùng thay thế ảnh hoặc xóa món
+ * Xóa file ảnh cũ qua Storage Adapter
  */
-export function deleteUploadedImage(imageUrl: string | null | undefined): void {
-  if (!imageUrl || !imageUrl.startsWith('/uploads/')) return;
+export async function deleteUploadedImage(imageUrl: string | null | undefined): Promise<void> {
+  if (!imageUrl) return;
 
   try {
-    const uploadDir = getUploadDirectory();
-    const filename = path.basename(imageUrl);
-    const baseName = filename.replace(/(_thumb|_large)?\.webp$/i, '');
+    const storage = getStorageAdapter();
 
-    const filesToDelete = [
-      path.join(uploadDir, `${baseName}.webp`),
-      path.join(uploadDir, `${baseName}_thumb.webp`),
-      path.join(uploadDir, `${baseName}_large.webp`),
-      path.join(uploadDir, filename),
-    ];
+    // Trường hợp URL dạng /uploads/restaurants/... hoặc /uploads/general/...
+    if (imageUrl.startsWith('/uploads/')) {
+      const key = imageUrl.replace(/^\/uploads\//, '');
+      await storage.delete(key);
 
-    filesToDelete.forEach((filePath) => {
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+      // Thử xóa các biến thể phụ nếu là kiểu tên cũ
+      const baseKey = key.replace(/(_thumb|_large)?\.webp$/i, '');
+      if (baseKey !== key) {
+        await storage.delete(`${baseKey}.webp`).catch(() => {});
+        await storage.delete(`${baseKey}_thumb.webp`).catch(() => {});
+        await storage.delete(`${baseKey}_large.webp`).catch(() => {});
       }
-    });
+    } else {
+      // URL CDN hoặc S3: trích xuất pathname
+      try {
+        const urlObj = new URL(imageUrl);
+        const pathPart = urlObj.pathname.replace(/^\/+/, '');
+        await storage.delete(pathPart);
+      } catch {
+        // Không phải URL tuyệt đối, bỏ qua
+      }
+    }
   } catch (err) {
-    console.warn('Không thể xóa ảnh cũ:', err);
+    console.warn('Lỗi khi xóa ảnh qua Storage Adapter:', err);
   }
 }

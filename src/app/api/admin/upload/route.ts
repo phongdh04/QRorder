@@ -22,30 +22,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Vui lòng chọn một tệp hình ảnh để tải lên.' }, { status: 400 });
     }
 
-    // 1. Kiểm tra loại file
-    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      return NextResponse.json(
-        { error: 'Định dạng tệp không được hỗ trợ. Chỉ chấp nhận ảnh JPG, PNG hoặc WebP.' },
-        { status: 400 }
-      );
-    }
-
-    // 2. Kiểm tra dung lượng tối đa (5MB)
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      return NextResponse.json(
-        { error: 'Dung lượng ảnh vượt quá giới hạn cho phép (tối đa 5MB).' },
-        { status: 400 }
-      );
-    }
-
-    // 3. Đọc dữ liệu ảnh thành Buffer
+    // 1. Đọc dữ liệu ảnh thành Buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 4. Xử lý qua sharp tạo 3 kích thước WebP và lưu vào UPLOAD_DIR
-    const result = await processAndSaveImage(buffer);
+    // 2. Validate nghiêm ngặt bằng magic bytes & kích thước
+    const { validateUploadedImage } = await import('@/lib/image/validator');
+    const validation = await validateUploadedImage(buffer);
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: validation.error || 'Tệp hình ảnh không hợp lệ.' },
+        { status: 400 }
+      );
+    }
 
-    // 5. Nếu có ảnh cũ, tiến hành dọn dẹp xóa ảnh cũ
+    // 3. Xử lý qua sharp tạo 3 kích thước WebP và lưu qua Storage Adapter
+    const result = await processAndSaveImage(buffer, user.restaurantId);
+
+    // 4. Nếu có ảnh cũ, tiến hành dọn dẹp xóa ảnh cũ
     if (oldImageUrl) {
       deleteUploadedImage(oldImageUrl);
     }
