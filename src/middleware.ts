@@ -12,6 +12,33 @@ const SECRET_KEY = new TextEncoder().encode(
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Chống CSRF cho các API ghi dữ liệu (POST, PUT, PATCH, DELETE)
+  const isMutatingMethod = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method);
+  if (isMutatingMethod && (pathname.startsWith('/api/admin') || pathname.startsWith('/api/staff'))) {
+    const origin = request.headers.get('origin');
+    if (origin) {
+      try {
+        const originUrl = new URL(origin);
+        const host = request.headers.get('host') || request.nextUrl.host;
+        const isMatch =
+          originUrl.host === host ||
+          originUrl.hostname === 'localhost' ||
+          originUrl.hostname === '127.0.0.1';
+        if (!isMatch) {
+          return NextResponse.json(
+            { error: 'Yêu cầu bị từ chối do vi phạm bảo mật nguồn gốc (CSRF protection)' },
+            { status: 403 }
+          );
+        }
+      } catch {
+        return NextResponse.json(
+          { error: 'Nguồn gốc yêu cầu không hợp lệ (Invalid Origin)' },
+          { status: 403 }
+        );
+      }
+    }
+  }
+
   // 1. Trang đăng nhập admin / staff
   if (pathname === '/admin/login') {
     const token = request.cookies.get(COOKIE_NAME)?.value;

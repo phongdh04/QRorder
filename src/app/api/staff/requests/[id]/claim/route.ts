@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { claimServiceRequest } from '@/lib/service-requests';
+import { checkAndRecordClaimRateLimit } from '@/lib/rate-limit';
 
 export async function POST(
   request: NextRequest,
@@ -10,6 +11,14 @@ export async function POST(
     const user = await getCurrentUser(true);
     if (!user) {
       return NextResponse.json({ error: 'Chưa đăng nhập hoặc phiên hết hạn' }, { status: 401 });
+    }
+
+    const rateCheck = checkAndRecordClaimRateLimit(user.userId);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: `Thao tác quá nhanh, vui lòng chờ ${rateCheck.waitSeconds} giây`, code: 'RATE_LIMITED' },
+        { status: 429 }
+      );
     }
 
     const result = await claimServiceRequest({

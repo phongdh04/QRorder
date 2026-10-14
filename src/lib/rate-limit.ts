@@ -140,3 +140,55 @@ export function checkAndRecordServiceRequestRateLimit(
   return { allowed: true };
 }
 
+// Giới hạn nhận việc (Claim): tối đa 15 lần trong 10 giây cho mỗi user
+const claimAttemptsStore = new Map<string, { count: number; windowStart: number }>();
+const CLAIM_WINDOW_MS = 10 * 1000;
+const MAX_CLAIMS_PER_WINDOW = 15;
+
+export function checkAndRecordClaimRateLimit(userId: string): {
+  allowed: boolean;
+  waitSeconds?: number;
+} {
+  const now = Date.now();
+  const record = claimAttemptsStore.get(userId);
+
+  if (!record || now - record.windowStart > CLAIM_WINDOW_MS) {
+    claimAttemptsStore.set(userId, { count: 1, windowStart: now });
+    return { allowed: true };
+  }
+
+  if (record.count >= MAX_CLAIMS_PER_WINDOW) {
+    const waitSeconds = Math.ceil((record.windowStart + CLAIM_WINDOW_MS - now) / 1000);
+    return { allowed: false, waitSeconds: Math.max(1, waitSeconds) };
+  }
+
+  record.count += 1;
+  return { allowed: true };
+}
+
+// Giới hạn đăng ký Web Push: tối đa 6 lần trong 60 giây cho mỗi user
+const pushAttemptsStore = new Map<string, { count: number; windowStart: number }>();
+const PUSH_WINDOW_MS = 60 * 1000;
+const MAX_PUSH_PER_WINDOW = 6;
+
+export function checkAndRecordPushRateLimit(userId: string): {
+  allowed: boolean;
+  waitSeconds?: number;
+} {
+  const now = Date.now();
+  const record = pushAttemptsStore.get(userId);
+
+  if (!record || now - record.windowStart > PUSH_WINDOW_MS) {
+    pushAttemptsStore.set(userId, { count: 1, windowStart: now });
+    return { allowed: true };
+  }
+
+  if (record.count >= MAX_PUSH_PER_WINDOW) {
+    const waitSeconds = Math.ceil((record.windowStart + PUSH_WINDOW_MS - now) / 1000);
+    return { allowed: false, waitSeconds: Math.max(1, waitSeconds) };
+  }
+
+  record.count += 1;
+  return { allowed: true };
+}
+

@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+import { checkAndRecordPushRateLimit } from '@/lib/rate-limit';
+
 const subscribeSchema = z.object({
   endpoint: z.string().url('Endpoint push không hợp lệ'),
   keys: z.object({
@@ -17,6 +19,14 @@ export async function POST(request: NextRequest) {
     const user = await getCurrentUser(true);
     if (!user) {
       return NextResponse.json({ error: 'Chưa đăng nhập hoặc phiên hết hạn' }, { status: 401 });
+    }
+
+    const rateCheck = checkAndRecordPushRateLimit(user.userId);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: `Thao tác quá thường xuyên, vui lòng chờ ${rateCheck.waitSeconds} giây`, code: 'RATE_LIMITED' },
+        { status: 429 }
+      );
     }
 
     const rawBody = await request.json().catch(() => ({}));
