@@ -162,8 +162,37 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // Tạo ServiceRequest loại 'order' gắn với đơn này
+      const serviceRequest = await tx.serviceRequest.create({
+        data: {
+          restaurant_id: restaurantId,
+          table_id: table.id,
+          session_id: session.id,
+          type: 'order',
+          order_id: newOrder.id,
+          status: 'pending',
+        },
+      });
+
+      // Ghi nhật ký sự kiện tạo request
+      await tx.requestEvent.create({
+        data: {
+          request_id: serviceRequest.id,
+          restaurant_id: restaurantId,
+          actor_user_id: null,
+          event: 'created',
+          meta: {
+            orderId: newOrder.id,
+            tableName: table.name,
+            total: orderTotalAmount,
+            itemsCount: items.length,
+          },
+        },
+      });
+
       return {
         orderId: newOrder.id,
+        requestId: serviceRequest.id,
         sessionId: session.id,
         orderTotalAmount,
         sessionTotal: updatedSession.total,
@@ -184,6 +213,24 @@ export async function POST(request: NextRequest) {
       data: {
         tableName: table.name,
         orderAmount: result.orderTotalAmount,
+      },
+    });
+
+    // Phát tín hiệu request_created cho nhân viên & quản lý
+    await broadcastQrEvent({
+      type: 'request_created',
+      restaurantId,
+      tableId: table.id,
+      sessionId: result.sessionId,
+      orderId: result.orderId,
+      requestId: result.requestId,
+      status: 'pending',
+      total: result.sessionTotal,
+      data: {
+        type: 'order',
+        tableName: table.name,
+        orderAmount: result.orderTotalAmount,
+        zoneId: table.zone_id,
       },
     });
 

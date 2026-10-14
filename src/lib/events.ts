@@ -3,13 +3,27 @@ import { EventEmitter } from 'events';
 import { prisma } from './prisma';
 
 export interface QrOrderEvent {
-  type: 'order_created' | 'order_status_changed' | 'session_updated' | 'session_closed';
+  type:
+    | 'order_created'
+    | 'order_status_changed'
+    | 'session_updated'
+    | 'session_closed'
+    | 'request_created'
+    | 'request_claimed'
+    | 'request_released'
+    | 'request_done'
+    | 'request_reassigned'
+    | 'request_escalated'
+    | 'shift_changed'
+    | 'presence_changed';
   restaurantId: string;
-  tableId: string;
+  tableId?: string;
   sessionId?: string;
   orderId?: string;
+  requestId?: string;
   status?: string;
   total?: number;
+  urgent?: boolean;
   data?: any;
   timestamp: number;
 }
@@ -55,7 +69,9 @@ export async function initPgListener(): Promise<void> {
           // Phát sự kiện tới các SSE client
           orderEventBus.emit('event', event);
           orderEventBus.emit(`restaurant:${event.restaurantId}`, event);
-          orderEventBus.emit(`table:${event.tableId}`, event);
+          if (event.tableId) {
+            orderEventBus.emit(`table:${event.tableId}`, event);
+          }
         } catch (err) {
           console.error('Lỗi parse payload notification:', err);
         }

@@ -44,6 +44,9 @@ export async function getCurrentUser(verifyDb = false): Promise<SessionPayload |
     const payload = await verifySessionToken(token);
     if (!payload) return null;
 
+    payload.id = payload.userId;
+    payload.restaurant_id = payload.restaurantId;
+
     if (verifyDb) {
       const { prisma } = await import('@/lib/prisma');
       const user = await prisma.user.findUnique({

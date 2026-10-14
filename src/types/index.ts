@@ -6,6 +6,8 @@ export interface SessionPayload {
   email: string;
   name: string;
   role: UserRole;
+  id?: string;
+  restaurant_id?: string;
 }
 
 export type OrderStatus = 'pending' | 'preparing' | 'served' | 'cancelled';

@@ -14,6 +14,7 @@ import { TableOrdersSheet } from './TableOrdersSheet';
 import { OrderSuccessModal } from './OrderSuccessModal';
 import { ThankYouModal } from './ThankYouModal';
 import { Footer } from './Footer';
+import { QuickServiceActions } from './QuickServiceActions';
 
 interface CustomerViewProps {
   data: CustomerPublicMenuData;
@@ -234,6 +235,9 @@ export function CustomerView({ data }: CustomerViewProps) {
           ordersCount={orderedItemsCount > 0 ? orderedItemsCount : sessionOrders.length}
           onOpenOrders={() => setIsOrdersSheetOpen(true)}
         />
+
+        {/* Nút hành động nhanh: Gọi nhân viên & Yêu cầu thanh toán */}
+        <QuickServiceActions tableToken={tableToken} />
 
         {/* Sticky Category Navigation kèm nút xem đơn ghim cố định */}
         {categories.length > 0 && (

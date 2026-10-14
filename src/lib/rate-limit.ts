@@ -115,3 +115,28 @@ export function checkAndRecordOrderRateLimit(identifier: string): {
   record.count += 1;
   return { allowed: true };
 }
+
+// Giới hạn gọi nhân viên / thanh toán: 1 lần / 60 giây / bàn
+const serviceRequestAttemptsStore = new Map<string, number>();
+const SERVICE_REQUEST_COOLDOWN_MS = 60 * 1000;
+
+export function checkAndRecordServiceRequestRateLimit(
+  tableId: string,
+  type: string
+): { allowed: boolean; waitSeconds?: number } {
+  const key = `${tableId}:${type}`;
+  const now = Date.now();
+  const lastRequestedAt = serviceRequestAttemptsStore.get(key);
+
+  if (lastRequestedAt && now - lastRequestedAt < SERVICE_REQUEST_COOLDOWN_MS) {
+    const waitSeconds = Math.ceil((lastRequestedAt + SERVICE_REQUEST_COOLDOWN_MS - now) / 1000);
+    return {
+      allowed: false,
+      waitSeconds: Math.max(1, waitSeconds),
+    };
+  }
+
+  serviceRequestAttemptsStore.set(key, now);
+  return { allowed: true };
+}
+
