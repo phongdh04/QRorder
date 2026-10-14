@@ -73,7 +73,91 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 5. Tạo ServiceRequest
+    // 5. Kiểm tra nếu đã có yêu cầu cùng loại đang chờ hoặc đang xử lý cho bàn này
+    const existingActiveRequest = await prisma.serviceRequest.findFirst({
+      where: {
+        table_id: table.id,
+        restaurant_id: restaurantId,
+        type,
+        status: { in: ['pending', 'claimed'] },
+      },
+      include: {
+        claimed_by_user: { select: { name: true } },
+      },
+      orderBy: { created_at: 'asc' },
+    });
+
+    const typeDesc = type === 'call_staff' ? 'Gọi nhân viên' : 'Yêu cầu thanh toán';
+
+    if (existingActiveRequest) {
+      // Đã có yêu cầu đang mở -> Ghi log nhắc lại nhưng KHÔNG tạo record trùng lặp
+      await prisma.requestEvent.create({
+        data: {
+          request_id: existingActiveRequest.id,
+          restaurant_id: restaurantId,
+          actor_user_id: null,
+          event: 'notified',
+          meta: {
+            tableName: table.name,
+            type,
+            reminder: true,
+            at: new Date().toISOString(),
+          },
+        },
+      });
+
+      // Nếu đã có nhân viên nhận việc: không spam còi hú, báo khách nhân viên đang đến
+      if (existingActiveRequest.status === 'claimed') {
+        const staffName = existingActiveRequest.claimed_by_user?.name;
+        const msg = staffName
+          ? `Nhân viên ${staffName} đã nhận yêu cầu và đang trên đường đến bàn!`
+          : 'Nhân viên đã tiếp nhận và đang trên đường đến bàn!';
+
+        return NextResponse.json({
+          success: true,
+          message: msg,
+          request: {
+            id: existingActiveRequest.id,
+            type,
+            status: existingActiveRequest.status,
+            description: typeDesc,
+            createdAt: existingActiveRequest.created_at,
+            isReminder: true,
+          },
+        });
+      }
+
+      // Nếu vẫn đang pending: Bắn SSE cập nhật nhẹ nhàng mà KHÔNG hú còi báo động lặp lại gây hối thúc
+      await broadcastQrEvent({
+        type: 'request_created',
+        restaurantId,
+        tableId: table.id,
+        sessionId: session.id,
+        requestId: existingActiveRequest.id,
+        status: 'pending',
+        data: {
+          type,
+          tableName: table.name,
+          zoneId: table.zone_id,
+          isReminder: true,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Nhân viên đã ghi nhận yêu cầu của bàn và sẽ đến ngay!',
+        request: {
+          id: existingActiveRequest.id,
+          type,
+          status: existingActiveRequest.status,
+          description: typeDesc,
+          createdAt: existingActiveRequest.created_at,
+          isReminder: true,
+        },
+      });
+    }
+
+    // 6. Chưa có yêu cầu nào đang mở -> Tạo ServiceRequest mới
     const serviceRequest = await prisma.serviceRequest.create({
       data: {
         restaurant_id: restaurantId,
@@ -84,7 +168,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 6. Ghi log sự kiện
+    // 7. Ghi log sự kiện tạo mới
     await prisma.requestEvent.create({
       data: {
         request_id: serviceRequest.id,
@@ -98,7 +182,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 7. Bắn tín hiệu Realtime SSE
+    // 8. Bắn tín hiệu Realtime SSE tạo yêu cầu mới
     await broadcastQrEvent({
       type: 'request_created',
       restaurantId,
@@ -113,9 +197,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const typeDesc = type === 'call_staff' ? 'Gọi nhân viên' : 'Yêu cầu thanh toán';
-
-    // 8. Gửi thông báo Web Push + In-App cho nhân viên & quản lý
+    // 9. Gửi thông báo Web Push + In-App cho nhân viên & quản lý (Lần đầu tiên)
     try {
       const { findRecipientsForTable } = await import('@/lib/service-requests');
       const { notificationDispatcher } = await import('@/lib/notifications');

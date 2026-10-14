@@ -222,6 +222,23 @@ export async function claimServiceRequest(params: {
     });
   }
 
+  // Nếu là gọi nhân viên hoặc xin bill: đồng bộ nhận tất cả các tín hiệu chờ của bàn này
+  if (request.type === 'call_staff' || request.type === 'request_bill') {
+    await prisma.serviceRequest.updateMany({
+      where: {
+        table_id: request.table.id,
+        restaurant_id: restaurantId,
+        type: request.type,
+        status: 'pending',
+      },
+      data: {
+        status: 'claimed',
+        claimed_by: userId,
+        claimed_at: new Date(),
+      },
+    });
+  }
+
   // Ghi nhật ký sự kiện
   await prisma.requestEvent.create({
     data: {
@@ -358,14 +375,31 @@ export async function completeServiceRequest(params: {
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.serviceRequest.update({
-      where: { id: requestId },
-      data: {
-        status: 'done',
-        completed_by: userId,
-        completed_at: new Date(),
-      },
-    });
+    // Nếu là gọi nhân viên hoặc xin bill: hoàn tất toàn bộ tín hiệu của bàn đó
+    if (request.type === 'call_staff' || request.type === 'request_bill') {
+      await tx.serviceRequest.updateMany({
+        where: {
+          table_id: request.table_id,
+          restaurant_id: restaurantId,
+          type: request.type,
+          status: { in: ['pending', 'claimed'] },
+        },
+        data: {
+          status: 'done',
+          completed_by: userId,
+          completed_at: new Date(),
+        },
+      });
+    } else {
+      await tx.serviceRequest.update({
+        where: { id: requestId },
+        data: {
+          status: 'done',
+          completed_by: userId,
+          completed_at: new Date(),
+        },
+      });
+    }
 
     if (request.order_id) {
       await tx.order.update({

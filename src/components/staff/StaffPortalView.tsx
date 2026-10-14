@@ -576,11 +576,18 @@ export function StaffPortalView({ user }: StaffPortalProps) {
                               • {item.zoneName}
                             </span>
                           </div>
-                          <span
-                            className={`inline-block mt-1 px-2.5 py-0.5 rounded-full border text-[10px] font-semibold tracking-wider uppercase ${badge.color}`}
-                          >
-                            {badge.label}
-                          </span>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span
+                              className={`inline-block px-2.5 py-0.5 rounded-full border text-[10px] font-semibold tracking-wider uppercase ${badge.color}`}
+                            >
+                              {badge.label}
+                            </span>
+                            {(item as any).callCount > 1 && (
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-800 text-amber-300 border border-neutral-700 font-medium">
+                                Gọi {(item as any).callCount} lần
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         {/* Đồng hồ đếm thời gian */}
@@ -593,7 +600,11 @@ export function StaffPortalView({ user }: StaffPortalProps) {
                               : 'bg-[#1C1C20] text-[#A49F94] border-[rgba(255,255,255,0.06)]'
                           }`}
                         >
-                          <div>{liveElapsed}s</div>
+                          <div>
+                            {liveElapsed >= 60
+                              ? `${Math.floor(liveElapsed / 60)}m ${liveElapsed % 60}s`
+                              : `${liveElapsed}s`}
+                          </div>
                           <div className="text-[9px] uppercase tracking-wider font-sans font-normal opacity-75">
                             {item.isEscalated || isOverdue ? 'Khẩn cấp' : 'Chờ'}
                           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   X,
   Clock,
@@ -102,6 +102,72 @@ export function TableDrawer({
   const activeRequests = table.activeRequests || [];
   const elapsed = formatElapsed(table.openedAt);
 
+  // Gom nhóm yêu cầu: order giữ theo từng đơn, call_staff và request_bill gom đúng 1 thẻ duy nhất cho bàn
+  const groupedRequests = useMemo(() => {
+    const rawList = table.activeRequests || [];
+    const result: any[] = [];
+    const callStaffList: any[] = [];
+    const requestBillList: any[] = [];
+
+    for (const req of rawList) {
+      if (req.type === 'call_staff') {
+        callStaffList.push(req);
+      } else if (req.type === 'request_bill') {
+        requestBillList.push(req);
+      } else {
+        result.push(req);
+      }
+    }
+
+    const now = Date.now();
+
+    // Gom toàn bộ tín hiệu gọi nhân viên thành 1 thẻ duy nhất
+    if (callStaffList.length > 0) {
+      callStaffList.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      const primary = callStaffList[0];
+      const claimedItem = callStaffList.find((r) => r.status === 'claimed');
+      const firstCreatedAt = new Date(primary.createdAt).getTime();
+      const waitMinutes = Math.max(0, Math.floor((now - firstCreatedAt) / 60000));
+
+      result.push({
+        ...primary,
+        id: claimedItem ? claimedItem.id : primary.id,
+        allIds: callStaffList.map((r) => r.id),
+        status: claimedItem ? 'claimed' : 'pending',
+        claimedBy: claimedItem ? claimedItem.claimedBy : primary.claimedBy,
+        claimedByName: claimedItem ? claimedItem.claimedByName : primary.claimedByName,
+        claimedAt: claimedItem ? claimedItem.claimedAt : primary.claimedAt,
+        escalatedAt: callStaffList.find((r) => r.escalatedAt)?.escalatedAt || null,
+        callCount: callStaffList.length,
+        waitMinutes,
+      });
+    }
+
+    // Gom toàn bộ tín hiệu xin bill thành 1 thẻ duy nhất
+    if (requestBillList.length > 0) {
+      requestBillList.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      const primary = requestBillList[0];
+      const claimedItem = requestBillList.find((r) => r.status === 'claimed');
+      const firstCreatedAt = new Date(primary.createdAt).getTime();
+      const waitMinutes = Math.max(0, Math.floor((now - firstCreatedAt) / 60000));
+
+      result.push({
+        ...primary,
+        id: claimedItem ? claimedItem.id : primary.id,
+        allIds: requestBillList.map((r) => r.id),
+        status: claimedItem ? 'claimed' : 'pending',
+        claimedBy: claimedItem ? claimedItem.claimedBy : primary.claimedBy,
+        claimedByName: claimedItem ? claimedItem.claimedByName : primary.claimedByName,
+        claimedAt: claimedItem ? claimedItem.claimedAt : primary.claimedAt,
+        escalatedAt: requestBillList.find((r) => r.escalatedAt)?.escalatedAt || null,
+        callCount: requestBillList.length,
+        waitMinutes,
+      });
+    }
+
+    return result;
+  }, [table.activeRequests]);
+
   const canPay = Boolean(
     table.activeSession &&
     table.activeSession.status === 'open' &&
@@ -162,12 +228,21 @@ export function TableDrawer({
     }
   };
 
-  const handleCompleteRequest = async (requestId: string) => {
+  const handleCompleteRequest = async (reqOrId: any) => {
     try {
-      const res = await fetch(`/api/staff/requests/${requestId}/done`, {
-        method: 'POST',
-      });
-      if (res.ok && onRefreshData) {
+      const ids: string[] =
+        typeof reqOrId === 'object' && reqOrId?.allIds
+          ? reqOrId.allIds
+          : [typeof reqOrId === 'string' ? reqOrId : reqOrId.id];
+
+      await Promise.all(
+        ids.map((id) =>
+          fetch(`/api/staff/requests/${id}/done`, {
+            method: 'POST',
+          })
+        )
+      );
+      if (onRefreshData) {
         onRefreshData();
       }
     } catch (err) {
@@ -265,19 +340,19 @@ export function TableDrawer({
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
               {/* PHẦN YÊU CẦU PHỤC VỤ (SERVICE REQUESTS) CỦA BÀN */}
-              {activeRequests.length > 0 && (
+              {groupedRequests.length > 0 && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs font-bold text-slate-300 tracking-wider uppercase">
                     <span className="flex items-center gap-1.5">
                       <Bell className="w-3.5 h-3.5 text-amber-400" />
-                      Yêu cầu & Tín hiệu ({activeRequests.length})
+                      Yêu cầu & Tín hiệu ({groupedRequests.length})
                     </span>
                   </div>
 
                   <div className="space-y-2.5">
-                    {activeRequests.map((req: any) => {
+                    {groupedRequests.map((req: any) => {
                       const isClaimed = req.status === 'claimed';
-                      const isEscalated = Boolean(req.escalatedAt);
+                      const isEscalated = Boolean(req.escalatedAt || req.isEscalated);
 
                       let typeLabel = 'Đơn mới';
                       let typeIcon = '🍽️';
@@ -301,9 +376,21 @@ export function TableDrawer({
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2">
-                            <div className="font-bold text-sm text-white flex items-center gap-1.5">
+                            <div className="font-bold text-sm text-white flex items-center gap-2 flex-wrap">
                               <span>{typeIcon}</span>
                               <span>{typeLabel}</span>
+                              {/* Count số phút khách đã gọi */}
+                              {req.waitMinutes !== undefined && (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30 flex items-center gap-1">
+                                  <Clock className="w-3 h-3 text-amber-400" />
+                                  Đã gọi {req.waitMinutes} phút
+                                </span>
+                              )}
+                              {req.callCount > 1 && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                                  Khách gọi {req.callCount} lần
+                                </span>
+                              )}
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                               {isEscalated && (
@@ -344,7 +431,7 @@ export function TableDrawer({
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleCompleteRequest(req.id)}
+                              onClick={() => handleCompleteRequest(req)}
                               className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1 shadow-xs transition-all active:scale-95"
                             >
                               <Check className="w-3 h-3" />
