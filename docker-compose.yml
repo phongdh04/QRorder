@@ -34,6 +34,7 @@ services:
       PORT: 3000
       NODE_ENV: "development"
       NEXT_TELEMETRY_DISABLED: 1
+      WATCHPACK_POLLING: "true"
     volumes:
       - .:/app
       - /app/node_modules

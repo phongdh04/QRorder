@@ -807,35 +807,7 @@ export function FloorPlanMap({
 
               return (
                 <g key={item.id} transform={`translate(${item.x}, ${item.y})`}>
-                  {/* Vòng hào quang sáng nét (Vector Accent) khi hover - 100% vector mượt mà, không lag filter */}
-                  {isHovered &&
-                    (isStool ? (
-                      <circle
-                        cx="0"
-                        cy="0"
-                        r={tableWidth / 2 + 3}
-                        fill="none"
-                        stroke="#38BDF8"
-                        strokeWidth="2"
-                        strokeOpacity="0.85"
-                        pointerEvents="none"
-                      />
-                    ) : (
-                      <rect
-                        x={-tableWidth / 2 - 3}
-                        y={-tableHeight / 2 - 3}
-                        width={tableWidth + 6}
-                        height={tableHeight + 6}
-                        rx="9"
-                        fill="none"
-                        stroke="#38BDF8"
-                        strokeWidth="2"
-                        strokeOpacity="0.85"
-                        pointerEvents="none"
-                      />
-                    ))}
-
-                  {/* Vùng cảm ứng chuột chuẩn xác theo kích thước ô bàn - Tuyệt đối không bị chồng lấn */}
+                  {/* Vùng cảm ứng chuột chuẩn xác theo kích thước ô bàn - Vị trí cố định vĩnh viễn ở index 0 */}
                   <rect
                     x={-tableWidth / 2}
                     y={-tableHeight / 2}
@@ -855,6 +827,33 @@ export function FloorPlanMap({
 
                   {/* Toàn bộ hình khối đồ họa bàn ghế là pointerEvents="none" thuần túy */}
                   <g pointerEvents="none">
+                    {/* Vòng hào quang sáng nét (Vector Accent) khi hover - 100% vector mượt mà */}
+                    {isHovered &&
+                      (isStool ? (
+                        <circle
+                          cx="0"
+                          cy="0"
+                          r={tableWidth / 2 + 3}
+                          fill="none"
+                          stroke="#38BDF8"
+                          strokeWidth="2"
+                          strokeOpacity="0.85"
+                          pointerEvents="none"
+                        />
+                      ) : (
+                        <rect
+                          x={-tableWidth / 2 - 3}
+                          y={-tableHeight / 2 - 3}
+                          width={tableWidth + 6}
+                          height={tableHeight + 6}
+                          rx="9"
+                          fill="none"
+                          stroke="#38BDF8"
+                          strokeWidth="2"
+                          strokeOpacity="0.85"
+                          pointerEvents="none"
+                        />
+                      ))}
                     {/* Vòng lan tỏa (ping ring) nếu có đơn mới */}
                     {isPending && (
                       <circle
