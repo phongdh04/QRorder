@@ -275,7 +275,7 @@ export default function AdminTablesAndOrdersPage() {
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
       eventSource?.close();
     };
-  }, [fetchTables, fetchKitchenQueue, addToast, setConnectionStatus]);
+  }, [fetchTables, fetchKitchenQueue, addToast, setConnectionStatus, checkAlerts]);
 
   // Bàn hiện tại đang được chọn để mở Drawer
   const selectedTable = tables.find((t) => t.id === selectedTableId) || null;

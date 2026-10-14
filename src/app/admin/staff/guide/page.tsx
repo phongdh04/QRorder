@@ -194,7 +194,7 @@ export default function StaffGuidePrintPage() {
                 <strong>Đăng nhập</strong> bằng tài khoản email & mật khẩu được quản lý cấp.
               </li>
               <li>
-                Nhấn nút <strong>"Bắt đầu ca"</strong> và cho phép nhận thông báo để không bỏ sót đơn.
+                Nhấn nút <strong>&quot;Bắt đầu ca&quot;</strong> và cho phép nhận thông báo để không bỏ sót đơn.
               </li>
             </ol>
           </div>

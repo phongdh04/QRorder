@@ -634,7 +634,7 @@ export function StaffPortalView({ user }: StaffPortalProps) {
               {myClaimedRequests.length === 0 ? (
                 <div className="py-20 text-center space-y-2">
                   <p className="font-serif text-base text-[#F3EFE6]">Bạn Chưa Nhận Việc Nào</p>
-                  <p className="text-xs text-[#A49F94]">Chuyển sang tab "Chờ nhận" để tiếp nhận bàn cần phục vụ.</p>
+                  <p className="text-xs text-[#A49F94]">Chuyển sang tab &quot;Chờ nhận&quot; để tiếp nhận bàn cần phục vụ.</p>
                 </div>
               ) : (
                 myClaimedRequests.map((item) => {

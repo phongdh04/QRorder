@@ -129,8 +129,8 @@ export function PwaInstallBanner() {
                   2
                 </div>
                 <div>
-                  <p className="font-medium">Chọn "Thêm vào MH chính"</p>
-                  <p className="text-[11px] text-[var(--muted)]">(Add to Home Screen) rồi nhấn "Thêm" ở góc trên bên phải.</p>
+                  <p className="font-medium">Chọn &quot;Thêm vào MH chính&quot;</p>
+                  <p className="text-[11px] text-[var(--muted)]">(Add to Home Screen) rồi nhấn &quot;Thêm&quot; ở góc trên bên phải.</p>
                 </div>
               </div>
 
@@ -140,7 +140,7 @@ export function PwaInstallBanner() {
                 </div>
                 <div>
                   <p className="font-medium">Mở app từ biểu tượng mới</p>
-                  <p className="text-[11px] text-[var(--muted)]">Mở ứng dụng từ Màn hình chính và nhấn "Bắt đầu ca" để kích hoạt thông báo.</p>
+                  <p className="text-[11px] text-[var(--muted)]">Mở ứng dụng từ Màn hình chính và nhấn &quot;Bắt đầu ca&quot; để kích hoạt thông báo.</p>
                 </div>
               </div>
             </div>
