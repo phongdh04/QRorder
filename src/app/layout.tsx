@@ -17,8 +17,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "The Velvet Lounge • Thực Đơn Bar",
-  description: "Trải nghiệm ẩm thực và đồ uống thủ công tinh tế",
+  title: "The Velvet Lounge • QR Order",
+  description: "Hệ thống gọi món và phục vụ cao cấp",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icons/icon-192.png",
+    apple: "/icons/icon-192.png",
+  },
 };
 
 export const viewport: Viewport = {
