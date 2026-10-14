@@ -5,6 +5,8 @@ import { checkAndEscalateRequests } from '@/lib/service-requests';
 
 export const dynamic = 'force-dynamic';
 
+let globalAdminEventCounter = Date.now();
+
 export async function GET(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user?.restaurantId) {
@@ -23,7 +25,7 @@ export async function GET(request: NextRequest) {
   // 3. ReadableStream cho Admin SSE
   const stream = new ReadableStream({
     start(controller) {
-      const initMessage = `event: connected\ndata: ${JSON.stringify({
+      const initMessage = `id: ${++globalAdminEventCounter}\nevent: connected\ndata: ${JSON.stringify({
         status: 'connected',
         restaurantId,
         timestamp: Date.now(),
@@ -32,7 +34,7 @@ export async function GET(request: NextRequest) {
 
       const handleRestaurantEvent = (event: QrOrderEvent) => {
         try {
-          const payload = `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`;
+          const payload = `id: ${++globalAdminEventCounter}\nevent: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`;
           controller.enqueue(encoder.encode(payload));
         } catch (err) {
           console.error('Lỗi enqueue SSE Admin:', err);
@@ -46,7 +48,13 @@ export async function GET(request: NextRequest) {
       // Heartbeat định kỳ 10 giây kèm kích hoạt kiểm tra escalation
       const heartbeatInterval = setInterval(async () => {
         try {
-          controller.enqueue(encoder.encode(': ping\n\n'));
+          controller.enqueue(
+            encoder.encode(
+              `id: ${++globalAdminEventCounter}\nevent: heartbeat\ndata: ${JSON.stringify({
+                time: Date.now(),
+              })}\n\n`
+            )
+          );
           // Chạy kiểm tra escalation tự động ngầm
           await checkAndEscalateRequests();
         } catch {
