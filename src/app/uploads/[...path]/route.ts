@@ -38,6 +38,20 @@ export async function GET(
       return new NextResponse('Image not found', { status: 404 });
     }
 
+    const stat = fs.statSync(targetFilePath);
+    const etag = `"${stat.size}-${stat.mtimeMs}"`;
+    const ifNoneMatch = request.headers.get('if-none-match');
+    if (ifNoneMatch === etag) {
+      return new NextResponse(null, {
+        status: 304,
+        headers: {
+          'Cache-Control': 'public, max-age=31536000, immutable',
+          'ETag': etag,
+          'X-Content-Type-Options': 'nosniff',
+        },
+      });
+    }
+
     const ext = path.extname(targetFilePath).toLowerCase();
     const contentType = MIME_MAP[ext] || 'application/octet-stream';
     const fileBuffer = fs.readFileSync(targetFilePath);
@@ -48,6 +62,8 @@ export async function GET(
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
         'Content-Length': fileBuffer.length.toString(),
+        'ETag': etag,
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch (error) {

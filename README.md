@@ -71,6 +71,27 @@ Hệ thống sẽ tự động:
 3. Tự động seed dữ liệu mẫu: Quán "The Velvet Lounge", 10 bàn, danh mục món ăn & tài khoản quản trị.
 4. Mở cổng web tại: **http://localhost:3000**
 
+### 3. Thử nghiệm Lưu trữ S3 cục bộ với MinIO (Tùy chọn)
+Mặc định hệ thống sử dụng **Local Storage** (`STORAGE_DRIVER=local`) lưu trong volume `uploads_data`. Nếu bạn muốn thử nghiệm lưu trữ tương thích S3 (MinIO) ngay trên máy cục bộ:
+```bash
+# Khởi động kèm container MinIO S3
+docker compose --profile minio up -d
+
+# Truy cập MinIO Web Console:
+# URL: http://localhost:9001
+# Username: minioadmin
+# Password: minioadmin123
+```
+Để ứng dụng chuyển sang lưu trữ S3/MinIO, cấu hình trong file `.env`:
+```env
+STORAGE_DRIVER=s3
+S3_ENDPOINT=http://minio:9000
+S3_REGION=auto
+S3_BUCKET=qrorder-media
+S3_ACCESS_KEY_ID=minioadmin
+S3_SECRET_ACCESS_KEY=minioadmin123
+```
+
 ---
 
 ## 🚀 Hướng Dẫn Triển Khai Lên VPS (Production)
