@@ -47,12 +47,6 @@ export function FloorPlanMap({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Bàn đang được hover ổn định
-  const activeHovered = useMemo(() => {
-    if (!hoveredTableId) return null;
-    return mappedTables.find((t) => t.id === hoveredTableId) || null;
-  }, [hoveredTableId, mappedTables]);
-
   // Ánh xạ danh sách bàn DB với dữ liệu tọa độ Blueprint
   const mappedTables = useMemo(() => {
     // Tạo map theo id hoặc theo name để tra cứu nhanh bàn từ DB
@@ -107,6 +101,12 @@ export function FloorPlanMap({
       };
     });
   }, [tables]);
+
+  // Bàn đang được hover ổn định (xác định sau khi đã map tables)
+  const activeHovered = useMemo(() => {
+    if (!hoveredTableId) return null;
+    return mappedTables.find((t) => t.id === hoveredTableId) || null;
+  }, [hoveredTableId, mappedTables]);
 
   // Lọc theo Khu vực và theo Trạng thái
   const visibleTables = useMemo(() => {
