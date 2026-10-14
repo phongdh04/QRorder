@@ -6,6 +6,11 @@ import { z } from 'zod';
 const updateTableSchema = z.object({
   name: z.string().min(1).max(50).optional(),
   is_active: z.boolean().optional(),
+  zone: z.string().optional(),
+  pos_x: z.number().optional(),
+  pos_y: z.number().optional(),
+  shape: z.string().optional(),
+  capacity: z.number().optional(),
 });
 
 export async function PATCH(

@@ -226,12 +226,21 @@ export async function adminGetTables(restaurantId: string) {
   return tables.map((t) => {
     const activeSession = t.table_sessions[0] || null;
 
+    const baseTableData = {
+      id: t.id,
+      name: t.name,
+      token: t.token,
+      is_active: t.is_active,
+      zone: t.zone || 'outdoor',
+      pos_x: t.pos_x,
+      pos_y: t.pos_y,
+      shape: t.shape || 'square',
+      capacity: t.capacity || 4,
+    };
+
     if (!activeSession) {
       return {
-        id: t.id,
-        name: t.name,
-        token: t.token,
-        is_active: t.is_active,
+        ...baseTableData,
         statusType: 'empty' as const, // Trống (xám nhạt)
         activeSession: null,
         unservedCount: 0,
@@ -276,10 +285,7 @@ export async function adminGetTables(restaurantId: string) {
     }
 
     return {
-      id: t.id,
-      name: t.name,
-      token: t.token,
-      is_active: t.is_active,
+      ...baseTableData,
       statusType,
       unservedCount,
       totalAmount: calculatedTotal,

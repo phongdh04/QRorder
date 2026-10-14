@@ -15,6 +15,11 @@ export interface TableItemData {
   totalAmount: number;
   openedAt: string | Date | null;
   activeSession: any | null;
+  zone?: string | null;
+  pos_x?: number | null;
+  pos_y?: number | null;
+  shape?: string | null;
+  capacity?: number | null;
 }
 
 interface TableCardProps {

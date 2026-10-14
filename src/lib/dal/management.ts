@@ -191,7 +191,17 @@ export async function adminReorderMenuItems(
 /**
  * 3. QUẢN LÝ BÀN & QR
  */
-export async function adminCreateTable(restaurantId: string, name: string) {
+export async function adminCreateTable(
+  restaurantId: string,
+  name: string,
+  extra?: {
+    zone?: string;
+    pos_x?: number;
+    pos_y?: number;
+    shape?: string;
+    capacity?: number;
+  }
+) {
   const cleanName = name.trim();
   if (!cleanName) throw new Error('Vui lòng nhập tên bàn.');
 
@@ -210,6 +220,11 @@ export async function adminCreateTable(restaurantId: string, name: string) {
       name: cleanName,
       token,
       is_active: true,
+      zone: extra?.zone || 'outdoor',
+      pos_x: extra?.pos_x,
+      pos_y: extra?.pos_y,
+      shape: extra?.shape || 'square',
+      capacity: extra?.capacity || 4,
     },
   });
 }
@@ -217,7 +232,15 @@ export async function adminCreateTable(restaurantId: string, name: string) {
 export async function adminUpdateTable(
   restaurantId: string,
   tableId: string,
-  data: { name?: string; is_active?: boolean }
+  data: {
+    name?: string;
+    is_active?: boolean;
+    zone?: string;
+    pos_x?: number;
+    pos_y?: number;
+    shape?: string;
+    capacity?: number;
+  }
 ) {
   const table = await prisma.table.findFirst({
     where: { id: tableId, restaurant_id: restaurantId },
@@ -240,6 +263,11 @@ export async function adminUpdateTable(
     data: {
       ...(data.name ? { name: data.name.trim() } : {}),
       ...(typeof data.is_active === 'boolean' ? { is_active: data.is_active } : {}),
+      ...(data.zone !== undefined ? { zone: data.zone } : {}),
+      ...(typeof data.pos_x === 'number' ? { pos_x: data.pos_x } : {}),
+      ...(typeof data.pos_y === 'number' ? { pos_y: data.pos_y } : {}),
+      ...(data.shape !== undefined ? { shape: data.shape } : {}),
+      ...(typeof data.capacity === 'number' ? { capacity: data.capacity } : {}),
     },
   });
 }

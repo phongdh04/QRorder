@@ -6,6 +6,11 @@ import { z } from 'zod';
 
 const createTableSchema = z.object({
   name: z.string().min(1, 'Tên bàn không được để trống').max(50),
+  zone: z.string().optional(),
+  pos_x: z.number().optional(),
+  pos_y: z.number().optional(),
+  shape: z.string().optional(),
+  capacity: z.number().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -40,7 +45,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const table = await adminCreateTable(user.restaurantId, validated.data.name);
+    const { name, ...extra } = validated.data;
+    const table = await adminCreateTable(user.restaurantId, name, extra);
     return NextResponse.json({ success: true, table }, { status: 201 });
   } catch (error: any) {
     console.error('Lỗi POST /api/admin/tables:', error);

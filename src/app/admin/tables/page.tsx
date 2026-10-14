@@ -29,6 +29,11 @@ interface TableItem {
   token: string;
   is_active: boolean;
   restaurant_id: string;
+  zone?: string | null;
+  pos_x?: number | null;
+  pos_y?: number | null;
+  shape?: string | null;
+  capacity?: number | null;
 }
 
 export default function AdminTablesPage() {
@@ -38,10 +43,16 @@ export default function AdminTablesPage() {
   const [qrMap, setQrMap] = useState<Record<string, string>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // Bộ lọc theo khu vực & Tìm kiếm
+  const [zoneFilter, setZoneFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
   // Modal Thêm / Sửa Bàn
   const [tableModalOpen, setTableModalOpen] = useState(false);
   const [editingTable, setEditingTable] = useState<TableItem | null>(null);
   const [tableNameInput, setTableNameInput] = useState('');
+  const [tableZoneInput, setTableZoneInput] = useState<string>('outdoor');
+  const [tableCapacityInput, setTableCapacityInput] = useState<number>(4);
   const [tableSubmitting, setTableSubmitting] = useState(false);
   const [tableError, setTableError] = useState<string | null>(null);
 
@@ -219,17 +230,22 @@ export default function AdminTablesPage() {
 
     try {
       let res: Response;
+      const payload = {
+        name: tableNameInput.trim(),
+        zone: tableZoneInput,
+        capacity: Number(tableCapacityInput) || 4,
+      };
       if (editingTable) {
         res = await fetch(`/api/admin/tables/${editingTable.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: tableNameInput.trim() }),
+          body: JSON.stringify(payload),
         });
       } else {
         res = await fetch('/api/admin/tables', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: tableNameInput.trim() }),
+          body: JSON.stringify(payload),
         });
       }
 
@@ -320,6 +336,8 @@ export default function AdminTablesPage() {
             onClick={() => {
               setEditingTable(null);
               setTableNameInput(`Bàn ${tables.length + 1}`);
+              setTableZoneInput('outdoor');
+              setTableCapacityInput(4);
               setTableError(null);
               setTableModalOpen(true);
             }}
@@ -328,6 +346,77 @@ export default function AdminTablesPage() {
             <Plus className="w-3.5 h-3.5" />
             <span>Thêm bàn mới</span>
           </Button>
+        </div>
+      </div>
+
+      {/* Toolbar: Lọc theo Phân Khu & Tìm kiếm bàn */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/90 p-3 rounded-2xl border border-slate-800 shadow-md">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setZoneFilter('all')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              zoneFilter === 'all'
+                ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            🌟 Tất cả ({tables.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoneFilter('outdoor')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              zoneFilter === 'outdoor'
+                ? 'bg-emerald-600 text-white font-black shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            🌿 Ngoài trời ({tables.filter((t) => (t.zone || 'outdoor') === 'outdoor').length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoneFilter('indoor')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              zoneFilter === 'indoor'
+                ? 'bg-purple-600 text-white font-black shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            👑 Trong nhà / VIP ({tables.filter((t) => t.zone === 'indoor').length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoneFilter('dj')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              zoneFilter === 'dj'
+                ? 'bg-cyan-600 text-white font-black shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            🎵 Khu DJ ({tables.filter((t) => t.zone === 'dj').length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoneFilter('bar')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              zoneFilter === 'bar'
+                ? 'bg-amber-600 text-white font-black shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            🍸 Quầy Bar ({tables.filter((t) => t.zone === 'bar').length})
+          </button>
+        </div>
+
+        <div className="relative w-full sm:w-64">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Tìm theo tên bàn hoặc token..."
+            className="w-full text-xs bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-500"
+          />
         </div>
       </div>
 
@@ -347,7 +436,19 @@ export default function AdminTablesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {tables.map((table) => {
+          {tables
+            .filter((table) => {
+              if (zoneFilter !== 'all' && (table.zone || 'outdoor') !== zoneFilter) return false;
+              if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase().trim();
+                return (
+                  table.name.toLowerCase().includes(q) ||
+                  table.token.toLowerCase().includes(q)
+                );
+              }
+              return true;
+            })
+            .map((table) => {
             const tableUrl = `${domain}/t/${table.token}`;
             const qrPreview = qrMap[table.id];
 
@@ -360,33 +461,63 @@ export default function AdminTablesPage() {
                     : 'border-slate-800/50 opacity-60 bg-slate-950/40'
                 }`}
               >
-                {/* Card Top: Name & Quick Actions */}
+                {/* Card Top: Name, Zone Badge & Quick Actions */}
                 <div>
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
-                        {table.name}
-                      </h3>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingTable(table);
-                          setTableNameInput(table.name);
-                          setTableError(null);
-                          setTableModalOpen(true);
-                        }}
-                        className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800"
-                        title="Đổi tên bàn"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
+                  <div className="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                          {table.name}
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingTable(table);
+                            setTableNameInput(table.name);
+                            setTableZoneInput(table.zone || 'outdoor');
+                            setTableCapacityInput(table.capacity || 4);
+                            setTableError(null);
+                            setTableModalOpen(true);
+                          }}
+                          className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800"
+                          title="Đổi tên bàn & khu vực"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Huy hiệu khu vực & sức chứa */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            (table.zone || 'outdoor') === 'outdoor'
+                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                              : table.zone === 'indoor'
+                              ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                              : table.zone === 'dj'
+                              ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
+                              : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          }`}
+                        >
+                          {(table.zone || 'outdoor') === 'outdoor'
+                            ? '🌿 Ngoài trời'
+                            : table.zone === 'indoor'
+                            ? '👑 VIP Lounge'
+                            : table.zone === 'dj'
+                            ? '🎵 Khu DJ'
+                            : '🍸 Quầy Bar'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          🪑 {table.capacity || 4} chỗ
+                        </span>
+                      </div>
                     </div>
 
                     {/* Toggle Active Switch */}
                     <button
                       type="button"
                       onClick={() => handleToggleActive(table)}
-                      className={`text-[11px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 transition-colors ${
+                      className={`text-[11px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 transition-colors shrink-0 ${
                         table.is_active
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                           : 'bg-slate-800 text-slate-400 border border-slate-700'
@@ -529,10 +660,40 @@ export default function AdminTablesPage() {
                   type="text"
                   value={tableNameInput}
                   onChange={(e) => setTableNameInput(e.target.value)}
-                  placeholder="Ví dụ: Bàn 01, Bàn VIP 2, Quầy Bar..."
+                  placeholder="Ví dụ: Bàn 01, VIP 01, Bàn DJ 01..."
                   className="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-hidden focus:border-blue-500"
                   autoFocus
                   required
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Phân khu trên sơ đồ <span className="text-amber-400">*</span>
+                </label>
+                <select
+                  value={tableZoneInput}
+                  onChange={(e) => setTableZoneInput(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-hidden focus:border-blue-500 cursor-pointer"
+                >
+                  <option value="outdoor">🌿 Khu Ngoài Trời (Vùng Lục Giác)</option>
+                  <option value="indoor">👑 Khu Trong Nhà / VIP Lounge</option>
+                  <option value="dj">🎵 Khu DJ & Sân Khấu</option>
+                  <option value="bar">🍸 Quầy Bar & Pha Chế</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Sức chứa (số ghế)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={tableCapacityInput}
+                  onChange={(e) => setTableCapacityInput(parseInt(e.target.value, 10) || 4)}
+                  className="w-full px-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-hidden focus:border-blue-500"
                 />
               </div>
 

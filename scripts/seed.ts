@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { ALL_BLUEPRINT_TABLES } from '../src/lib/floor-plan-data';
 
 const prisma = new PrismaClient();
 
@@ -64,38 +65,60 @@ async function main() {
     console.log(`* Tài khoản Owner đã tồn tại: ${ownerEmail}`);
   }
 
-  // 2. Tạo 10 bàn
+  // 2. Khởi tạo & Đồng bộ tất cả bàn theo sơ đồ mặt bằng quán (Khu Ngoài trời, VIP, DJ, Quầy Bar)
   const existingTables = await prisma.table.findMany({
     where: { restaurant_id: restaurant.id },
   });
 
   let sampleFirstTableToken = '';
 
-  if (existingTables.length < 10) {
-    for (let i = 1; i <= 10; i++) {
-      const tableName = `Bàn ${i < 10 ? '0' + i : i}`;
-      const token = `table_${i}_${crypto.randomBytes(12).toString('hex')}`; // >= 28 ký tự
-      
-      const existing = existingTables.find((t) => t.name === tableName);
-      if (!existing) {
-        const createdTable = await prisma.table.create({
-          data: {
-            restaurant_id: restaurant.id,
-            name: tableName,
-            token,
-            is_active: true,
-          },
-        });
-        if (i === 1) sampleFirstTableToken = createdTable.token;
-      } else if (i === 1) {
-        sampleFirstTableToken = existing.token;
+  for (const bp of ALL_BLUEPRINT_TABLES) {
+    // Tìm bàn đã có trong DB
+    const existing = existingTables.find((t) => {
+      if (t.name === bp.name || t.name === bp.code) return true;
+      if (bp.zone === 'outdoor') {
+        const num = parseInt(bp.code.replace('NT-', ''), 10);
+        if (!isNaN(num)) {
+          const padded = num < 10 ? `0${num}` : `${num}`;
+          return t.name === `Bàn ${padded}` || t.name === `Bàn ${num}`;
+        }
       }
+      return false;
+    });
+
+    if (existing) {
+      // Cập nhật vị trí và phân khu
+      await prisma.table.update({
+        where: { id: existing.id },
+        data: {
+          zone: bp.zone,
+          pos_x: bp.x,
+          pos_y: bp.y,
+          shape: bp.shape,
+          capacity: bp.capacity,
+        },
+      });
+      if (!sampleFirstTableToken) sampleFirstTableToken = existing.token;
+    } else {
+      // Tạo mới bàn kèm token bảo mật
+      const token = `table_${bp.code.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${crypto.randomBytes(12).toString('hex')}`;
+      const created = await prisma.table.create({
+        data: {
+          restaurant_id: restaurant.id,
+          name: bp.name,
+          token,
+          is_active: true,
+          zone: bp.zone,
+          pos_x: bp.x,
+          pos_y: bp.y,
+          shape: bp.shape,
+          capacity: bp.capacity,
+        },
+      });
+      if (!sampleFirstTableToken) sampleFirstTableToken = created.token;
     }
-    console.log('+ Đã tạo danh sách 10 bàn với token ngẫu nhiên bảo mật (>= 20 ký tự)');
-  } else {
-    sampleFirstTableToken = existingTables[0].token;
-    console.log(`* Đã có sẵn ${existingTables.length} bàn`);
   }
+  console.log(`+ Đã đồng bộ toàn bộ ${ALL_BLUEPRINT_TABLES.length} bàn trên sơ đồ mặt bằng vào database.`);
 
   // 3. Tạo 4 danh mục
   const categoryDefs = [

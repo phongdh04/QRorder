@@ -49,6 +49,11 @@ model Table {
   name          String
   token         String   @unique // ngau nhien >= 20 ky tu
   is_active     Boolean  @default(true)
+  zone          String?  @default("outdoor") // "outdoor" (Ngoài trời), "indoor" (Trong nhà / VIP), "bar" (Quầy Bar), "dj" (Khu DJ)
+  pos_x         Float?   // Vị trí X (%) trên sơ đồ mặt bằng
+  pos_y         Float?   // Vị trí Y (%) trên sơ đồ mặt bằng
+  shape         String?  @default("square") // "square" | "circle" | "bar_stool"
+  capacity      Int?     @default(4)
 
   restaurant     Restaurant     @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
   table_sessions TableSession[]
@@ -56,6 +61,7 @@ model Table {
 
   @@index([restaurant_id])
   @@index([token])
+  @@index([zone])
   @@map("tables")
 }
 

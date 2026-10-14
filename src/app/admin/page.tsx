@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAdmin } from '@/context/AdminContext';
 import { TableGrid } from '@/components/admin/TableGrid';
+import { FloorPlanMap } from '@/components/admin/FloorPlanMap';
 import { TableDrawer } from '@/components/admin/TableDrawer';
 import { KitchenQueue, KitchenQueueItem } from '@/components/admin/KitchenQueue';
 import { TableItemData } from '@/components/admin/TableCard';
@@ -17,6 +18,7 @@ export default function AdminTablesAndOrdersPage() {
   const [tables, setTables] = useState<TableItemData[]>([]);
   const [kitchenQueue, setKitchenQueue] = useState<KitchenQueueItem[]>([]);
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'map' | 'grid'>('map');
   const [isLoading, setIsLoading] = useState(true);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -363,28 +365,68 @@ export default function AdminTablesAndOrdersPage() {
   return (
     <div className="space-y-6">
       {/* Top Banner / Heading */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            Quản Lý Bàn & Đơn Gọi
+          <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <span>Quản Lý Bàn & Đơn Gọi</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 font-bold">
+              Realtime
+            </span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Theo dõi trạng thái 10 bàn, tiếp nhận đơn mới và điều phối quầy bar thời gian thực.
+            Theo dõi sơ đồ mặt bằng trực quan các khu vực, tiếp nhận đơn mới và điều phối phục vụ.
           </p>
+        </div>
+
+        {/* Nút chuyển đổi: Sơ đồ 2D & Lưới thẻ bàn */}
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 self-start sm:self-auto shadow-inner">
+          <button
+            type="button"
+            onClick={() => setViewMode('map')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              viewMode === 'map'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <span>🗺️</span>
+            <span>Sơ đồ mặt bằng 2D</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('grid')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              viewMode === 'grid'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <span>📋</span>
+            <span>Lưới thẻ bàn</span>
+          </button>
         </div>
       </div>
 
       {/* Main Two-Column Layout on Desktop & Tablet Large */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Lưới Bàn (7 cols on lg, 8 cols on xl) */}
+        {/* Left Column: Sơ đồ mặt bằng 2D hoặc Lưới Bàn */}
         <div className="lg:col-span-8 xl:col-span-8 space-y-4">
-          <TableGrid
-            tables={tables}
-            selectedTableId={selectedTableId}
-            onSelectTable={(table) => setSelectedTableId(table.id)}
-            isLoading={isLoading}
-            onRefresh={loadInitialData}
-          />
+          {viewMode === 'map' ? (
+            <FloorPlanMap
+              tables={tables}
+              selectedTableId={selectedTableId}
+              onSelectTable={(table) => setSelectedTableId(table.id)}
+              isLoading={isLoading}
+            />
+          ) : (
+            <TableGrid
+              tables={tables}
+              selectedTableId={selectedTableId}
+              onSelectTable={(table) => setSelectedTableId(table.id)}
+              isLoading={isLoading}
+              onRefresh={loadInitialData}
+            />
+          )}
         </div>
 
         {/* Right Column: Bảng "Món cần làm" (Kitchen/Bar Queue) */}
