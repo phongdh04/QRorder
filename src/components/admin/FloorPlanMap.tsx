@@ -43,14 +43,15 @@ export function FloorPlanMap({
   const [selectedZone, setSelectedZone] = useState<ZoneId>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'occupied' | 'pending'>('all');
   const [zoomLevel, setZoomLevel] = useState<number>(1);
-  const [hoveredTable, setHoveredTable] = useState<{
-    table: TableItemData | null;
-    blueprint: TableBlueprint | null;
-    x: number;
-    y: number;
-  } | null>(null);
+  const [hoveredTableId, setHoveredTableId] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Bàn đang được hover ổn định
+  const activeHovered = useMemo(() => {
+    if (!hoveredTableId) return null;
+    return mappedTables.find((t) => t.id === hoveredTableId) || null;
+  }, [hoveredTableId, mappedTables]);
 
   // Ánh xạ danh sách bàn DB với dữ liệu tọa độ Blueprint
   const mappedTables = useMemo(() => {
@@ -696,6 +697,7 @@ export function FloorPlanMap({
             {/* ======================================================== */}
             {visibleTables.map((item) => {
               const isSelected = selectedTableId === item.id;
+              const isHovered = hoveredTableId === item.id;
               const isPending = item.statusType === 'pending';
               const isPreparing = item.statusType === 'preparing';
               const isOccupied = item.statusType === 'occupied';
@@ -704,6 +706,9 @@ export function FloorPlanMap({
               // Kích thước ô bàn
               const tableWidth = isStool ? 28 : 34;
               const tableHeight = isStool ? 28 : 34;
+
+              // Hit box cố định 54x54 px để bắt chuột mượt mà, triệt tiêu hoàn toàn hiện tượng rung nhấp nháy
+              const hitBoxSize = 54;
 
               // Màu sắc theo trạng thái
               let fillColor = '#181C26';
@@ -728,13 +733,15 @@ export function FloorPlanMap({
 
               if (isSelected) {
                 strokeColor = '#F59E0B';
+              } else if (isHovered) {
+                strokeColor = '#38BDF8'; // Viền sáng cyan nổi bật khi hover
               }
 
               return (
                 <g
                   key={item.id}
                   transform={`translate(${item.x}, ${item.y})`}
-                  className="cursor-pointer transition-transform duration-150 hover:scale-125"
+                  className="cursor-pointer"
                   onClick={() => {
                     // Nếu đã có trong DB thì mở drawer tương ứng
                     if (item.dbTable) {
@@ -759,123 +766,133 @@ export function FloorPlanMap({
                       });
                     }
                   }}
-                  onMouseEnter={() =>
-                    setHoveredTable({
-                      table: item.dbTable,
-                      blueprint: item.blueprint,
-                      x: item.x,
-                      y: item.y,
-                    })
-                  }
-                  onMouseLeave={() => setHoveredTable(null)}
+                  onMouseEnter={() => setHoveredTableId(item.id)}
+                  onMouseLeave={() => setHoveredTableId((prev) => (prev === item.id ? null : prev))}
                 >
-                  {/* Vòng lan tỏa (ping ring) nếu có đơn mới */}
-                  {isPending && (
-                    <circle
-                      cx="0"
-                      cy="0"
-                      r="26"
-                      fill="none"
-                      stroke="#FB923C"
-                      strokeWidth="2.5"
-                      className="animate-ping opacity-75"
-                    />
-                  )}
+                  {/* Vùng cảm ứng chuột cố định (Hit area) che toàn bộ bàn + ghế: Bắt chuột 100% ổn định, triệt tiêu nhấp nháy */}
+                  <rect
+                    x={-hitBoxSize / 2}
+                    y={-hitBoxSize / 2}
+                    width={hitBoxSize}
+                    height={hitBoxSize}
+                    fill="transparent"
+                  />
 
-                  {/* Khung bàn chính */}
-                  {isStool ? (
-                    <circle
-                      cx="0"
-                      cy="0"
-                      r={tableWidth / 2}
-                      fill={fillColor}
-                      stroke={strokeColor}
-                      strokeWidth={isSelected ? 3.5 : 2}
-                      style={{ filter: glowFilter }}
-                    />
-                  ) : (
-                    <rect
-                      x={-tableWidth / 2}
-                      y={-tableHeight / 2}
-                      width={tableWidth}
-                      height={tableHeight}
-                      rx="7"
-                      fill={fillColor}
-                      stroke={strokeColor}
-                      strokeWidth={isSelected ? 3.5 : 2}
-                      style={{ filter: glowFilter }}
-                    />
-                  )}
-
-                  {/* Chấm hiển thị ghế xung quanh cho bàn vuông */}
-                  {!isStool && (
-                    <g opacity="0.4">
-                      {/* 4 ghế mini xung quanh */}
-                      <rect x="-10" y={-tableHeight / 2 - 4} width="20" height="3" rx="1.5" fill={strokeColor} />
-                      <rect x="-10" y={tableHeight / 2 + 1} width="20" height="3" rx="1.5" fill={strokeColor} />
-                      <rect x={-tableWidth / 2 - 4} y="-10" width="3" height="20" rx="1.5" fill={strokeColor} />
-                      <rect x={tableWidth / 2 + 1} y="-10" width="3" height="20" rx="1.5" fill={strokeColor} />
-                    </g>
-                  )}
-
-                  {/* Tên mã bàn */}
-                  <text
-                    x="0"
-                    y={isPending || isOccupied ? -1 : 3.5}
-                    textAnchor="middle"
-                    fill={textColor}
-                    fontSize={item.code.length > 5 ? '8' : '9'}
-                    fontWeight="900"
-                    className="font-mono tracking-tight pointer-events-none"
+                  {/* Toàn bộ hình khối đồ họa bàn ghế đặt trong nhóm pointer-events-none để không làm đứt quãng sự kiện chuột */}
+                  <g
+                    className="pointer-events-none transition-transform duration-150"
+                    style={{
+                      transform: isHovered ? 'scale(1.12)' : 'scale(1)',
+                    }}
                   >
-                    {item.code}
-                  </text>
+                    {/* Vòng lan tỏa (ping ring) nếu có đơn mới */}
+                    {isPending && (
+                      <circle
+                        cx="0"
+                        cy="0"
+                        r="26"
+                        fill="none"
+                        stroke="#FB923C"
+                        strokeWidth="2.5"
+                        className="animate-ping opacity-75"
+                      />
+                    )}
 
-                  {/* Chỉ số món hoặc tiền thu gọn nếu đang có khách */}
-                  {(isPending || isPreparing) && (
-                    <circle
-                      cx="12"
-                      cy="-12"
-                      r="6.5"
-                      fill="#EA580C"
-                      stroke="#FFFFFF"
-                      strokeWidth="1.5"
-                    />
-                  )}
-                  {isPending && (
+                    {/* Khung bàn chính */}
+                    {isStool ? (
+                      <circle
+                        cx="0"
+                        cy="0"
+                        r={tableWidth / 2}
+                        fill={fillColor}
+                        stroke={strokeColor}
+                        strokeWidth={isSelected ? 3.5 : isHovered ? 3 : 2}
+                        style={{ filter: glowFilter }}
+                      />
+                    ) : (
+                      <rect
+                        x={-tableWidth / 2}
+                        y={-tableHeight / 2}
+                        width={tableWidth}
+                        height={tableHeight}
+                        rx="7"
+                        fill={fillColor}
+                        stroke={strokeColor}
+                        strokeWidth={isSelected ? 3.5 : isHovered ? 3 : 2}
+                        style={{ filter: glowFilter }}
+                      />
+                    )}
+
+                    {/* Chấm hiển thị ghế xung quanh cho bàn vuông */}
+                    {!isStool && (
+                      <g opacity={isHovered ? 0.7 : 0.4}>
+                        <rect x="-10" y={-tableHeight / 2 - 4} width="20" height="3" rx="1.5" fill={strokeColor} />
+                        <rect x="-10" y={tableHeight / 2 + 1} width="20" height="3" rx="1.5" fill={strokeColor} />
+                        <rect x={-tableWidth / 2 - 4} y="-10" width="3" height="20" rx="1.5" fill={strokeColor} />
+                        <rect x={tableWidth / 2 + 1} y="-10" width="3" height="20" rx="1.5" fill={strokeColor} />
+                      </g>
+                    )}
+
+                    {/* Tên mã bàn */}
                     <text
-                      x="12"
-                      y="-9.5"
+                      x="0"
+                      y={isPending || isOccupied ? -1 : 3.5}
                       textAnchor="middle"
-                      fill="#FFFFFF"
-                      fontSize="7"
+                      fill={isHovered ? '#FFFFFF' : textColor}
+                      fontSize={item.code.length > 5 ? '8' : '9'}
                       fontWeight="900"
-                      className="pointer-events-none"
+                      className="font-mono tracking-tight"
                     >
-                      !
+                      {item.code}
                     </text>
-                  )}
+
+                    {/* Chỉ số món hoặc tiền thu gọn nếu đang có khách */}
+                    {(isPending || isPreparing) && (
+                      <circle
+                        cx="12"
+                        cy="-12"
+                        r="6.5"
+                        fill="#EA580C"
+                        stroke="#FFFFFF"
+                        strokeWidth="1.5"
+                      />
+                    )}
+                    {isPending && (
+                      <text
+                        x="12"
+                        y="-9.5"
+                        textAnchor="middle"
+                        fill="#FFFFFF"
+                        fontSize="7"
+                        fontWeight="900"
+                      >
+                        !
+                      </text>
+                    )}
+                  </g>
                 </g>
               );
             })}
           </svg>
 
           {/* Hover Tooltip Popup trên Canvas */}
-          {hoveredTable && (
+          {activeHovered && (
             <div
               style={{
-                left: `${(hoveredTable.x / 1000) * 100}%`,
-                top: `${(hoveredTable.y / 1000) * 100}%`,
+                left: `${(activeHovered.x / 1000) * 100}%`,
+                top: `${(activeHovered.y / 1100) * 100}%`,
               }}
-              className="absolute -translate-x-1/2 -translate-y-full mb-3 pointer-events-none z-30 animate-in fade-in zoom-in-95 duration-100"
+              className={`absolute -translate-x-1/2 pointer-events-none select-none z-30 transition-all duration-150 ${
+                activeHovered.y < 180 ? 'translate-y-6' : '-translate-y-[calc(100%+14px)]'
+              }`}
             >
-              <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl p-3 shadow-2xl text-xs w-48 space-y-1.5 text-slate-200">
+              <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl p-3 shadow-2xl text-xs w-48 space-y-1.5 text-slate-200 pointer-events-none">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
                   <span className="font-extrabold text-white text-sm">
-                    {hoveredTable.table?.name || hoveredTable.blueprint?.name}
+                    {activeHovered.dbTable?.name || activeHovered.blueprint?.name}
                   </span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-800 font-mono text-slate-400">
-                    {hoveredTable.blueprint?.code}
+                    {activeHovered.blueprint?.code}
                   </span>
                 </div>
 
@@ -883,11 +900,11 @@ export function FloorPlanMap({
                   <div className="flex items-center justify-between text-slate-400">
                     <span>Phân khu:</span>
                     <span className="font-semibold text-slate-300">
-                      {hoveredTable.blueprint?.zone === 'outdoor'
+                      {activeHovered.blueprint?.zone === 'outdoor'
                         ? '🌿 Ngoài trời'
-                        : hoveredTable.blueprint?.zone === 'dj'
+                        : activeHovered.blueprint?.zone === 'dj'
                         ? '🎵 Cạnh DJ'
-                        : hoveredTable.blueprint?.zone === 'bar'
+                        : activeHovered.blueprint?.zone === 'bar'
                         ? '🍸 Quầy Bar'
                         : '👑 VIP / Trong nhà'}
                     </span>
@@ -897,28 +914,28 @@ export function FloorPlanMap({
                     <span>Trạng thái:</span>
                     <span
                       className={`font-bold ${
-                        hoveredTable.table?.statusType === 'pending'
+                        activeHovered.dbTable?.statusType === 'pending'
                           ? 'text-orange-400 animate-pulse'
-                          : hoveredTable.table?.statusType === 'occupied'
+                          : activeHovered.dbTable?.statusType === 'occupied'
                           ? 'text-blue-400'
                           : 'text-slate-400'
                       }`}
                     >
-                      {hoveredTable.table?.statusType === 'pending'
+                      {activeHovered.dbTable?.statusType === 'pending'
                         ? 'Có đơn mới gọi'
-                        : hoveredTable.table?.statusType === 'preparing'
+                        : activeHovered.dbTable?.statusType === 'preparing'
                         ? 'Đang làm đồ'
-                        : hoveredTable.table?.statusType === 'occupied'
+                        : activeHovered.dbTable?.statusType === 'occupied'
                         ? 'Đang phục vụ'
                         : 'Bàn trống'}
                     </span>
                   </div>
 
-                  {hoveredTable.table && hoveredTable.table.totalAmount > 0 && (
+                  {activeHovered.dbTable && activeHovered.dbTable.totalAmount > 0 && (
                     <div className="flex items-center justify-between pt-1 border-t border-slate-800/80 font-bold">
                       <span className="text-slate-400">Tạm tính:</span>
                       <span className="text-amber-400 font-mono">
-                        {formatVND(hoveredTable.table.totalAmount)}
+                        {formatVND(activeHovered.dbTable.totalAmount)}
                       </span>
                     </div>
                   )}
