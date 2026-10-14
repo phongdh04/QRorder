@@ -13,28 +13,37 @@ model Restaurant {
   slug      String   @unique
   logo_url  String?
   theme     Json?
-  plan              String   @default("basic") // "basic" | "pro"
-  image_quota_count Int      @default(30)
-  image_quota_bytes BigInt   @default(20971520) // 20MB
-  menu_display_mode String   @default("photo") // "photo" | "minimal"
-  created_at        DateTime @default(now())
+  plan                  String   @default("basic") // "basic" | "pro"
+  image_quota_count     Int      @default(30)
+  image_quota_bytes     BigInt   @default(20971520) // 20MB
+  menu_display_mode     String   @default("photo") // "photo" | "minimal"
+  escalation_seconds    Int      @default(60)
+  offline_alert_seconds Int      @default(120)
+  created_at            DateTime @default(now())
 
-  users          User[]
-  tables         Table[]
-  categories     Category[]
-  menu_items     MenuItem[]
-  menu_images    MenuImage[]
-  table_sessions TableSession[]
-  orders         Order[]
-  audit_logs     AuditLog[]
+  users              User[]
+  tables             Table[]
+  categories         Category[]
+  menu_items         MenuItem[]
+  menu_images        MenuImage[]
+  table_sessions     TableSession[]
+  orders             Order[]
+  audit_logs         AuditLog[]
+  zones              Zone[]
+  shifts             Shift[]
+  duty_assignments   DutyAssignment[]
+  service_requests   ServiceRequest[]
+  request_events     RequestEvent[]
+  push_subscriptions PushSubscription[]
+  staff_invites      StaffInvite[]
 
   @@map("restaurants")
 }
 
 model User {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   restaurant_id String
-  email         String   @unique
+  email         String    @unique
   password_hash String
   name          String
   role          String    @default("staff") // "owner" | "manager" | "staff"
@@ -42,8 +51,14 @@ model User {
   last_seen_at  DateTime?
   created_at    DateTime  @default(now())
 
-  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
-  audit_logs    AuditLog[]
+  restaurant         Restaurant         @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  audit_logs         AuditLog[]
+  duty_assignments   DutyAssignment[]
+  push_subscriptions PushSubscription[]
+  staff_invites      StaffInvite[]
+  claimed_requests   ServiceRequest[]   @relation("ClaimedRequests")
+  completed_requests ServiceRequest[]   @relation("CompletedRequests")
+  request_events     RequestEvent[]
 
   @@index([restaurant_id])
   @@map("users")
@@ -56,18 +71,22 @@ model Table {
   token         String   @unique // ngau nhien >= 20 ky tu
   is_active     Boolean  @default(true)
   zone          String?  @default("outdoor") // "outdoor" (Ngoài trời), "indoor" (Trong nhà / VIP), "bar" (Quầy Bar), "dj" (Khu DJ)
+  zone_id       String?
   pos_x         Float?   // Vị trí X (%) trên sơ đồ mặt bằng
   pos_y         Float?   // Vị trí Y (%) trên sơ đồ mặt bằng
   shape         String?  @default("square") // "square" | "circle" | "bar_stool"
   capacity      Int?     @default(4)
 
-  restaurant     Restaurant     @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
-  table_sessions TableSession[]
-  orders         Order[]
+  restaurant       Restaurant       @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  assigned_zone    Zone?            @relation(fields: [zone_id], references: [id], onDelete: SetNull)
+  table_sessions   TableSession[]
+  orders           Order[]
+  service_requests ServiceRequest[]
 
   @@index([restaurant_id])
   @@index([token])
   @@index([zone])
+  @@index([zone_id])
   @@map("tables")
 }
 
@@ -151,10 +170,11 @@ model TableSession {
   opened_at      DateTime  @default(now())
   paid_at        DateTime?
 
-  restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
-  table      Table      @relation(fields: [table_id], references: [id], onDelete: Cascade)
-  orders     Order[]
-  audit_logs AuditLog[]
+  restaurant       Restaurant       @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  table            Table            @relation(fields: [table_id], references: [id], onDelete: Cascade)
+  orders           Order[]
+  audit_logs       AuditLog[]
+  service_requests ServiceRequest[]
 
   @@index([restaurant_id])
   @@index([table_id])
@@ -174,10 +194,11 @@ model Order {
   cancel_reason String?
   created_at    DateTime @default(now())
 
-  session     TableSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
-  restaurant  Restaurant   @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
-  table       Table        @relation(fields: [table_id], references: [id], onDelete: Cascade)
-  order_items OrderItem[]
+  session          TableSession     @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  restaurant       Restaurant       @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  table            Table            @relation(fields: [table_id], references: [id], onDelete: Cascade)
+  order_items      OrderItem[]
+  service_requests ServiceRequest[]
 
   @@index([restaurant_id])
   @@index([session_id])
@@ -222,4 +243,148 @@ model AuditLog {
   @@index([user_id])
   @@index([created_at])
   @@map("audit_logs")
+}
+
+model Zone {
+  id            String   @id @default(uuid())
+  restaurant_id String
+  name          String
+  sort_order    Int      @default(0)
+  created_at    DateTime @default(now())
+
+  restaurant       Restaurant       @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  tables           Table[]
+  duty_assignments DutyAssignment[]
+
+  @@index([restaurant_id])
+  @@index([restaurant_id, sort_order])
+  @@map("zones")
+}
+
+model Shift {
+  id            String    @id @default(uuid())
+  restaurant_id String
+  started_by    String
+  started_at    DateTime  @default(now())
+  ended_at      DateTime?
+
+  restaurant       Restaurant       @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  duty_assignments DutyAssignment[]
+
+  @@index([restaurant_id])
+  @@index([restaurant_id, ended_at])
+  @@map("shifts")
+}
+
+model DutyAssignment {
+  id            String   @id @default(uuid())
+  shift_id      String
+  restaurant_id String
+  user_id       String
+  zone_id       String?
+  on_duty       Boolean  @default(true)
+  created_at    DateTime @default(now())
+
+  shift      Shift      @relation(fields: [shift_id], references: [id], onDelete: Cascade)
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  zone       Zone?      @relation(fields: [zone_id], references: [id], onDelete: SetNull)
+
+  @@index([restaurant_id])
+  @@index([shift_id])
+  @@index([user_id])
+  @@index([zone_id])
+  @@index([shift_id, user_id])
+  @@map("duty_assignments")
+}
+
+model ServiceRequest {
+  id            String    @id @default(uuid())
+  restaurant_id String
+  table_id      String
+  session_id    String
+  type          String    // "order" | "call_staff" | "request_bill"
+  order_id      String?
+  status        String    @default("pending") // "pending" | "claimed" | "done" | "cancelled"
+  claimed_by    String?
+  claimed_at    DateTime?
+  completed_by  String?
+  completed_at  DateTime?
+  escalated_at  DateTime?
+  created_at    DateTime  @default(now())
+
+  restaurant        Restaurant     @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  table             Table          @relation(fields: [table_id], references: [id], onDelete: Cascade)
+  session           TableSession   @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  order             Order?         @relation(fields: [order_id], references: [id], onDelete: SetNull)
+  claimed_by_user   User?          @relation("ClaimedRequests", fields: [claimed_by], references: [id], onDelete: SetNull)
+  completed_by_user User?          @relation("CompletedRequests", fields: [completed_by], references: [id], onDelete: SetNull)
+  events            RequestEvent[]
+
+  @@index([restaurant_id])
+  @@index([restaurant_id, status, created_at])
+  @@index([restaurant_id, claimed_by])
+  @@index([table_id])
+  @@index([session_id])
+  @@index([order_id])
+  @@map("service_requests")
+}
+
+model RequestEvent {
+  id            String   @id @default(uuid())
+  request_id    String
+  restaurant_id String
+  actor_user_id String?
+  event         String   // "created" | "notified" | "claimed" | "released" | "reassigned" | "escalated" | "done" | "cancelled"
+  meta          Json?
+  created_at    DateTime @default(now())
+
+  request    ServiceRequest @relation(fields: [request_id], references: [id], onDelete: Cascade)
+  restaurant Restaurant     @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  actor_user User?          @relation(fields: [actor_user_id], references: [id], onDelete: SetNull)
+
+  @@index([restaurant_id])
+  @@index([request_id])
+  @@index([actor_user_id])
+  @@index([created_at])
+  @@map("request_events")
+}
+
+model PushSubscription {
+  id            String    @id @default(uuid())
+  user_id       String
+  restaurant_id String
+  endpoint      String    @unique
+  p256dh        String
+  auth          String
+  user_agent    String?
+  created_at    DateTime  @default(now())
+  last_seen_at  DateTime?
+  is_active     Boolean   @default(true)
+
+  user       User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+
+  @@index([restaurant_id])
+  @@index([user_id])
+  @@index([is_active])
+  @@map("push_subscriptions")
+}
+
+model StaffInvite {
+  id            String    @id @default(uuid())
+  restaurant_id String
+  user_id       String?
+  token_hash    String    @unique
+  expires_at    DateTime
+  used_at       DateTime?
+  created_by    String
+  created_at    DateTime  @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
+  user       User?      @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@index([restaurant_id])
+  @@index([token_hash])
+  @@map("staff_invites")
 }

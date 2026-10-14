@@ -41,28 +41,108 @@ async function main() {
     console.log(`* Quán bar đã tồn tại: ${restaurant.name}`);
   }
 
-  // 1. Tạo tài khoản chủ quán (Owner)
-  const ownerEmail = 'owner@demobar.vn';
-  const ownerRawPassword = 'Admin@123456';
-  const passwordHash = await bcrypt.hash(ownerRawPassword, 10);
+  // 1. Tạo tài khoản chủ quán (Owner), Quản lý (Manager), và 3 Nhân viên (Staff)
+  const defaultPasswordHash = await bcrypt.hash('Staff@123456', 10);
+  const ownerPasswordHash = await bcrypt.hash('Admin@123456', 10);
+  const managerPasswordHash = await bcrypt.hash('Manager@123456', 10);
 
-  const existingOwner = await prisma.user.findUnique({
-    where: { email: ownerEmail },
+  const usersDef = [
+    {
+      email: 'owner@demobar.vn',
+      name: 'Chủ Quán (Owner)',
+      role: 'owner',
+      password_hash: ownerPasswordHash,
+      rawPass: 'Admin@123456',
+    },
+    {
+      email: 'manager@demobar.vn',
+      name: 'Quản Lý Tuấn (Manager)',
+      role: 'manager',
+      password_hash: managerPasswordHash,
+      rawPass: 'Manager@123456',
+    },
+    {
+      email: 'staff1@demobar.vn',
+      name: 'Nguyễn Văn An (Khu A)',
+      role: 'staff',
+      password_hash: defaultPasswordHash,
+      rawPass: 'Staff@123456',
+    },
+    {
+      email: 'staff2@demobar.vn',
+      name: 'Trần Thị Bình (Khu B)',
+      role: 'staff',
+      password_hash: defaultPasswordHash,
+      rawPass: 'Staff@123456',
+    },
+    {
+      email: 'staff3@demobar.vn',
+      name: 'Lê Hoàng Cường (Linh hoạt)',
+      role: 'staff',
+      password_hash: defaultPasswordHash,
+      rawPass: 'Staff@123456',
+    },
+  ];
+
+  const seededUsers: Record<string, any> = {};
+
+  for (const u of usersDef) {
+    let user = await prisma.user.findUnique({ where: { email: u.email } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          restaurant_id: restaurant.id,
+          email: u.email,
+          password_hash: u.password_hash,
+          name: u.name,
+          role: u.role,
+          is_active: true,
+          last_seen_at: new Date(),
+        },
+      });
+      console.log(`+ Đã tạo tài khoản ${u.role}: ${u.email}`);
+    } else {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          role: u.role,
+          name: u.name,
+          is_active: true,
+          last_seen_at: new Date(),
+        },
+      });
+      console.log(`* Tài khoản đã tồn tại và cập nhật: ${u.email} (${u.role})`);
+    }
+    seededUsers[u.email] = user;
+  }
+
+  // 1b. Khởi tạo 2 Khu phục vụ (Khu A, Khu B)
+  let zoneA = await prisma.zone.findFirst({
+    where: { restaurant_id: restaurant.id, name: 'Khu A (Trong nhà & VIP)' },
   });
-
-  if (!existingOwner) {
-    await prisma.user.create({
+  if (!zoneA) {
+    zoneA = await prisma.zone.create({
       data: {
         restaurant_id: restaurant.id,
-        email: ownerEmail,
-        password_hash: passwordHash,
-        name: 'Quản Lý Quán Bar',
-        role: 'owner',
+        name: 'Khu A (Trong nhà & VIP)',
+        sort_order: 1,
       },
     });
-    console.log(`+ Đã tạo tài khoản Owner: ${ownerEmail}`);
-  } else {
-    console.log(`* Tài khoản Owner đã tồn tại: ${ownerEmail}`);
+    console.log(`+ Đã tạo Khu A: ${zoneA.id}`);
+  }
+
+  let zoneB = await prisma.zone.findFirst({
+    where: { restaurant_id: restaurant.id, name: 'Khu B (Ngoài trời & Bar)' },
+  });
+  if (!zoneB) {
+    zoneB = await prisma.zone.create({
+      data: {
+        restaurant_id: restaurant.id,
+        name: 'Khu B (Ngoài trời & Bar)',
+        sort_order: 2,
+      },
+    });
+    console.log(`+ Đã tạo Khu B: ${zoneB.id}`);
   }
 
   // 2. Khởi tạo & Đồng bộ tất cả bàn theo sơ đồ mặt bằng quán (Khu Ngoài trời, VIP, DJ, Quầy Bar)
@@ -94,12 +174,15 @@ async function main() {
       return false;
     });
 
+    const assignedZoneId = bp.zone === 'indoor' || bp.zone === 'dj' ? zoneA.id : zoneB.id;
+
     if (existing) {
       // Cập nhật vị trí và phân khu
       await prisma.table.update({
         where: { id: existing.id },
         data: {
           zone: bp.zone,
+          zone_id: assignedZoneId,
           pos_x: bp.x,
           pos_y: bp.y,
           shape: bp.shape,
@@ -117,6 +200,7 @@ async function main() {
           token,
           is_active: true,
           zone: bp.zone,
+          zone_id: assignedZoneId,
           pos_x: bp.x,
           pos_y: bp.y,
           shape: bp.shape,
@@ -126,7 +210,66 @@ async function main() {
       if (!sampleFirstTableToken) sampleFirstTableToken = created.token;
     }
   }
-  console.log(`+ Đã đồng bộ toàn bộ ${ALL_BLUEPRINT_TABLES.length} bàn trên sơ đồ mặt bằng vào database.`);
+  console.log(`+ Đã đồng bộ toàn bộ ${ALL_BLUEPRINT_TABLES.length} bàn trên sơ đồ mặt bằng vào database kèm zone_id.`);
+
+  // 2b. Khởi tạo 1 ca đang mở (Shift) và phân công nhân viên (DutyAssignment)
+  const managerUser = seededUsers['manager@demobar.vn'];
+  const staff1 = seededUsers['staff1@demobar.vn'];
+  const staff2 = seededUsers['staff2@demobar.vn'];
+  const staff3 = seededUsers['staff3@demobar.vn'];
+
+  let activeShift = await prisma.shift.findFirst({
+    where: { restaurant_id: restaurant.id, ended_at: null },
+  });
+
+  if (!activeShift) {
+    activeShift = await prisma.shift.create({
+      data: {
+        restaurant_id: restaurant.id,
+        started_by: managerUser.id,
+        started_at: new Date(),
+      },
+    });
+    console.log(`+ Đã mở ca làm việc mẫu: ${activeShift.id}`);
+  }
+
+  await prisma.dutyAssignment.deleteMany({
+    where: { shift_id: activeShift.id },
+  });
+
+  await prisma.dutyAssignment.createMany({
+    data: [
+      {
+        shift_id: activeShift.id,
+        restaurant_id: restaurant.id,
+        user_id: staff1.id,
+        zone_id: zoneA.id,
+        on_duty: true,
+      },
+      {
+        shift_id: activeShift.id,
+        restaurant_id: restaurant.id,
+        user_id: staff2.id,
+        zone_id: zoneB.id,
+        on_duty: true,
+      },
+      {
+        shift_id: activeShift.id,
+        restaurant_id: restaurant.id,
+        user_id: staff3.id,
+        zone_id: null,
+        on_duty: true,
+      },
+      {
+        shift_id: activeShift.id,
+        restaurant_id: restaurant.id,
+        user_id: managerUser.id,
+        zone_id: null,
+        on_duty: true,
+      },
+    ],
+  });
+  console.log('+ Đã tạo phân công ca trực mẫu cho Quản lý & 3 Nhân viên.');
 
   // 3. Tạo 4 danh mục
   const categoryDefs = [
@@ -373,13 +516,28 @@ async function main() {
   console.log('\n================================================================');
   console.log('🎉 SEED DỮ LIỆU THÀNH CÔNG CHO QUÁN "THE VELVET LOUNGE"');
   console.log('----------------------------------------------------------------');
-  console.log('🔑 THÔNG TIN ĐĂNG NHẬP ADMIN:');
-  console.log(`   URL:      http://localhost:3000/admin/login`);
-  console.log(`   Email:    ${ownerEmail}`);
-  console.log(`   Mật khẩu: ${ownerRawPassword}`);
+  console.log('🔑 THÔNG TIN TÀI KHOẢN MẪU (3 VAI TRÒ):');
+  console.log('   [1] CHỦ QUÁN (OWNER):');
+  console.log('       Email:    owner@demobar.vn');
+  console.log('       Mật khẩu: Admin@123456');
+  console.log('       Quyền:    Toàn quyền hệ thống + Doanh thu + Menu + Thông tin quán');
+  console.log('   [2] QUẢN LÝ (MANAGER):');
+  console.log('       Email:    manager@demobar.vn');
+  console.log('       Mật khẩu: Manager@123456');
+  console.log('       Quyền:    Sơ đồ bàn, phân công ca, hủy đơn, thanh toán, quản lý staff');
+  console.log('   [3] NHÂN VIÊN 1 (STAFF - Khu A: Trong nhà & VIP):');
+  console.log('       Email:    staff1@demobar.vn');
+  console.log('       Mật khẩu: Staff@123456');
+  console.log('   [4] NHÂN VIÊN 2 (STAFF - Khu B: Ngoài trời & Bar):');
+  console.log('       Email:    staff2@demobar.vn');
+  console.log('       Mật khẩu: Staff@123456');
+  console.log('   [5] NHÂN VIÊN 3 (STAFF - Linh hoạt mọi khu):');
+  console.log('       Email:    staff3@demobar.vn');
+  console.log('       Mật khẩu: Staff@123456');
   console.log('----------------------------------------------------------------');
-  console.log('🍸 LIÊN KẾT GỌI MÓN MẪU TẠI BÀN 01:');
-  console.log(`   URL:      http://localhost:3000/t/${sampleFirstTableToken}`);
+  console.log('📱 CỔNG NHÂN VIÊN (PWA):  http://localhost:3000/staff');
+  console.log('💻 CỔNG QUẢN TRỊ (ADMIN): http://localhost:3000/admin');
+  console.log('🍸 LIÊN KẾT BÀN MẪU (BÀN 01): http://localhost:3000/t/' + sampleFirstTableToken);
   console.log('================================================================\n');
 }
 
