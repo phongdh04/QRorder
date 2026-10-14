@@ -105,4 +105,42 @@ export class LocalStorageAdapter implements StorageAdapter {
     }
     return `/uploads/${cleanKey}`;
   }
+
+  /**
+   * Liệt kê tất cả các tệp trong thư mục uploads (hỗ trợ prefix)
+   */
+  async list(prefix = ''): Promise<string[]> {
+    const cleanPrefix = prefix.replace(/\\/g, '/').replace(/^\/+/, '');
+    const results: string[] = [];
+
+    const walk = async (currentDir: string) => {
+      let entries: fs.Dirent[] = [];
+      try {
+        entries = await fs.promises.readdir(currentDir, { withFileTypes: true });
+      } catch {
+        return;
+      }
+
+      for (const entry of entries) {
+        const fullEntryPath = path.join(currentDir, entry.name);
+        if (entry.isDirectory()) {
+          await walk(fullEntryPath);
+        } else if (entry.isFile()) {
+          // Bỏ qua các file ẩn như .gitkeep, .DS_Store
+          if (entry.name.startsWith('.')) continue;
+
+          const relativePath = path.relative(this.uploadDir, fullEntryPath);
+          const key = relativePath.replace(/\\/g, '/');
+          if (!cleanPrefix || key.startsWith(cleanPrefix)) {
+            results.push(key);
+          }
+        }
+      }
+    };
+
+    if (fs.existsSync(this.uploadDir)) {
+      await walk(this.uploadDir);
+    }
+    return results;
+  }
 }

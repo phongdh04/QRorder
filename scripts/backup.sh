@@ -28,7 +28,12 @@ while true; do
   fi
 
   # 2. Sao lưu Thư mục Uploads (hình ảnh món ăn, logo quán)
-  if [ -d "$UPLOADS_DIR" ]; then
+  if [ "${STORAGE_DRIVER}" = "s3" ]; then
+    echo "[$(date)] ☁️ Ứng dụng đang cấu hình STORAGE_DRIVER=s3 (Cloudflare R2 / MinIO / AWS S3)."
+    echo "[$(date)]    Dữ liệu ảnh được lưu trực tiếp trên Object Storage. Khuyến nghị bật Bucket Versioning & Lifecycle Rules."
+  fi
+
+  if [ -d "$UPLOADS_DIR" ] && [ "$(ls -A "$UPLOADS_DIR" 2>/dev/null)" ]; then
     echo "[$(date)] Đang sao lưu thư mục hình ảnh uploads ($UPLOADS_DIR)..."
     if tar -czf "$UPLOADS_BACKUP_FILE" -C "$UPLOADS_DIR" . 2>/dev/null; then
       echo "[$(date)] ✓ Uploads backup thành công: $UPLOADS_BACKUP_FILE ($(du -h "$UPLOADS_BACKUP_FILE" | cut -f1))"
@@ -36,7 +41,7 @@ while true; do
       echo "[$(date)] ⚠️ Thất bại khi đóng gói thư mục uploads!"
     fi
   else
-    echo "[$(date)] Bỏ qua sao lưu uploads (thư mục $UPLOADS_DIR chưa tồn tại)."
+    echo "[$(date)] Bỏ qua sao lưu uploads (thư mục $UPLOADS_DIR rỗng hoặc chưa tồn tại)."
   fi
 
   # 3. Dọn dẹp các bản sao lưu cũ quá giới hạn KEEP_COUNT

@@ -4,6 +4,8 @@ import {
   DeleteObjectCommand,
   HeadObjectCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
+  ListObjectsV2CommandOutput,
 } from '@aws-sdk/client-s3';
 import { StorageAdapter } from './types';
 
@@ -165,5 +167,34 @@ export class S3StorageAdapter implements StorageAdapter {
     }
 
     return `https://${this.bucket}.s3.amazonaws.com/${cleanKey}`;
+  }
+
+  /**
+   * Liệt kê tất cả các tệp trong bucket S3 (tự động phân trang)
+   */
+  async list(prefix = ''): Promise<string[]> {
+    const cleanPrefix = prefix.replace(/\\/g, '/').replace(/^\/+/, '');
+    const results: string[] = [];
+    let continuationToken: string | undefined = undefined;
+
+    do {
+      const command: ListObjectsV2Command = new ListObjectsV2Command({
+        Bucket: this.bucket,
+        Prefix: cleanPrefix || undefined,
+        ContinuationToken: continuationToken,
+      });
+
+      const response: ListObjectsV2CommandOutput = await this.client.send(command);
+      if (response.Contents) {
+        for (const item of response.Contents) {
+          if (item.Key) {
+            results.push(item.Key);
+          }
+        }
+      }
+      continuationToken = response.NextContinuationToken;
+    } while (continuationToken);
+
+    return results;
   }
 }

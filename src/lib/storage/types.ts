@@ -39,6 +39,12 @@ export interface StorageAdapter {
    * @param key Khóa định danh tệp
    */
   get?(key: string): Promise<Buffer | null>;
+
+  /**
+   * Liệt kê các khóa lưu trữ (hỗ trợ dọn dẹp ảnh mồ côi / di chuyển S3)
+   * @param prefix Tiền tố khóa cần lọc (tùy chọn)
+   */
+  list?(prefix?: string): Promise<string[]>;
 }
 
 export interface StorageKeyComponents {
