@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { initPgListener, orderEventBus, QrOrderEvent } from '@/lib/events';
+import { checkAndEscalateRequests } from '@/lib/service-requests';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,14 +43,16 @@ export async function GET(request: NextRequest) {
       const channelName = `restaurant:${restaurantId}`;
       orderEventBus.on(channelName, handleRestaurantEvent);
 
-      // Heartbeat định kỳ 15 giây
-      const heartbeatInterval = setInterval(() => {
+      // Heartbeat định kỳ 10 giây kèm kích hoạt kiểm tra escalation
+      const heartbeatInterval = setInterval(async () => {
         try {
           controller.enqueue(encoder.encode(': ping\n\n'));
+          // Chạy kiểm tra escalation tự động ngầm
+          await checkAndEscalateRequests();
         } catch {
           clearInterval(heartbeatInterval);
         }
-      }, 15000);
+      }, 10000);
 
       // Dọn dẹp
       request.signal.addEventListener('abort', () => {

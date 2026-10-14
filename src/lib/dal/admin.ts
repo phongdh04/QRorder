@@ -200,13 +200,35 @@ export async function adminBatchConfirmTableOrders(restaurantId: string, tableId
   });
 }
 
+import { getTableColorStatus, TableColorStatus } from '@/lib/service-requests';
+
 /**
- * Lấy danh sách 10 bàn kèm phiên và thống kê trạng thái chi tiết cho Lưới Bàn
+ * Lấy danh sách 10 bàn kèm phiên, khu vực, yêu cầu phục vụ và thống kê trạng thái chi tiết cho Lưới Bàn & Sơ đồ
  */
 export async function adminGetTables(restaurantId: string) {
+  // Lấy ca trực hiện tại đang mở cùng phân công nhân viên
+  const activeShift = await prisma.shift.findFirst({
+    where: {
+      restaurant_id: restaurantId,
+      ended_at: null,
+    },
+    include: {
+      duty_assignments: {
+        where: { on_duty: true },
+        include: {
+          user: {
+            select: { id: true, name: true, role: true, last_seen_at: true },
+          },
+          zone: true,
+        },
+      },
+    },
+  });
+
   const tables = await prisma.table.findMany({
     where: { restaurant_id: restaurantId },
     include: {
+      assigned_zone: true,
       table_sessions: {
         where: { status: 'open' },
         include: {
@@ -218,12 +240,48 @@ export async function adminGetTables(restaurantId: string) {
           },
         },
       },
+      service_requests: {
+        where: {
+          status: { in: ['pending', 'claimed'] },
+        },
+        include: {
+          claimed_by_user: {
+            select: { id: true, name: true, role: true },
+          },
+          order: {
+            include: { order_items: true },
+          },
+        },
+        orderBy: { created_at: 'asc' },
+      },
     },
     orderBy: { name: 'asc' },
   });
 
   return tables.map((t) => {
     const activeSession = t.table_sessions[0] || null;
+    const activeRequests = t.service_requests || [];
+
+    // Tính trạng thái màu chuẩn theo Phần 3 mục 9: Đỏ > Cam > Vàng > Xanh > Xám
+    const colorStatus = getTableColorStatus(Boolean(activeSession), activeRequests);
+
+    // Tính thời gian chờ lâu nhất của yêu cầu đang chờ (giây)
+    let longestWaitSeconds = 0;
+    if (activeRequests.length > 0) {
+      const oldestReqTime = Math.min(
+        ...activeRequests.map((r) => new Date(r.created_at).getTime())
+      );
+      longestWaitSeconds = Math.max(0, Math.floor((Date.now() - oldestReqTime) / 1000));
+    }
+
+    // Nhân viên đang trong ca phụ trách khu này (hoặc linh hoạt toàn bộ khu)
+    const assignedStaffNames = Array.from(
+      new Set(
+        (activeShift?.duty_assignments || [])
+          .filter((da) => da.zone_id === null || (t.zone_id && da.zone_id === t.zone_id))
+          .map((da) => da.user.name)
+      )
+    );
 
     const tAny = t as any;
     const baseTableData = {
@@ -232,10 +290,38 @@ export async function adminGetTables(restaurantId: string) {
       token: t.token,
       is_active: t.is_active,
       zone: (tAny.zone as string) || 'outdoor',
+      zone_id: t.zone_id || null,
+      zoneName: t.assigned_zone?.name || null,
       pos_x: (tAny.pos_x as number | null) ?? null,
       pos_y: (tAny.pos_y as number | null) ?? null,
       shape: (tAny.shape as string) || 'square',
       capacity: (tAny.capacity as number) || 4,
+      colorStatus,
+      longestWaitSeconds,
+      assignedStaffNames,
+      activeRequests: activeRequests.map((req) => ({
+        id: req.id,
+        type: req.type,
+        status: req.status,
+        orderId: req.order_id,
+        claimedBy: req.claimed_by,
+        claimedByName: req.claimed_by_user?.name || null,
+        claimedAt: req.claimed_at,
+        escalatedAt: req.escalated_at,
+        createdAt: req.created_at,
+        order: req.order
+          ? {
+              id: req.order.id,
+              status: req.order.status,
+              items: req.order.order_items.map((item) => ({
+                id: item.id,
+                name: item.name_snapshot,
+                quantity: item.quantity,
+                price: item.price_snapshot,
+              })),
+            }
+          : null,
+      })),
     };
 
     if (!activeSession) {

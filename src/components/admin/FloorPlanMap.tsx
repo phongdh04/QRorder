@@ -131,6 +131,9 @@ export function FloorPlanMap({
         shape: bp.shape,
         capacity: bp.capacity,
         statusType: matchedDbTable?.statusType || 'empty',
+        colorStatus: matchedDbTable?.colorStatus || (matchedDbTable?.statusType === 'empty' ? 'gray' : matchedDbTable?.statusType === 'pending' ? 'orange' : matchedDbTable?.statusType === 'preparing' ? 'yellow' : 'green'),
+        longestWaitSeconds: matchedDbTable?.longestWaitSeconds || 0,
+        assignedStaffNames: matchedDbTable?.assignedStaffNames || [],
         unservedCount: matchedDbTable?.unservedCount || 0,
         totalAmount: matchedDbTable?.totalAmount || 0,
         is_active: matchedDbTable ? matchedDbTable.is_active : true,
@@ -767,32 +770,38 @@ export function FloorPlanMap({
             {visibleTables.map((item) => {
               const isSelected = selectedTableId === item.id;
               const isHovered = hoveredTableId === item.id;
-              const isPending = item.statusType === 'pending';
-              const isPreparing = item.statusType === 'preparing';
-              const isOccupied = item.statusType === 'occupied';
               const isStool = item.shape === 'bar_stool';
+              const color = item.colorStatus || (item.statusType === 'empty' ? 'gray' : item.statusType === 'pending' ? 'orange' : item.statusType === 'preparing' ? 'yellow' : 'green');
+              const isUrgent = color === 'red';
+              const isPending = color === 'orange';
+              const isPreparing = color === 'yellow';
+              const isOccupied = color === 'green';
 
               // Kích thước ô bàn
               const tableWidth = isStool ? 28 : 34;
               const tableHeight = isStool ? 28 : 34;
 
-              // Màu sắc theo trạng thái
+              // Màu sắc theo 5 chuẩn Phần 3 mục 9: Đỏ > Cam > Vàng > Xanh > Xám
               let fillColor = '#181C26';
               let strokeColor = '#334155';
               let textColor = '#94A3B8';
 
-              if (isPending) {
+              if (color === 'red') {
+                fillColor = '#7F1D1D';
+                strokeColor = '#EF4444';
+                textColor = '#FFFFFF';
+              } else if (color === 'orange') {
                 fillColor = '#C2410C';
                 strokeColor = '#FB923C';
                 textColor = '#FFFFFF';
-              } else if (isPreparing) {
-                fillColor = '#B45309';
-                strokeColor = '#FBBF24';
+              } else if (color === 'yellow') {
+                fillColor = '#854D0E';
+                strokeColor = '#FACC15';
                 textColor = '#FFFFFF';
-              } else if (isOccupied) {
-                fillColor = '#1E3A8A';
-                strokeColor = '#60A5FA';
-                textColor = '#DBEAFE';
+              } else if (color === 'green') {
+                fillColor = '#064E3B';
+                strokeColor = '#10B981';
+                textColor = '#A7F3D0';
               }
 
               // Khi hover hoặc select: Đổi viền neon sắc nét
@@ -800,7 +809,7 @@ export function FloorPlanMap({
                 strokeColor = '#F59E0B';
               } else if (isHovered) {
                 strokeColor = '#38BDF8';
-                if (!isOccupied && !isPending && !isPreparing) {
+                if (color === 'gray') {
                   fillColor = '#1E293B';
                 }
               }
@@ -854,14 +863,14 @@ export function FloorPlanMap({
                           pointerEvents="none"
                         />
                       ))}
-                    {/* Vòng lan tỏa (ping ring) nếu có đơn mới */}
-                    {isPending && (
+                    {/* Vòng lan tỏa (ping ring) nếu khẩn cấp (đỏ) hoặc chờ nhận (cam) */}
+                    {(isUrgent || isPending) && (
                       <circle
                         cx="0"
                         cy="0"
                         r="26"
                         fill="none"
-                        stroke="#FB923C"
+                        stroke={isUrgent ? '#EF4444' : '#FB923C'}
                         strokeWidth="2.5"
                         className="animate-ping opacity-75"
                         pointerEvents="none"
@@ -877,7 +886,7 @@ export function FloorPlanMap({
                         fill={fillColor}
                         stroke={strokeColor}
                         strokeWidth={isSelected ? 3.5 : isHovered ? 2.5 : 2}
-                        style={{ filter: isPending ? 'url(#pendingGlow)' : undefined }}
+                        style={{ filter: isUrgent || isPending ? 'url(#pendingGlow)' : undefined }}
                         pointerEvents="none"
                       />
                     ) : (
@@ -890,7 +899,7 @@ export function FloorPlanMap({
                         fill={fillColor}
                         stroke={strokeColor}
                         strokeWidth={isSelected ? 3.5 : isHovered ? 2.5 : 2}
-                        style={{ filter: isPending ? 'url(#pendingGlow)' : undefined }}
+                        style={{ filter: isUrgent || isPending ? 'url(#pendingGlow)' : undefined }}
                         pointerEvents="none"
                       />
                     )}
@@ -908,7 +917,7 @@ export function FloorPlanMap({
                     {/* Tên mã bàn */}
                     <text
                       x="0"
-                      y={isPending || isOccupied ? -1 : 3.5}
+                      y={item.longestWaitSeconds > 0 ? -2 : 3}
                       textAnchor="middle"
                       fill={isHovered ? '#FFFFFF' : textColor}
                       fontSize={item.code.length > 5 ? '8' : '9'}
@@ -918,6 +927,35 @@ export function FloorPlanMap({
                     >
                       {item.code}
                     </text>
+
+                    {/* Huy hiệu thời gian chờ nếu có */}
+                    {item.longestWaitSeconds > 0 && (
+                      <g transform="translate(0, 9)" pointerEvents="none">
+                        <rect
+                          x="-10"
+                          y="-3.5"
+                          width="20"
+                          height="7.5"
+                          rx="3.75"
+                          fill={isUrgent ? '#991B1B' : '#EA580C'}
+                          stroke="#FFFFFF"
+                          strokeWidth="0.5"
+                        />
+                        <text
+                          x="0"
+                          y="1.8"
+                          textAnchor="middle"
+                          fill="#FFFFFF"
+                          fontSize="5.2"
+                          fontWeight="900"
+                          className="font-mono"
+                        >
+                          {item.longestWaitSeconds < 60
+                            ? `${item.longestWaitSeconds}s`
+                            : `${Math.floor(item.longestWaitSeconds / 60)}m`}
+                        </text>
+                      </g>
+                    )}
 
                     {/* Chỉ số món hoặc tiền thu gọn nếu đang có khách */}
                     {(isPending || isPreparing) && (

@@ -12,9 +12,13 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  Clock,
+  CalendarClock,
+  Wifi,
   Wine,
   X,
 } from 'lucide-react';
+import { useAdmin } from '@/context/AdminContext';
 
 interface AdminSidebarProps {
   isCollapsed: boolean;
@@ -38,6 +42,9 @@ export function AdminSidebar({
   onCloseMobile,
 }: AdminSidebarProps) {
   const pathname = usePathname();
+  const { userRole } = useAdmin();
+
+  const isOwner = userRole === 'owner';
 
   const navItems: NavItem[] = [
     {
@@ -46,30 +53,44 @@ export function AdminSidebar({
       icon: LayoutGrid,
     },
     {
-      href: '/admin/revenue',
-      label: 'Doanh thu',
-      icon: TrendingUp,
-    },
-    {
-      href: '/admin/menu',
-      label: 'Thực đơn',
-      icon: UtensilsCrossed,
-    },
-    {
-      href: '/admin/tables',
-      label: 'Bàn & QR',
-      icon: QrCode,
-    },
-    {
-      href: '/admin/store',
-      label: 'Thông tin quán',
-      icon: Store,
+      href: '/admin/shifts',
+      label: 'Ca & phân khu',
+      icon: CalendarClock,
     },
     {
       href: '/admin/staff',
       label: 'Nhân viên',
       icon: Users,
     },
+    {
+      href: '/admin/staff/guide',
+      label: 'Tờ in Wi-Fi',
+      icon: Wifi,
+    },
+    ...(isOwner
+      ? [
+          {
+            href: '/admin/revenue',
+            label: 'Doanh thu',
+            icon: TrendingUp,
+          },
+          {
+            href: '/admin/menu',
+            label: 'Thực đơn',
+            icon: UtensilsCrossed,
+          },
+          {
+            href: '/admin/tables',
+            label: 'Bàn & QR',
+            icon: QrCode,
+          },
+          {
+            href: '/admin/store',
+            label: 'Thông tin quán',
+            icon: Store,
+          },
+        ]
+      : []),
   ];
 
   const sidebarContent = (

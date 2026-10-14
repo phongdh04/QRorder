@@ -10,7 +10,9 @@ import { TableItemData } from '@/components/admin/TableCard';
 import { OrderStatusType } from '@/components/admin/StatusBadge';
 import { AdminToastContainer, ToastMessage } from '@/components/admin/AdminToast';
 import { playChimeSound } from '@/lib/sound';
+import { soundEffects } from '@/lib/sound-effects';
 import { formatVND } from '@/lib/utils';
+import { AlertTriangle, WifiOff, Bell, UserX } from 'lucide-react';
 
 export default function AdminTablesAndOrdersPage() {
   const { isSoundEnabled, setConnectionStatus } = useAdmin();
@@ -21,6 +23,21 @@ export default function AdminTablesAndOrdersPage() {
   const [viewMode, setViewMode] = useState<'map' | 'grid'>('map');
   const [isLoading, setIsLoading] = useState(true);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Cảnh báo quản lý
+  const [alerts, setAlerts] = useState<{
+    escalatedCount: number;
+    escalatedRequests: any[];
+    offlineOnDutyStaff: any[];
+    hasPendingWithNoStaff: boolean;
+    pendingRequestsCount: number;
+  }>({
+    escalatedCount: 0,
+    escalatedRequests: [],
+    offlineOnDutyStaff: [],
+    hasPendingWithNoStaff: false,
+    pendingRequestsCount: 0,
+  });
 
   // Ref giữ trạng thái âm thanh để dùng trong SSE callback không bị stale closure
   const isSoundEnabledRef = useRef(isSoundEnabled);
@@ -99,6 +116,26 @@ export default function AdminTablesAndOrdersPage() {
     }
   }, [tables]);
 
+  const checkAlerts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/alerts/check');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setAlerts(json);
+        }
+      }
+    } catch (err) {
+      console.warn('Lỗi kiểm tra alerts:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkAlerts();
+    const interval = setInterval(checkAlerts, 15000);
+    return () => clearInterval(interval);
+  }, [checkAlerts]);
+
   // 4. Kết nối SSE Realtime tới /api/admin/stream
   useEffect(() => {
     let eventSource: EventSource | null = null;
@@ -113,6 +150,7 @@ export default function AdminTablesAndOrdersPage() {
         // Tải lại dữ liệu mới nhất sau khi nối lại để không bị sót đơn
         fetchTables();
         fetchKitchenQueue();
+        checkAlerts();
       });
 
       // Nhận sự kiện có đơn mới từ khách gọi
@@ -121,12 +159,10 @@ export default function AdminTablesAndOrdersPage() {
           const payload = JSON.parse(event.data);
           const tableName = payload.data?.tableName || 'Khách';
 
-          // Phát âm thanh chuông "ting" nếu bật
           if (isSoundEnabledRef.current) {
             playChimeSound();
           }
 
-          // Hiện popup toast
           addToast(
             'order',
             `Có đơn mới từ ${tableName}!`,
@@ -134,24 +170,95 @@ export default function AdminTablesAndOrdersPage() {
             payload.tableId
           );
 
-          // Cập nhật dữ liệu ngay lập tức
           fetchTables();
           fetchKitchenQueue();
+          checkAlerts();
         } catch (err) {
           console.error('Lỗi xử lý SSE order_created:', err);
         }
+      });
+
+      // Nhận sự kiện yêu cầu phục vụ mới (gọi nhân viên / thanh toán / đơn mới)
+      eventSource.addEventListener('request_created', (event: MessageEvent) => {
+        try {
+          const payload = JSON.parse(event.data);
+          const tableName = payload.data?.tableName || 'Bàn';
+          const type = payload.data?.type;
+
+          if (isSoundEnabledRef.current) {
+            playChimeSound();
+          }
+
+          let title = `Tín hiệu từ ${tableName}`;
+          if (type === 'call_staff') title = `🛎️ ${tableName} gọi nhân viên!`;
+          else if (type === 'request_bill') title = `💳 ${tableName} yêu cầu thanh toán!`;
+
+          addToast('order', title, 'Khách hàng đang cần phục vụ tại bàn.', payload.tableId);
+          fetchTables();
+          checkAlerts();
+        } catch (err) {
+          console.error(err);
+        }
+      });
+
+      // Nhận sự kiện yêu cầu bị escalate (chờ quá lâu chưa ai nhận)
+      eventSource.addEventListener('request_escalated', (event: MessageEvent) => {
+        try {
+          const payload = JSON.parse(event.data);
+          const tableName = payload.data?.tableName || 'Bàn';
+
+          if (isSoundEnabledRef.current) {
+            soundEffects.playTone('urgent');
+          }
+
+          addToast(
+            'error',
+            `🚨 KHẨN CẤP: ${tableName} chờ quá lâu!`,
+            `Yêu cầu đã quá thời gian quy định mà chưa có nhân viên nào nhận xử lý.`,
+            payload.tableId
+          );
+
+          fetchTables();
+          checkAlerts();
+        } catch (err) {
+          console.error(err);
+        }
+      });
+
+      // Nhận sự kiện trạng thái request thay đổi
+      eventSource.addEventListener('request_claimed', () => {
+        fetchTables();
+        checkAlerts();
+      });
+      eventSource.addEventListener('request_released', () => {
+        fetchTables();
+        checkAlerts();
+      });
+      eventSource.addEventListener('request_reassigned', () => {
+        fetchTables();
+        checkAlerts();
+      });
+      eventSource.addEventListener('request_done', () => {
+        fetchTables();
+        checkAlerts();
+      });
+      eventSource.addEventListener('shift_changed', () => {
+        fetchTables();
+        checkAlerts();
       });
 
       // Nhận sự kiện đơn đổi trạng thái
       eventSource.addEventListener('order_status_changed', () => {
         fetchTables();
         fetchKitchenQueue();
+        checkAlerts();
       });
 
       // Nhận sự kiện session bàn thay đổi / đóng thanh toán
       eventSource.addEventListener('session_closed', () => {
         fetchTables();
         fetchKitchenQueue();
+        checkAlerts();
       });
 
       eventSource.onerror = () => {
@@ -407,6 +514,52 @@ export default function AdminTablesAndOrdersPage() {
         </div>
       </div>
 
+      {/* Alert Banners for Manager */}
+      {alerts.escalatedCount > 0 && (
+        <div className="p-4 rounded-2xl bg-red-500/15 border border-red-500/50 flex items-center justify-between gap-3 text-red-200 animate-pulse">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+            <div className="text-xs font-semibold">
+              <strong className="text-white text-sm">CẢNH BÁO KHẨN CẤP:</strong> Có{' '}
+              <span className="font-bold text-white underline">{alerts.escalatedCount} yêu cầu</span> đã quá thời gian quy định tại{' '}
+              <span className="text-white font-bold">{alerts.escalatedRequests.map((r: any) => r.tableName).join(', ')}</span> chưa có nhân viên nhận!
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={fetchTables}
+            className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shrink-0 transition-colors"
+          >
+            Kiểm tra ngay
+          </button>
+        </div>
+      )}
+
+      {alerts.hasPendingWithNoStaff && (
+        <div className="p-4 rounded-2xl bg-orange-500/15 border border-orange-500/40 flex items-center justify-between gap-3 text-orange-200">
+          <div className="flex items-center gap-2.5">
+            <UserX className="w-5 h-5 text-orange-400 shrink-0" />
+            <div className="text-xs font-semibold">
+              <strong className="text-white">CẢNH BÁO CA TRỰC:</strong> Đang có{' '}
+              <span className="font-bold text-white">{alerts.pendingRequestsCount} đơn/yêu cầu</span> chờ nhưng hiện{' '}
+              <span className="text-red-300 font-bold">không có nhân viên nào trong ca trực đang online</span>!
+            </div>
+          </div>
+        </div>
+      )}
+
+      {alerts.offlineOnDutyStaff.length > 0 && (
+        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3 text-amber-200 text-xs">
+          <div className="flex items-center gap-2">
+            <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>
+              Nhân viên trong ca mất kết nối quá thời gian cảnh báo:{' '}
+              <strong className="text-white">{alerts.offlineOnDutyStaff.map((s: any) => s.name).join(', ')}</strong>
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Main Two-Column Layout on Desktop & Tablet Large */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Sơ đồ mặt bằng 2D hoặc Lưới Bàn */}
@@ -447,6 +600,7 @@ export default function AdminTablesAndOrdersPage() {
         onUpdateOrderStatus={handleUpdateOrderStatus}
         onBatchConfirm={handleBatchConfirm}
         onPaySession={handlePaySession}
+        onRefreshData={loadInitialData}
       />
 
       {/* Toast Notifications container */}

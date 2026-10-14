@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { adminToggleStaffActive } from '@/lib/dal/management';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const toggleStaffSchema = z.object({
@@ -17,9 +18,9 @@ export async function PATCH(
       return NextResponse.json({ error: 'Yêu cầu đăng nhập quản trị.' }, { status: 401 });
     }
 
-    if (user.role !== 'owner') {
+    if (user.role !== 'owner' && user.role !== 'manager') {
       return NextResponse.json(
-        { error: 'Chỉ có Chủ quán (Owner) mới có quyền khóa hoặc mở tài khoản nhân viên.' },
+        { error: 'Không có quyền khóa hoặc mở tài khoản nhân viên.' },
         { status: 403 }
       );
     }
@@ -36,8 +37,18 @@ export async function PATCH(
     const updated = await adminToggleStaffActive(
       user.restaurantId,
       params.id,
-      validated.data.is_active
+      validated.data.is_active,
+      user.role
     );
+
+    // Nếu bị khóa tài khoản, vô hiệu hóa toàn bộ push subscriptions của user này
+    if (!validated.data.is_active) {
+      await prisma.pushSubscription.updateMany({
+        where: { user_id: params.id, restaurant_id: user.restaurantId },
+        data: { is_active: false },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       message: validated.data.is_active

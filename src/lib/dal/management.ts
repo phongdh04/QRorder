@@ -377,13 +377,14 @@ export async function adminUpdateStoreInfo(
 }
 
 /**
- * 5. QUẢN LÝ NHÂN VIÊN (STAFF)
+ * 5. QUẢN LÝ NHÂN VIÊN (STAFF & MANAGER)
  */
-export async function adminGetStaffList(restaurantId: string) {
+export async function adminGetStaffList(restaurantId: string, allowedRoles?: string[]) {
+  const roles = allowedRoles && allowedRoles.length > 0 ? allowedRoles : ['owner', 'manager', 'staff'];
   return prisma.user.findMany({
     where: {
       restaurant_id: restaurantId,
-      role: 'staff',
+      role: { in: roles },
     },
     select: {
       id: true,
@@ -391,15 +392,16 @@ export async function adminGetStaffList(restaurantId: string) {
       email: true,
       role: true,
       is_active: true,
+      last_seen_at: true,
       created_at: true,
     },
-    orderBy: { created_at: 'desc' },
+    orderBy: [{ role: 'asc' }, { name: 'asc' }],
   });
 }
 
 export async function adminCreateStaff(
   restaurantId: string,
-  data: { name: string; email: string; password: string }
+  data: { name: string; email: string; password: string; role?: 'staff' | 'manager' }
 ) {
   const cleanEmail = data.email.trim().toLowerCase();
   const cleanName = data.name.trim();
@@ -425,7 +427,7 @@ export async function adminCreateStaff(
       name: cleanName,
       email: cleanEmail,
       password_hash,
-      role: 'staff',
+      role: data.role || 'staff',
       is_active: true,
     },
     select: {
@@ -434,6 +436,7 @@ export async function adminCreateStaff(
       email: true,
       role: true,
       is_active: true,
+      last_seen_at: true,
       created_at: true,
     },
   });
@@ -442,12 +445,22 @@ export async function adminCreateStaff(
 export async function adminToggleStaffActive(
   restaurantId: string,
   userId: string,
-  isActive: boolean
+  isActive: boolean,
+  actorRole: string
 ) {
-  const user = await prisma.user.findFirst({
-    where: { id: userId, restaurant_id: restaurantId, role: 'staff' },
+  const targetUser = await prisma.user.findFirst({
+    where: { id: userId, restaurant_id: restaurantId },
   });
-  if (!user) throw new Error('Tài khoản nhân viên không tồn tại.');
+  if (!targetUser) throw new Error('Tài khoản nhân viên không tồn tại.');
+
+  if (targetUser.role === 'owner') {
+    throw new Error('Không thể khóa tài khoản Chủ quán.');
+  }
+
+  // Manager chỉ được khóa/mở khóa staff
+  if (actorRole === 'manager' && targetUser.role !== 'staff') {
+    throw new Error('Quản lý chỉ có quyền khóa hoặc mở khóa tài khoản nhân viên (staff).');
+  }
 
   return prisma.user.update({
     where: { id: userId },
@@ -456,6 +469,35 @@ export async function adminToggleStaffActive(
       id: true,
       name: true,
       email: true,
+      role: true,
+      is_active: true,
+      last_seen_at: true,
+    },
+  });
+}
+
+export async function adminUpdateStaffRole(
+  restaurantId: string,
+  userId: string,
+  newRole: 'staff' | 'manager'
+) {
+  const targetUser = await prisma.user.findFirst({
+    where: { id: userId, restaurant_id: restaurantId },
+  });
+  if (!targetUser) throw new Error('Tài khoản nhân viên không tồn tại.');
+
+  if (targetUser.role === 'owner') {
+    throw new Error('Không thể thay đổi vai trò của Chủ quán.');
+  }
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: { role: newRole },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
       is_active: true,
     },
   });
