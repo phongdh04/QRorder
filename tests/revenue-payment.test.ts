@@ -1,8 +1,15 @@
+import { describe, it } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { adminPayTableSession, adminReopenTableSession } from '../src/lib/dal/payment';
 import { getVnDayRangeUtc, getVnDateKey } from '../src/lib/tz';
 
 const prisma = new PrismaClient();
+
+describe('Revenue & Payment System', () => {
+  it('chạy đầy đủ các kịch bản thanh toán, hủy món, ranh giới múi giờ VN và audit log', async () => {
+    await runTests();
+  }, 30000);
+});
 
 async function runTests() {
   console.log('====================================================');
@@ -256,15 +263,6 @@ async function runTests() {
   console.log('====================================================\n');
 
   if (failed > 0) {
-    process.exit(1);
+    throw new Error(`${failed} bài kiểm thử thất bại trong revenue-payment.`);
   }
 }
-
-runTests()
-  .catch((e) => {
-    console.error('Lỗi khi chạy test:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
