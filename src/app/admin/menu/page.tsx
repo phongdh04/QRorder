@@ -19,10 +19,24 @@ import {
   Sparkles,
   Layers,
   Image as ImageIcon,
+  HardDrive,
+  Database,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatVND } from '@/lib/utils';
 import { ImageUploadField } from '@/components/admin/ImageUploadField';
+
+interface QuotaData {
+  plan: string;
+  planName: string;
+  usedImages: number;
+  maxImages: number;
+  usedBytes: number;
+  maxBytes: number;
+  percentImages: number;
+  percentBytes: number;
+  displayMode: string;
+}
 
 interface MenuItem {
   id: string;
@@ -69,6 +83,7 @@ export default function AdminMenuPage() {
   const [editingCatName, setEditingCatName] = useState('');
   const [catSubmitting, setCatSubmitting] = useState(false);
   const [catError, setCatError] = useState<string | null>(null);
+  const [quota, setQuota] = useState<QuotaData | null>(null);
 
   // Fetch Menu
   const fetchMenu = async () => {
@@ -76,8 +91,9 @@ export default function AdminMenuPage() {
       const res = await fetch('/api/admin/menu');
       if (res.ok) {
         const json = await res.json();
-        if (json.success && json.menu) {
-          setCategories(json.menu);
+        if (json.success) {
+          if (json.menu) setCategories(json.menu);
+          if (json.quota) setQuota(json.quota);
         }
       }
     } catch (err) {
@@ -408,6 +424,94 @@ export default function AdminMenuPage() {
           </Button>
         </div>
       </div>
+
+      {/* Quota Banner: Thanh hạn mức ảnh và dung lượng theo gói */}
+      {quota && (
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-sm backdrop-blur-sm">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            {/* Left: Thông tin gói & chế độ */}
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
+                <HardDrive className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-bold text-white">{quota.planName}</span>
+                  <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                    {quota.plan.toUpperCase()}
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
+                      quota.displayMode === 'minimal'
+                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    }`}
+                  >
+                    Chế độ: {quota.displayMode === 'minimal' ? 'Tối giản (Minimal)' : 'Có ảnh (Photo)'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Ảnh được lưu tự động 3 biến thể WebP chuẩn 4:3 kèm blurDataURL hiệu ứng cao cấp.
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Progress bars số lượng ảnh và dung lượng */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:w-[420px] shrink-0">
+              {/* Số lượng ảnh */}
+              <div className="space-y-1.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/80">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Số lượng ảnh</span>
+                  </span>
+                  <span className="font-semibold text-slate-200">
+                    {quota.usedImages} / {quota.maxImages} ({quota.percentImages}%)
+                  </span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      quota.percentImages >= 90
+                        ? 'bg-rose-500'
+                        : quota.percentImages >= 75
+                        ? 'bg-amber-500'
+                        : 'bg-blue-500'
+                    }`}
+                    style={{ width: `${quota.percentImages}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Dung lượng MB */}
+              <div className="space-y-1.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/80">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                    <Database className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Dung lượng đã dùng</span>
+                  </span>
+                  <span className="font-semibold text-slate-200">
+                    {(quota.usedBytes / (1024 * 1024)).toFixed(1)} /{' '}
+                    {(quota.maxBytes / (1024 * 1024)).toFixed(0)} MB ({quota.percentBytes}%)
+                  </span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      quota.percentBytes >= 90
+                        ? 'bg-rose-500'
+                        : quota.percentBytes >= 75
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500'
+                    }`}
+                    style={{ width: `${quota.percentBytes}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filter & Search Bar */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">

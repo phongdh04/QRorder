@@ -23,7 +23,9 @@ export async function GET(request: NextRequest) {
     const restaurantId = user.restaurantId;
 
     const menu = await adminGetMenu(restaurantId);
-    return NextResponse.json({ success: true, menu });
+    const { getRestaurantQuotaStats } = await import('@/lib/image/quota');
+    const quota = await getRestaurantQuotaStats(restaurantId);
+    return NextResponse.json({ success: true, menu, quota });
   } catch (error) {
     console.error('Lỗi admin/menu:', error);
     return NextResponse.json({ error: 'Lỗi tải thực đơn.' }, { status: 500 });

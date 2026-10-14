@@ -190,6 +190,37 @@ Sau khi chạy seed, tài khoản quản trị mặc định:
 
 ---
 
+## 📦 Quản Trị Gói Dịch Vụ & Hạn Mức Ảnh (Hệ Thống)
+
+Quản trị viên hệ thống có thể kiểm tra và thay đổi gói dịch vụ (`basic` | `pro`), hạn mức số ảnh và tổng dung lượng lưu trữ của từng nhà hàng thông qua công cụ CLI:
+
+### 1. Xem danh sách nhà hàng và dung lượng sử dụng:
+```bash
+docker compose exec app npx tsx scripts/manage-restaurant-plan.ts list
+```
+
+### 2. Thay đổi gói dịch vụ của quán (áp dụng hạn mức mặc định):
+- **Gói Basic**: Tối đa 30 ảnh, dung lượng 20MB.
+- **Gói Pro**: Tối đa 200 ảnh, dung lượng 150MB.
+```bash
+# Nâng cấp lên gói PRO
+docker compose exec app npx tsx scripts/manage-restaurant-plan.ts set <id-hoặc-slug> pro
+
+# Đổi về gói BASIC
+docker compose exec app npx tsx scripts/manage-restaurant-plan.ts set <id-hoặc-slug> basic
+```
+
+### 3. Tùy chỉnh hạn mức riêng biệt hoặc chuyển chế độ hiển thị:
+```bash
+# Cấp hạn mức đặc biệt: tối đa 500 ảnh, 300MB
+docker compose exec app npx tsx scripts/manage-restaurant-plan.ts set <id-hoặc-slug> pro --images 500 --bytes 300
+
+# Chuyển chế độ hiển thị menu (photo hoặc minimal)
+docker compose exec app npx tsx scripts/manage-restaurant-plan.ts set <id-hoặc-slug> basic --mode minimal
+```
+
+---
+
 ## 💾 Cơ Chế Sao Lưu & Khôi Phục Dữ Liệu
 
 ### 1. Tự động sao lưu định kỳ
