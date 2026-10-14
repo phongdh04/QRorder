@@ -16,19 +16,25 @@ export function generateRawInviteToken(): string {
  */
 export async function createStaffInvite(params: {
   restaurantId: string;
-  createdByUserId: string;
+  createdBy?: string;
+  createdByUserId?: string;
+  role?: 'staff' | 'manager';
+  name?: string;
+  expiresInHours?: number;
 }): Promise<{ rawToken: string; expiresAt: Date; inviteId: string }> {
-  const { restaurantId, createdByUserId } = params;
+  const { restaurantId } = params;
+  const createdBy = params.createdBy || params.createdByUserId || 'system';
+  const hours = params.expiresInHours ?? 24;
   const rawToken = generateRawInviteToken();
   const tokenHash = hashInviteToken(rawToken);
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 giờ
+  const expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000);
 
   const invite = await prisma.staffInvite.create({
     data: {
       restaurant_id: restaurantId,
       token_hash: tokenHash,
       expires_at: expiresAt,
-      created_by: createdByUserId,
+      created_by: createdBy,
     },
   });
 
@@ -45,13 +51,14 @@ export async function createStaffInvite(params: {
 export async function consumeStaffInvite(params: {
   rawToken: string;
   email: string;
-  name: string;
   password: string;
+  name?: string;
 }): Promise<
   | { success: true; message: string; user: any }
-  | { success: false; error: string; code: string }
+  | { success: false; error: string; message: string; code: string }
 > {
-  const { rawToken, email, name, password } = params;
+  const { rawToken, email, password } = params;
+  const name = params.name || 'Nhân viên';
   const tokenHash = hashInviteToken(rawToken);
   const now = new Date();
 
@@ -61,15 +68,30 @@ export async function consumeStaffInvite(params: {
   });
 
   if (!invite) {
-    return { success: false, code: 'INVALID_TOKEN', error: 'Liên kết mời không tồn tại hoặc không hợp lệ' };
+    return {
+      success: false,
+      code: 'INVITE_NOT_FOUND',
+      error: 'Liên kết mời không tồn tại hoặc không hợp lệ',
+      message: 'Liên kết mời không tồn tại hoặc không hợp lệ',
+    };
   }
 
   if (invite.used_at) {
-    return { success: false, code: 'ALREADY_USED', error: 'Liên kết mời này đã được sử dụng trước đó' };
+    return {
+      success: false,
+      code: 'INVITE_USED',
+      error: 'Liên kết mời này đã được sử dụng trước đó',
+      message: 'Liên kết mời này đã được sử dụng trước đó',
+    };
   }
 
   if (invite.expires_at < now) {
-    return { success: false, code: 'EXPIRED', error: 'Liên kết mời đã hết hạn (chỉ có hiệu lực trong 24 giờ)' };
+    return {
+      success: false,
+      code: 'INVITE_EXPIRED',
+      error: 'Liên kết mời đã hết hạn (chỉ có hiệu lực trong 24 giờ)',
+      message: 'Liên kết mời đã hết hạn (chỉ có hiệu lực trong 24 giờ)',
+    };
   }
 
   // Kiểm tra email trùng
@@ -78,7 +100,12 @@ export async function consumeStaffInvite(params: {
   });
 
   if (existingUser) {
-    return { success: false, code: 'EMAIL_EXISTS', error: 'Email này đã tồn tại trong hệ thống' };
+    return {
+      success: false,
+      code: 'EMAIL_EXISTS',
+      error: 'Email này đã tồn tại trong hệ thống',
+      message: 'Email này đã tồn tại trong hệ thống',
+    };
   }
 
   const passwordHash = await hashPassword(password);
@@ -116,6 +143,7 @@ export async function consumeStaffInvite(params: {
       name: newUser.name,
       role: newUser.role,
       restaurantId: newUser.restaurant_id,
+      is_active: newUser.is_active,
     },
   };
 }
