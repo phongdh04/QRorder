@@ -1,9 +1,11 @@
+export type UserRole = 'owner' | 'manager' | 'staff';
+
 export interface SessionPayload {
   userId: string;
   restaurantId: string;
   email: string;
   name: string;
-  role: 'owner' | 'staff';
+  role: UserRole;
 }
 
 export type OrderStatus = 'pending' | 'preparing' | 'served' | 'cancelled';

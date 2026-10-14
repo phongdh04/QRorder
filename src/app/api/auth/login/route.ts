@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       restaurantId: user.restaurant_id,
       email: user.email,
       name: user.name,
-      role: user.role as 'owner' | 'staff',
+      role: user.role as any,
     });
 
     const response = NextResponse.json({

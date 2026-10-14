@@ -36,12 +36,28 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
   }
 }
 
-export async function getCurrentUser(): Promise<SessionPayload | null> {
+export async function getCurrentUser(verifyDb = false): Promise<SessionPayload | null> {
   try {
     const cookieStore = cookies();
     const token = cookieStore.get(COOKIE_NAME)?.value;
     if (!token) return null;
-    return await verifySessionToken(token);
+    const payload = await verifySessionToken(token);
+    if (!payload) return null;
+
+    if (verifyDb) {
+      const { prisma } = await import('@/lib/prisma');
+      const user = await prisma.user.findUnique({
+        where: { id: payload.userId },
+        select: { id: true, is_active: true, role: true, restaurant_id: true },
+      });
+      // Nếu tài khoản không tồn tại hoặc đã bị khóa (is_active = false)
+      if (!user || !user.is_active || user.restaurant_id !== payload.restaurantId) {
+        return null;
+      }
+      payload.role = user.role as any;
+    }
+
+    return payload;
   } catch {
     return null;
   }

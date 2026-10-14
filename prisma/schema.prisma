@@ -37,9 +37,10 @@ model User {
   email         String   @unique
   password_hash String
   name          String
-  role          String   @default("staff") // "owner" | "staff"
-  is_active     Boolean  @default(true)
-  created_at    DateTime @default(now())
+  role          String    @default("staff") // "owner" | "manager" | "staff"
+  is_active     Boolean   @default(true)
+  last_seen_at  DateTime?
+  created_at    DateTime  @default(now())
 
   restaurant    Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade)
   audit_logs    AuditLog[]
