@@ -997,8 +997,24 @@ export function FloorPlanMap({
               >
                 {(() => {
                   const showBelow = activeHovered.y < 190;
-                  const boxWidth = 200;
-                  const boxHeight = 118;
+
+                  // Trích xuất món ăn của bàn nếu có
+                  const hoveredOrders = activeHovered.dbTable?.activeSession?.orders?.filter((o: any) => o.status !== 'cancelled') || [];
+                  const hoveredDishMap = new Map<string, number>();
+                  hoveredOrders.forEach((o: any) => {
+                    o.order_items?.forEach((it: any) => {
+                      const k = it.name_snapshot;
+                      hoveredDishMap.set(k, (hoveredDishMap.get(k) || 0) + it.quantity);
+                    });
+                  });
+                  const hoveredDishesList = Array.from(hoveredDishMap.entries());
+                  const hasDishes = hoveredDishesList.length > 0;
+                  const dishesPreviewText = hasDishes
+                    ? hoveredDishesList.slice(0, 2).map(([name, qty]) => `${qty}x ${name}`).join(', ') + (hoveredDishesList.length > 2 ? ` (+${hoveredDishesList.length - 2})` : '')
+                    : '';
+
+                  const boxWidth = hasDishes ? 220 : 200;
+                  const boxHeight = hasDishes ? 134 : 118;
                   let boxX = -boxWidth / 2;
 
                   // Đảm bảo không tràn viền trái hoặc viền phải viewBox
@@ -1200,17 +1216,37 @@ export function FloorPlanMap({
                         </>
                       )}
 
+                      {/* Hiển thị tóm tắt món ăn nếu bàn đã gọi món */}
+                      {hasDishes && (
+                        <>
+                          <text x={boxX + 14} y={boxY + 110} fill="#64748B" fontSize="10" pointerEvents="none">
+                            Món đang gọi:
+                          </text>
+                          <text
+                            x={boxX + boxWidth - 14}
+                            y={boxY + 110}
+                            textAnchor="end"
+                            fill="#FDE68A"
+                            fontSize="10"
+                            fontWeight="600"
+                            pointerEvents="none"
+                          >
+                            {dishesPreviewText.length > 22 ? dishesPreviewText.slice(0, 20) + '...' : dishesPreviewText}
+                          </text>
+                        </>
+                      )}
+
                       {/* Gợi ý bấm */}
                       <text
                         x={boxX + boxWidth / 2}
-                        y={boxY + 109}
+                        y={boxY + (hasDishes ? 126 : 109)}
                         textAnchor="middle"
                         fill="#64748B"
                         fontSize="8.5"
                         fontWeight="600"
                         pointerEvents="none"
                       >
-                        Bấm để mở chi tiết & gọi món
+                        Bấm để xem cụ thể món ăn & chi tiết
                       </text>
                     </g>
                   );
