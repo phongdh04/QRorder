@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { getTableColorStatus, TableColorStatus } from '@/lib/service-requests';
 
 /**
  * DATA ACCESS LAYER (DAL) CHO ADMIN / STAFF
@@ -200,7 +201,6 @@ export async function adminBatchConfirmTableOrders(restaurantId: string, tableId
   });
 }
 
-import { getTableColorStatus, TableColorStatus } from '@/lib/service-requests';
 
 /**
  * Lấy danh sách 10 bàn kèm phiên, khu vực, yêu cầu phục vụ và thống kê trạng thái chi tiết cho Lưới Bàn & Sơ đồ
