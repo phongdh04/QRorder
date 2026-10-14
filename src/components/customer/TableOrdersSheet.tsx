@@ -241,29 +241,33 @@ export function TableOrdersSheet({
 
                       {/* Items in this order */}
                       <div className="space-y-2 pt-1 border-t border-[var(--border)]">
-                        {order.order_items?.map((item: any) => (
-                          <div
-                            key={item.id}
-                            className="flex justify-between items-start text-xs font-sans"
-                          >
-                            <div className="flex-1 pr-2">
-                              <span className="text-[var(--text)] font-medium">
-                                {item.name_snapshot}{' '}
-                                <span className="text-[var(--accent)] font-bold">
-                                  ×{item.quantity}
+                        {(order.order_items || order.items || []).map((item: any) => {
+                          const itemName = item.name_snapshot || item.name || 'Món';
+                          const itemPrice = item.price_snapshot ?? item.price ?? 0;
+                          return (
+                            <div
+                              key={item.id}
+                              className="flex justify-between items-start text-xs font-sans"
+                            >
+                              <div className="flex-1 pr-2">
+                                <span className="text-[var(--text)] font-medium">
+                                  {itemName}{' '}
+                                  <span className="text-[var(--accent)] font-bold">
+                                    ×{item.quantity}
+                                  </span>
                                 </span>
+                                {item.note && (
+                                  <p className="text-[11px] text-[var(--muted)] italic mt-0.5">
+                                    Ghi chú: {item.note}
+                                  </p>
+                                )}
+                              </div>
+                              <span className="text-[var(--muted)] font-medium shrink-0">
+                                {formatVND(itemPrice * item.quantity)}
                               </span>
-                              {item.note && (
-                                <p className="text-[11px] text-[var(--muted)] italic mt-0.5">
-                                  Ghi chú: {item.note}
-                                </p>
-                              )}
                             </div>
-                            <span className="text-[var(--muted)] font-medium shrink-0">
-                              {formatVND(item.price_snapshot * item.quantity)}
-                            </span>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
 
                       {/* General order note */}

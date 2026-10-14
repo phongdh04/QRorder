@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { CustomerPublicMenuData, CustomerPublicItem } from '@/lib/dal/customer';
 import { useCart } from '@/hooks/useCart';
 import { useTableRealtime } from '@/hooks/useTableRealtime';
@@ -32,9 +32,25 @@ export function CustomerView({ data }: CustomerViewProps) {
   const [orderSuccessData, setOrderSuccessData] = useState<any | null>(null);
   const [isThankYouOpen, setIsThankYouOpen] = useState(false);
 
-  // Dữ liệu đơn hàng & tổng tiền của phiên hiện tại
-  const [sessionOrders, setSessionOrders] = useState<any[]>([]);
-  const [sessionTotal, setSessionTotal] = useState<number>(0);
+  // Dữ liệu đơn hàng & tổng tiền của phiên hiện tại (khởi tạo ngay từ data.activeSession)
+  const [sessionOrders, setSessionOrders] = useState<any[]>(data.activeSession?.orders || []);
+  const [sessionTotal, setSessionTotal] = useState<number>(data.activeSession?.total || 0);
+
+  // Tính tổng số lượng món đã đặt trong các đợt gọi
+  const orderedItemsCount = useMemo(() => {
+    return sessionOrders.reduce((sum, order) => {
+      if (order.status === 'cancelled') return sum;
+      const items = order.order_items || order.items || [];
+      return sum + items.reduce((s: number, i: any) => s + (i.quantity || 1), 0);
+    }, 0);
+  }, [sessionOrders]);
+
+  // Kiểm tra xem có đơn nào đang chờ duyệt hoặc đang pha chế không
+  const hasActiveOrders = useMemo(() => {
+    return sessionOrders.some(
+      (o) => o.status === 'pending' || o.status === 'preparing'
+    );
+  }, [sessionOrders]);
 
   const isClickScrollingRef = useRef(false);
 
@@ -215,16 +231,19 @@ export function CustomerView({ data }: CustomerViewProps) {
           tableName={data.table.name}
           logoUrl={data.restaurant.logoUrl}
           coverImageUrl={data.restaurant.coverImageUrl}
-          ordersCount={sessionOrders.length}
+          ordersCount={orderedItemsCount > 0 ? orderedItemsCount : sessionOrders.length}
           onOpenOrders={() => setIsOrdersSheetOpen(true)}
         />
 
-        {/* Sticky Category Navigation */}
+        {/* Sticky Category Navigation kèm nút xem đơn ghim cố định */}
         {categories.length > 0 && (
           <CategoryNav
             categories={categories.map((c) => ({ id: c.id, name: c.name }))}
             activeId={activeCategoryId}
             onSelectCategory={handleSelectCategory}
+            orderedItemsCount={orderedItemsCount}
+            hasActiveOrders={hasActiveOrders}
+            onOpenOrders={() => setIsOrdersSheetOpen(true)}
           />
         )}
 
@@ -253,11 +272,16 @@ export function CustomerView({ data }: CustomerViewProps) {
         {/* Footer */}
         <Footer restaurantName={data.restaurant.name} />
 
-        {/* Thanh giỏ hàng nổi ở đáy màn hình */}
+        {/* Thanh nổi ở đáy màn hình: Giỏ hàng chưa gửi & Nút xem các món đã đặt */}
         <FloatingCartBar
           totalCount={cart.totalCount}
           totalAmount={cart.totalAmount}
           onOpenCart={() => setIsCartOpen(true)}
+          ordersCount={sessionOrders.length}
+          orderedItemsCount={orderedItemsCount}
+          sessionTotal={sessionTotal}
+          hasActiveOrders={hasActiveOrders}
+          onOpenOrders={() => setIsOrdersSheetOpen(true)}
         />
 
         {/* Bottom Sheet: Chi tiết món */}

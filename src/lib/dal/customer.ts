@@ -15,6 +15,30 @@ export interface CustomerPublicCategory {
   items: CustomerPublicItem[];
 }
 
+export interface CustomerOrderItemData {
+  id: string;
+  name_snapshot: string;
+  price_snapshot: number;
+  quantity: number;
+  note?: string | null;
+}
+
+export interface CustomerOrderData {
+  id: string;
+  status: string;
+  note?: string | null;
+  cancel_reason?: string | null;
+  created_at: string;
+  order_items: CustomerOrderItemData[];
+}
+
+export interface CustomerActiveSessionData {
+  id: string;
+  status: string;
+  total: number;
+  orders: CustomerOrderData[];
+}
+
 export interface CustomerPublicMenuData {
   table: {
     name: string;
@@ -26,6 +50,7 @@ export interface CustomerPublicMenuData {
     coverImageUrl?: string | null;
     theme?: Record<string, any> | null;
   };
+  activeSession?: CustomerActiveSessionData | null;
   categories: CustomerPublicCategory[];
 }
 
@@ -40,7 +65,7 @@ export async function customerGetPublicMenuByToken(
     return null;
   }
 
-  // 1. Tìm bàn theo token (chỉ lấy bàn is_active = true)
+  // 1. Tìm bàn theo token (chỉ lấy bàn is_active = true) cùng phiên mở hiện tại
   const table = await prisma.table.findFirst({
     where: {
       token: token.trim(),
@@ -53,6 +78,19 @@ export async function customerGetPublicMenuByToken(
           name: true,
           logo_url: true,
           theme: true,
+        },
+      },
+      table_sessions: {
+        where: { status: 'open' },
+        orderBy: { opened_at: 'desc' },
+        take: 1,
+        include: {
+          orders: {
+            orderBy: { created_at: 'desc' },
+            include: {
+              order_items: true,
+            },
+          },
         },
       },
     },
@@ -100,6 +138,7 @@ export async function customerGetPublicMenuByToken(
   }));
 
   const themeObj = (table.restaurant.theme as Record<string, any>) || {};
+  const activeSession = table.table_sessions?.[0] || null;
 
   return {
     table: {
@@ -112,6 +151,27 @@ export async function customerGetPublicMenuByToken(
       coverImageUrl: themeObj.cover_image_url || null,
       theme: themeObj,
     },
+    activeSession: activeSession
+      ? {
+          id: activeSession.id,
+          status: activeSession.status,
+          total: activeSession.total,
+          orders: activeSession.orders.map((o) => ({
+            id: o.id,
+            status: o.status,
+            note: o.note,
+            cancel_reason: o.cancel_reason,
+            created_at: o.created_at.toISOString(),
+            order_items: o.order_items.map((i) => ({
+              id: i.id,
+              name_snapshot: i.name_snapshot,
+              price_snapshot: i.price_snapshot,
+              quantity: i.quantity,
+              note: i.note,
+            })),
+          })),
+        }
+      : null,
     categories: cleanCategories,
   };
 }

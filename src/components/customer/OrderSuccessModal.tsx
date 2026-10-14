@@ -106,7 +106,12 @@ export function OrderSuccessModal({
               }}
               className="w-full h-11 rounded-xl bg-[var(--accent)] text-[#0B0B0C] text-xs uppercase tracking-[0.18em] font-semibold flex items-center justify-center gap-1.5 hover:brightness-105 active:scale-[0.99] transition-all shadow-md shadow-[var(--accent)]/15"
             >
-              <span>Xem Đơn Của Bàn Tôi</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                <path d="M3 6h18" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
+              <span>Xem Các Món Đã Đặt</span>
             </button>
 
             <button
@@ -114,9 +119,13 @@ export function OrderSuccessModal({
               onClick={onClose}
               className="w-full h-10 rounded-xl bg-transparent text-[var(--muted)] hover:text-[var(--text)] text-xs uppercase tracking-[0.15em] font-medium transition-colors"
             >
-              Tiếp tục xem thực đơn
+              Tiếp tục gọi thêm món
             </button>
           </div>
+
+          <p className="text-[11px] text-[var(--muted)]/80 font-light pt-1">
+            💡 Bạn có thể xem lại chi tiết các món đã gọi bất kỳ lúc nào qua thanh trạng thái ở đáy màn hình.
+          </p>
         </motion.div>
       </div>
     </AnimatePresence>
