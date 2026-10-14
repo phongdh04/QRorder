@@ -42,10 +42,13 @@ services:
       NODE_ENV: "development"
       NEXT_TELEMETRY_DISABLED: 1
       WATCHPACK_POLLING: "true"
+      VAPID_PUBLIC_KEY: "${VAPID_PUBLIC_KEY:-BDCypCIFtDcfzFm0FtXPCb2kGUsvMfdx08vrfmdz0tLmAOFrZTsLsHcQmpRr4cliAz1G039NI7uLdlSCwQ-ZGxQ}"
+      VAPID_PRIVATE_KEY: "${VAPID_PRIVATE_KEY:-WHFNKKKDPYejGxW28r9VasBwXDxVYkEZQ33s3qFvhxU}"
+      VAPID_SUBJECT: "${VAPID_SUBJECT:-mailto:admin@demobar.vn}"
     volumes:
       - .:/app
       - /app/node_modules
-      - /app/.next
+      - next_cache:/app/.next
       - uploads_data:/app/public/uploads
     command: sh -c "sh /app/scripts/entrypoint.sh"
     depends_on:
@@ -73,4 +76,6 @@ volumes:
   uploads_data:
     driver: local
   minio_data:
+    driver: local
+  next_cache:
     driver: local

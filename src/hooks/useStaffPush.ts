@@ -36,7 +36,7 @@ export function useStaffPush() {
 
     // Đăng ký Service Worker
     navigator.serviceWorker
-      .register('/sw.js', { scope: '/staff' })
+      .register('/sw.js', { scope: '/' })
       .then(async (reg) => {
         setSwRegistration(reg);
 
@@ -86,11 +86,25 @@ export function useStaffPush() {
         };
       }
 
-      // Lấy registration
+      // Lấy registration an toàn với timeout 3s chống treo Promise
       let reg = swRegistration;
       if (!reg) {
-        reg = await navigator.serviceWorker.ready;
-        setSwRegistration(reg);
+        try {
+          reg = await Promise.race([
+            navigator.serviceWorker.ready,
+            new Promise<any>((_, reject) =>
+              setTimeout(() => reject(new Error('Service Worker timeout')), 3000)
+            ),
+          ]);
+          if (reg) setSwRegistration(reg);
+        } catch {
+          reg = null;
+        }
+      }
+
+      if (!reg) {
+        setIsLoading(false);
+        return { success: false, error: 'Service Worker chưa sẵn sàng trên trình duyệt' };
       }
 
       // Lấy VAPID Key nếu chưa có

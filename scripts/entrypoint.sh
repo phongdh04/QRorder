@@ -12,8 +12,12 @@ if [ ! -d "node_modules/@prisma" ] || [ ! -d "node_modules/next" ]; then
 fi
 
 # 2. Sinh Prisma Client
-echo "⚙️  Sinh Prisma client..."
-npx prisma generate
+if [ ! -f "node_modules/.prisma/client/index.js" ]; then
+  echo "⚙️  Sinh Prisma client..."
+  npx prisma generate || true
+else
+  echo "✓ Prisma client đã sẵn sàng."
+fi
 
 # 3. Đẩy schema vào cơ sở dữ liệu Postgres
 echo "🗄️  Đồng bộ Database Schema (Prisma db push)..."

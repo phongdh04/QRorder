@@ -76,6 +76,13 @@ export function StaffPortalView({ user }: StaffPortalProps) {
   // Lưu số lượng pending trước đó để phát hiện việc mới
   const prevPendingCountRef = useRef<number>(0);
 
+  // Khôi phục trạng thái ca trực từ localStorage khi tải trang
+  useEffect(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('staff_on_duty') === 'true') {
+      setIsOnDuty(true);
+    }
+  }, []);
+
   // 1. Tải danh sách yêu cầu từ API
   const fetchRequests = useCallback(async () => {
     try {
@@ -86,6 +93,12 @@ export function StaffPortalView({ user }: StaffPortalProps) {
         if (json.data.userAssignment !== undefined) {
           setUserAssignment(json.data.userAssignment);
           userAssignmentRef.current = json.data.userAssignment;
+          if (json.data.userAssignment?.on_duty) {
+            setIsOnDuty(true);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('staff_on_duty', 'true');
+            }
+          }
         }
 
         const newPending: RequestItem[] = json.data.pending || [];
@@ -198,32 +211,68 @@ export function StaffPortalView({ user }: StaffPortalProps) {
     soundManager.setMuted(nextMuted);
   };
 
-  // 5. Thao tác "Bắt đầu ca" (Một lần chạm: mở khóa âm thanh, xin quyền push, xin wake lock)
+  // 5. Thao tác "Bắt đầu ca" (Một lần chạm: mở khóa âm thanh, xin quyền push, xin wake lock, check-in lên máy chủ)
   const handleStartShift = async () => {
-    // a. Mở khóa AudioContext
-    soundManager.unlockAudio();
-    soundManager.playTone('normal');
-
-    // b. Bật Wake Lock
-    requestWakeLock();
-
-    // c. Xin quyền thông báo và đăng ký Web Push
-    if (permission !== 'granted') {
-      await requestPermissionAndSubscribe();
-    }
-
+    // a. Cập nhật ngay trạng thái giao diện và lưu localStorage để tránh phụ thuộc vào mạng
     setIsOnDuty(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('staff_on_duty', 'true');
+    }
     setActionNotice({ message: 'Đã sẵn sàng vào ca nhận đơn!', type: 'info' });
     setTimeout(() => setActionNotice(null), 3000);
+
+    // b. Mở khóa AudioContext (bọc try/catch không làm gãy luồng)
+    try {
+      soundManager.unlockAudio();
+      soundManager.playTone('normal');
+    } catch (e) {
+      console.warn('Lỗi mở khóa âm thanh:', e);
+    }
+
+    // c. Bật Wake Lock giữ màn hình luôn sáng
+    try {
+      requestWakeLock();
+    } catch (e) {
+      console.warn('Lỗi bật wake lock:', e);
+    }
+
+    // d. Gửi check-in ca trực lên máy chủ
+    try {
+      await fetch('/api/staff/shift/checkin', { method: 'POST' });
+    } catch (e) {
+      console.warn('Lỗi ghi nhận checkin ca trực:', e);
+    }
+
+    // e. Xin quyền thông báo và đăng ký Web Push bất đồng bộ (chạy nền, không chặn giao diện)
+    try {
+      if (permission !== 'granted') {
+        requestPermissionAndSubscribe().catch((pushErr) => {
+          console.warn('Không thể đăng ký web push:', pushErr);
+        });
+      }
+    } catch (e) {
+      console.warn('Lỗi push notification:', e);
+    }
+
+    // f. Tải lại danh sách việc
     fetchRequests();
   };
 
-  const handleEndShift = () => {
+  const handleEndShift = async () => {
     soundManager.stopAlarm();
     setIsAlarmActive(false);
     setIsOnDuty(false);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('staff_on_duty');
+    }
     setActionNotice({ message: 'Đã kết thúc ca làm việc.', type: 'info' });
     setTimeout(() => setActionNotice(null), 3000);
+
+    try {
+      await fetch('/api/staff/shift/checkout', { method: 'POST' });
+    } catch (e) {
+      console.warn('Lỗi checkout ca trực:', e);
+    }
   };
 
   // 6. NHẬN VIỆC (Optimistic UI - phản hồi tức thì)
