@@ -422,14 +422,14 @@ export function FloorPlanMap({
 
               {/* Vòng đệm mờ phía trong lục giác tạo chiều sâu */}
               <polygon
-                points="500,210 750,340 750,650 500,790 250,650 250,340"
+                points="500,200 750,320 750,615 500,740 250,615 250,320"
                 fill="none"
                 stroke="rgba(16, 185, 129, 0.12)"
                 strokeWidth="1"
               />
 
               {/* Huy hiệu & Tiêu đề Khu Ngoài Trời */}
-              <g transform="translate(500, 208)">
+              <g transform="translate(500, 198)">
                 <rect
                   x="-125"
                   y="-14"
@@ -457,12 +457,12 @@ export function FloorPlanMap({
 
               {/* Biểu tượng cây trang trí tại 6 góc lục giác */}
               {[
-                { x: 500, y: 190 },
-                { x: 770, y: 330 },
-                { x: 770, y: 670 },
-                { x: 500, y: 810 },
-                { x: 230, y: 670 },
-                { x: 230, y: 330 },
+                { x: 500, y: 180 },
+                { x: 770, y: 310 },
+                { x: 770, y: 630 },
+                { x: 500, y: 760 },
+                { x: 230, y: 630 },
+                { x: 230, y: 310 },
               ].map((pt, idx) => (
                 <circle
                   key={`hex-corner-${idx}`}

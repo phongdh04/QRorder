@@ -83,8 +83,8 @@ export const VENUE_ZONES: ZoneMeta[] = [
 // Định nghĩa tọa độ đa giác 6 cạnh (Hexagon) trung tâm (viewBox: 1000 x 1000)
 export const HEXAGON_CONFIG = {
   // 6 đỉnh của hình lục giác đối xứng thẳng đứng
-  points: '500,190 770,330 770,670 500,810 230,670 230,330',
-  center: { x: 500, y: 500 },
+  points: '500,180 770,310 770,630 500,760 230,630 230,310',
+  center: { x: 500, y: 470 },
   label: 'KHU VỰC NGOÀI TRỜI (OPEN AIR)',
   subLabel: 'Vùng lục giác 33 bàn trung tâm',
 };
@@ -114,20 +114,20 @@ export const VENUE_LANDMARKS = {
   },
   // Quầy Bar chính ở phía dưới
   barCounter: {
-    x: 230,
-    y: 890,
-    width: 440,
-    height: 75,
+    x: 210,
+    y: 905,
+    width: 470,
+    height: 70,
     title: 'QUẦY BAR',
     subTitle: 'COCKTAIL & DRAFT BEER',
     icon: '🍸',
   },
   // Quầy Thanh toán cạnh quầy bar
   cashier: {
-    x: 690,
-    y: 890,
-    width: 170,
-    height: 75,
+    x: 705,
+    y: 905,
+    width: 175,
+    height: 70,
     title: 'QUẦY THANH TOÁN',
     subTitle: 'CASHIER / POS',
     icon: '💳',
@@ -155,55 +155,55 @@ export interface TableBlueprint {
  */
 const OUTDOOR_TABLES: TableBlueprint[] = [
   // Hàng 1 (Đỉnh lục giác) - 1 bàn
-  { name: 'Bàn 01 (NT-01)', code: 'NT-01', zone: 'outdoor', x: 500, y: 245, shape: 'square', capacity: 4 },
+  { name: 'Bàn 01 (NT-01)', code: 'NT-01', zone: 'outdoor', x: 500, y: 228, shape: 'square', capacity: 4 },
 
   // Hàng 2 - 3 bàn
-  { name: 'Bàn 02 (NT-02)', code: 'NT-02', zone: 'outdoor', x: 415, y: 300, shape: 'square', capacity: 4 },
-  { name: 'Bàn 03 (NT-03)', code: 'NT-03', zone: 'outdoor', x: 500, y: 300, shape: 'square', capacity: 4 },
-  { name: 'Bàn 04 (NT-04)', code: 'NT-04', zone: 'outdoor', x: 585, y: 300, shape: 'square', capacity: 4 },
+  { name: 'Bàn 02 (NT-02)', code: 'NT-02', zone: 'outdoor', x: 415, y: 284, shape: 'square', capacity: 4 },
+  { name: 'Bàn 03 (NT-03)', code: 'NT-03', zone: 'outdoor', x: 500, y: 284, shape: 'square', capacity: 4 },
+  { name: 'Bàn 04 (NT-04)', code: 'NT-04', zone: 'outdoor', x: 585, y: 284, shape: 'square', capacity: 4 },
 
   // Hàng 3 - 5 bàn
-  { name: 'Bàn 05 (NT-05)', code: 'NT-05', zone: 'outdoor', x: 310, y: 365, shape: 'square', capacity: 4 },
-  { name: 'Bàn 06 (NT-06)', code: 'NT-06', zone: 'outdoor', x: 405, y: 365, shape: 'square', capacity: 4 },
-  { name: 'Bàn 07 (NT-07)', code: 'NT-07', zone: 'outdoor', x: 500, y: 365, shape: 'square', capacity: 4 },
-  { name: 'Bàn 08 (NT-08)', code: 'NT-08', zone: 'outdoor', x: 595, y: 365, shape: 'square', capacity: 4 },
-  { name: 'Bàn 09 (NT-09)', code: 'NT-09', zone: 'outdoor', x: 690, y: 365, shape: 'square', capacity: 4 },
+  { name: 'Bàn 05 (NT-05)', code: 'NT-05', zone: 'outdoor', x: 310, y: 344, shape: 'square', capacity: 4 },
+  { name: 'Bàn 06 (NT-06)', code: 'NT-06', zone: 'outdoor', x: 405, y: 344, shape: 'square', capacity: 4 },
+  { name: 'Bàn 07 (NT-07)', code: 'NT-07', zone: 'outdoor', x: 500, y: 344, shape: 'square', capacity: 4 },
+  { name: 'Bàn 08 (NT-08)', code: 'NT-08', zone: 'outdoor', x: 595, y: 344, shape: 'square', capacity: 4 },
+  { name: 'Bàn 09 (NT-09)', code: 'NT-09', zone: 'outdoor', x: 690, y: 344, shape: 'square', capacity: 4 },
 
   // Hàng 4 - 5 bàn
-  { name: 'Bàn 10 (NT-10)', code: 'NT-10', zone: 'outdoor', x: 310, y: 430, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-11', code: 'NT-11', zone: 'outdoor', x: 405, y: 430, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-12', code: 'NT-12', zone: 'outdoor', x: 500, y: 430, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-13', code: 'NT-13', zone: 'outdoor', x: 595, y: 430, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-14', code: 'NT-14', zone: 'outdoor', x: 690, y: 430, shape: 'square', capacity: 4 },
+  { name: 'Bàn 10 (NT-10)', code: 'NT-10', zone: 'outdoor', x: 310, y: 404, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-11', code: 'NT-11', zone: 'outdoor', x: 405, y: 404, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-12', code: 'NT-12', zone: 'outdoor', x: 500, y: 404, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-13', code: 'NT-13', zone: 'outdoor', x: 595, y: 404, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-14', code: 'NT-14', zone: 'outdoor', x: 690, y: 404, shape: 'square', capacity: 4 },
 
   // Hàng 5 (Hàng ngang trung tâm) - 5 bàn
-  { name: 'Bàn NT-15', code: 'NT-15', zone: 'outdoor', x: 310, y: 495, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-16', code: 'NT-16', zone: 'outdoor', x: 405, y: 495, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-17', code: 'NT-17', zone: 'outdoor', x: 500, y: 495, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-18', code: 'NT-18', zone: 'outdoor', x: 595, y: 495, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-19', code: 'NT-19', zone: 'outdoor', x: 690, y: 495, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-15', code: 'NT-15', zone: 'outdoor', x: 310, y: 464, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-16', code: 'NT-16', zone: 'outdoor', x: 405, y: 464, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-17', code: 'NT-17', zone: 'outdoor', x: 500, y: 464, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-18', code: 'NT-18', zone: 'outdoor', x: 595, y: 464, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-19', code: 'NT-19', zone: 'outdoor', x: 690, y: 464, shape: 'square', capacity: 4 },
 
   // Hàng 6 - 5 bàn
-  { name: 'Bàn NT-20', code: 'NT-20', zone: 'outdoor', x: 310, y: 560, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-21', code: 'NT-21', zone: 'outdoor', x: 405, y: 560, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-22', code: 'NT-22', zone: 'outdoor', x: 500, y: 560, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-23', code: 'NT-23', zone: 'outdoor', x: 595, y: 560, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-24', code: 'NT-24', zone: 'outdoor', x: 690, y: 560, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-20', code: 'NT-20', zone: 'outdoor', x: 310, y: 524, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-21', code: 'NT-21', zone: 'outdoor', x: 405, y: 524, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-22', code: 'NT-22', zone: 'outdoor', x: 500, y: 524, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-23', code: 'NT-23', zone: 'outdoor', x: 595, y: 524, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-24', code: 'NT-24', zone: 'outdoor', x: 690, y: 524, shape: 'square', capacity: 4 },
 
   // Hàng 7 - 5 bàn
-  { name: 'Bàn NT-25', code: 'NT-25', zone: 'outdoor', x: 310, y: 625, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-26', code: 'NT-26', zone: 'outdoor', x: 405, y: 625, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-27', code: 'NT-27', zone: 'outdoor', x: 500, y: 625, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-28', code: 'NT-28', zone: 'outdoor', x: 595, y: 625, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-29', code: 'NT-29', zone: 'outdoor', x: 690, y: 625, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-25', code: 'NT-25', zone: 'outdoor', x: 310, y: 584, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-26', code: 'NT-26', zone: 'outdoor', x: 405, y: 584, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-27', code: 'NT-27', zone: 'outdoor', x: 500, y: 584, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-28', code: 'NT-28', zone: 'outdoor', x: 595, y: 584, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-29', code: 'NT-29', zone: 'outdoor', x: 690, y: 584, shape: 'square', capacity: 4 },
 
   // Hàng 8 - 3 bàn
-  { name: 'Bàn NT-30', code: 'NT-30', zone: 'outdoor', x: 415, y: 690, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-31', code: 'NT-31', zone: 'outdoor', x: 500, y: 690, shape: 'square', capacity: 4 },
-  { name: 'Bàn NT-32', code: 'NT-32', zone: 'outdoor', x: 585, y: 690, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-30', code: 'NT-30', zone: 'outdoor', x: 415, y: 644, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-31', code: 'NT-31', zone: 'outdoor', x: 500, y: 644, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-32', code: 'NT-32', zone: 'outdoor', x: 585, y: 644, shape: 'square', capacity: 4 },
 
   // Hàng 9 (Đáy lục giác) - 1 bàn
-  { name: 'Bàn NT-33', code: 'NT-33', zone: 'outdoor', x: 500, y: 750, shape: 'square', capacity: 4 },
+  { name: 'Bàn NT-33', code: 'NT-33', zone: 'outdoor', x: 500, y: 704, shape: 'square', capacity: 4 },
 ];
 
 /**
@@ -211,12 +211,12 @@ const OUTDOOR_TABLES: TableBlueprint[] = [
  */
 const INDOOR_VIP_TABLES: TableBlueprint[] = [
   // Cụm phía Bắc (trên đỉnh lục giác): pod 2x2 + 2 bàn cánh
-  { name: 'VIP 01', code: 'VIP-01', zone: 'indoor', x: 475, y: 75, shape: 'square', capacity: 4 },
-  { name: 'VIP 02', code: 'VIP-02', zone: 'indoor', x: 525, y: 75, shape: 'square', capacity: 4 },
-  { name: 'VIP 03', code: 'VIP-03', zone: 'indoor', x: 475, y: 115, shape: 'square', capacity: 4 },
-  { name: 'VIP 04', code: 'VIP-04', zone: 'indoor', x: 525, y: 115, shape: 'square', capacity: 4 },
-  { name: 'Bàn VIP-T1', code: 'VIP-T1', zone: 'indoor', x: 360, y: 150, shape: 'square', capacity: 2 },
-  { name: 'Bàn VIP-T2', code: 'VIP-T2', zone: 'indoor', x: 640, y: 150, shape: 'square', capacity: 2 },
+  { name: 'VIP 01', code: 'VIP-01', zone: 'indoor', x: 475, y: 70, shape: 'square', capacity: 4 },
+  { name: 'VIP 02', code: 'VIP-02', zone: 'indoor', x: 525, y: 70, shape: 'square', capacity: 4 },
+  { name: 'VIP 03', code: 'VIP-03', zone: 'indoor', x: 475, y: 110, shape: 'square', capacity: 4 },
+  { name: 'VIP 04', code: 'VIP-04', zone: 'indoor', x: 525, y: 110, shape: 'square', capacity: 4 },
+  { name: 'Bàn VIP-T1', code: 'VIP-T1', zone: 'indoor', x: 360, y: 140, shape: 'square', capacity: 2 },
+  { name: 'Bàn VIP-T2', code: 'VIP-T2', zone: 'indoor', x: 640, y: 140, shape: 'square', capacity: 2 },
 
   // Cụm Tây Bắc (Top-Left): pod 2x2
   { name: 'VIP 05', code: 'VIP-05', zone: 'indoor', x: 185, y: 185, shape: 'square', capacity: 4 },
@@ -241,25 +241,17 @@ const INDOOR_VIP_TABLES: TableBlueprint[] = [
   { name: 'VIP 20', code: 'VIP-20', zone: 'indoor', x: 865, y: 670, shape: 'square', capacity: 4 },
   { name: 'VIP 21', code: 'VIP-21', zone: 'indoor', x: 905, y: 670, shape: 'square', capacity: 4 },
 
-  // Cụm Đông Nam (Bottom-Right): pod 2x2 + 1 bàn đơn
+  // Cụm Đông Nam (Bottom-Right): pod 2x2
   { name: 'VIP 22', code: 'VIP-22', zone: 'indoor', x: 765, y: 755, shape: 'square', capacity: 4 },
   { name: 'VIP 23', code: 'VIP-23', zone: 'indoor', x: 810, y: 755, shape: 'square', capacity: 4 },
   { name: 'VIP 24', code: 'VIP-24', zone: 'indoor', x: 765, y: 795, shape: 'square', capacity: 4 },
   { name: 'VIP 25', code: 'VIP-25', zone: 'indoor', x: 810, y: 795, shape: 'square', capacity: 4 },
-  { name: 'Bàn VIP-B2', code: 'VIP-B2', zone: 'indoor', x: 655, y: 825, shape: 'square', capacity: 2 },
 
-  // Cụm Tây Nam (Bottom-Left): pod 2x2 + 1 bàn đơn
+  // Cụm Tây Nam (Bottom-Left): pod 2x2
   { name: 'VIP 26', code: 'VIP-26', zone: 'indoor', x: 185, y: 755, shape: 'square', capacity: 4 },
   { name: 'VIP 27', code: 'VIP-27', zone: 'indoor', x: 230, y: 755, shape: 'square', capacity: 4 },
   { name: 'VIP 28', code: 'VIP-28', zone: 'indoor', x: 185, y: 795, shape: 'square', capacity: 4 },
   { name: 'VIP 29', code: 'VIP-29', zone: 'indoor', x: 230, y: 795, shape: 'square', capacity: 4 },
-  { name: 'Bàn VIP-B1', code: 'VIP-B1', zone: 'indoor', x: 345, y: 825, shape: 'square', capacity: 2 },
-
-  // Cụm Phía Nam (Dưới đáy lục giác): pod 2x2
-  { name: 'VIP 30', code: 'VIP-30', zone: 'indoor', x: 475, y: 835, shape: 'square', capacity: 4 },
-  { name: 'VIP 31', code: 'VIP-31', zone: 'indoor', x: 525, y: 835, shape: 'square', capacity: 4 },
-  { name: 'VIP 32', code: 'VIP-32', zone: 'indoor', x: 475, y: 870, shape: 'square', capacity: 4 },
-  { name: 'VIP 33', code: 'VIP-33', zone: 'indoor', x: 525, y: 870, shape: 'square', capacity: 4 },
 ];
 
 /**
@@ -283,15 +275,19 @@ const DJ_TABLES: TableBlueprint[] = [
 ];
 
 /**
- * CÁC VỊ TRÍ GHẾ TẠI QUẦY BAR
+ * CÁC BÀN KHU QUẦY BAR (CỤM BÀN PHÍA NAM THEO BẢN VẼ TAY)
+ * 1 Cụm 4 bàn 2x2 trung tâm (BAR-01 đến BAR-04) + 2 bàn đơn hai bên (BAR-05, BAR-06)
  */
 const BAR_TABLES: TableBlueprint[] = [
-  { name: 'Ghế Bar 01', code: 'BAR-01', zone: 'bar', x: 270, y: 875, shape: 'bar_stool', capacity: 1 },
-  { name: 'Ghế Bar 02', code: 'BAR-02', zone: 'bar', x: 335, y: 875, shape: 'bar_stool', capacity: 1 },
-  { name: 'Ghế Bar 03', code: 'BAR-03', zone: 'bar', x: 400, y: 875, shape: 'bar_stool', capacity: 1 },
-  { name: 'Ghế Bar 04', code: 'BAR-04', zone: 'bar', x: 465, y: 875, shape: 'bar_stool', capacity: 1 },
-  { name: 'Ghế Bar 05', code: 'BAR-05', zone: 'bar', x: 530, y: 875, shape: 'bar_stool', capacity: 1 },
-  { name: 'Ghế Bar 06', code: 'BAR-06', zone: 'bar', x: 595, y: 875, shape: 'bar_stool', capacity: 1 },
+  // Cụm pod 2x2 trung tâm phía trước quầy bar
+  { name: 'Bàn Bar 01', code: 'BAR-01', zone: 'bar', x: 475, y: 810, shape: 'square', capacity: 4 },
+  { name: 'Bàn Bar 02', code: 'BAR-02', zone: 'bar', x: 525, y: 810, shape: 'square', capacity: 4 },
+  { name: 'Bàn Bar 03', code: 'BAR-03', zone: 'bar', x: 475, y: 852, shape: 'square', capacity: 4 },
+  { name: 'Bàn Bar 04', code: 'BAR-04', zone: 'bar', x: 525, y: 852, shape: 'square', capacity: 4 },
+
+  // Hai bàn đơn cánh hai bên
+  { name: 'Bàn Bar Solo 1', code: 'BAR-05', zone: 'bar', x: 350, y: 830, shape: 'square', capacity: 2 },
+  { name: 'Bàn Bar Solo 2', code: 'BAR-06', zone: 'bar', x: 650, y: 830, shape: 'square', capacity: 2 },
 ];
 
 // Danh sách hợp nhất tất cả các bàn trong sơ đồ
