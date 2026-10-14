@@ -3,6 +3,7 @@ import { generateTableToken } from '@/lib/utils';
 import { deleteUploadedImage } from '@/lib/upload';
 import { deleteImageKeysFromStorage } from '@/lib/image/cleanup';
 import { hashPassword } from '@/lib/auth';
+import { revalidateRestaurantMenuCache } from '@/lib/dal/customer';
 
 /**
  * 1. QUẢN LÝ DANH MỤC (CATEGORIES)
@@ -16,7 +17,7 @@ export async function adminCreateCategory(
     _max: { sort_order: true },
   });
 
-  return prisma.category.create({
+  const created = await prisma.category.create({
     data: {
       restaurant_id: restaurantId,
       name: data.name.trim(),
@@ -24,6 +25,9 @@ export async function adminCreateCategory(
       is_active: data.is_active ?? true,
     },
   });
+
+  revalidateRestaurantMenuCache(restaurantId);
+  return created;
 }
 
 export async function adminUpdateCategory(
@@ -36,7 +40,7 @@ export async function adminUpdateCategory(
   });
   if (!cat) throw new Error('Danh mục không tồn tại.');
 
-  return prisma.category.update({
+  const updated = await prisma.category.update({
     where: { id: categoryId },
     data: {
       ...(data.name ? { name: data.name.trim() } : {}),
@@ -44,6 +48,9 @@ export async function adminUpdateCategory(
       ...(typeof data.is_active === 'boolean' ? { is_active: data.is_active } : {}),
     },
   });
+
+  revalidateRestaurantMenuCache(restaurantId);
+  return updated;
 }
 
 export async function adminDeleteCategory(restaurantId: string, categoryId: string) {
@@ -71,10 +78,13 @@ export async function adminDeleteCategory(restaurantId: string, categoryId: stri
   }
 
   // Xóa các món và xóa danh mục
-  return prisma.$transaction([
+  const result = await prisma.$transaction([
     prisma.menuItem.deleteMany({ where: { category_id: categoryId } }),
     prisma.category.delete({ where: { id: categoryId } }),
   ]);
+
+  revalidateRestaurantMenuCache(restaurantId);
+  return result;
 }
 
 export async function adminReorderCategories(restaurantId: string, categoryIds: string[]) {
@@ -84,7 +94,9 @@ export async function adminReorderCategories(restaurantId: string, categoryIds: 
       data: { sort_order: index },
     })
   );
-  return prisma.$transaction(updates);
+  const result = await prisma.$transaction(updates);
+  revalidateRestaurantMenuCache(restaurantId);
+  return result;
 }
 
 /**
@@ -112,7 +124,7 @@ export async function adminCreateMenuItem(
     _max: { sort_order: true },
   });
 
-  return prisma.menuItem.create({
+  const created = await prisma.menuItem.create({
     data: {
       restaurant_id: restaurantId,
       category_id: data.category_id,
@@ -124,6 +136,9 @@ export async function adminCreateMenuItem(
       sort_order: data.sort_order ?? ((maxSort._max.sort_order ?? 0) + 1),
     },
   });
+
+  revalidateRestaurantMenuCache(restaurantId);
+  return created;
 }
 
 export async function adminUpdateMenuItem(
@@ -166,7 +181,7 @@ export async function adminUpdateMenuItem(
     }
   }
 
-  return prisma.menuItem.update({
+  const updated = await prisma.menuItem.update({
     where: { id: menuItemId },
     data: {
       ...(data.category_id ? { category_id: data.category_id } : {}),
@@ -178,6 +193,9 @@ export async function adminUpdateMenuItem(
       ...(typeof data.sort_order === 'number' ? { sort_order: data.sort_order } : {}),
     },
   });
+
+  revalidateRestaurantMenuCache(restaurantId);
+  return updated;
 }
 
 export async function adminDeleteMenuItem(restaurantId: string, menuItemId: string) {
@@ -197,9 +215,12 @@ export async function adminDeleteMenuItem(restaurantId: string, menuItemId: stri
     deleteUploadedImage(item.image_url);
   }
 
-  return prisma.menuItem.delete({
+  const deleted = await prisma.menuItem.delete({
     where: { id: menuItemId },
   });
+
+  revalidateRestaurantMenuCache(restaurantId);
+  return deleted;
 }
 
 export async function adminReorderMenuItems(
@@ -213,7 +234,9 @@ export async function adminReorderMenuItems(
       data: { sort_order: index },
     })
   );
-  return prisma.$transaction(updates);
+  const result = await prisma.$transaction(updates);
+  revalidateRestaurantMenuCache(restaurantId);
+  return result;
 }
 
 /**
@@ -339,7 +362,7 @@ export async function adminUpdateStoreInfo(
     ...(data.theme ? data.theme : {}),
   };
 
-  return prisma.restaurant.update({
+  const updated = await prisma.restaurant.update({
     where: { id: restaurantId },
     data: {
       ...(data.name ? { name: data.name.trim() } : {}),
@@ -348,6 +371,9 @@ export async function adminUpdateStoreInfo(
       theme: updatedTheme,
     },
   });
+
+  revalidateRestaurantMenuCache(restaurantId);
+  return updated;
 }
 
 /**

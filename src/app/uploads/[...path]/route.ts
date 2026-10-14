@@ -39,17 +39,21 @@ export async function GET(
     }
 
     const stat = fs.statSync(targetFilePath);
-    const etag = `"${stat.size}-${stat.mtimeMs}"`;
+    const etag = `"${stat.size}-${Math.floor(stat.mtimeMs)}"`;
     const ifNoneMatch = request.headers.get('if-none-match');
-    if (ifNoneMatch === etag) {
-      return new NextResponse(null, {
-        status: 304,
-        headers: {
-          'Cache-Control': 'public, max-age=31536000, immutable',
-          'ETag': etag,
-          'X-Content-Type-Options': 'nosniff',
-        },
-      });
+    if (ifNoneMatch) {
+      const clientTag = ifNoneMatch.replace(/^W\//, '');
+      const serverTag = etag.replace(/^W\//, '');
+      if (clientTag === serverTag || ifNoneMatch === '*') {
+        return new NextResponse(null, {
+          status: 304,
+          headers: {
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'ETag': etag,
+            'X-Content-Type-Options': 'nosniff',
+          },
+        });
+      }
     }
 
     const ext = path.extname(targetFilePath).toLowerCase();

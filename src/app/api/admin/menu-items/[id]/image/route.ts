@@ -8,6 +8,7 @@ import { processImagePipeline } from '@/lib/image/pipeline';
 import { imageProcessingQueue } from '@/lib/image/queue';
 import { deleteImageKeysFromStorage } from '@/lib/image/cleanup';
 import { formatBytes } from '@/lib/image/quota';
+import { revalidateRestaurantMenuCache } from '@/lib/dal/customer';
 
 /**
  * POST /api/admin/menu-items/[id]/image
@@ -211,6 +212,9 @@ export async function POST(
       },
     });
 
+    // Làm mới cache menu tức thì cho quán
+    revalidateRestaurantMenuCache(user.restaurantId);
+
     return NextResponse.json({
       success: true,
       message: 'Tải và xử lý ảnh thành công.',
@@ -292,6 +296,9 @@ export async function DELETE(
         image_url: null,
       },
     });
+
+    // Làm mới cache menu tức thì cho quán
+    revalidateRestaurantMenuCache(user.restaurantId);
 
     return NextResponse.json({
       success: true,

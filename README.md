@@ -221,12 +221,44 @@ docker compose exec app npx tsx scripts/manage-restaurant-plan.ts set <id-hoặc
 
 ---
 
+## 🌐 Cấu Hình Cloudflare CDN & Tối Ưu Cache (Khuyên Dùng)
+
+Khi triển khai thực tế trên VPS, đặt **Cloudflare (Gói miễn phí - Free Tier)** phía trước tên miền sẽ giúp VPS gần như **không phải gánh băng thông ảnh**, chống DDoS và tăng tốc độ tải ảnh cho khách:
+
+### 1. Bật Proxy Cloudflare
+- Trong trang quản trị DNS Cloudflare, bản ghi `A` trỏ về VPS phải bật **Proxied** (Biểu tượng đám mây màu cam ☁️).
+- Vào **SSL/TLS** -> Chọn chế độ mã hóa **Full** hoặc **Full (strict)** để mã hóa đầu cuối giữa Cloudflare và Caddy.
+
+### 2. Thiết lập Cache Rules (Tối ưu hóa bộ đệm ảnh)
+Vào mục **Caching** -> **Cache Rules** -> Chọn **Create rule**:
+- **Quy tắc 1: Cache vĩnh viễn hình ảnh tĩnh (Edge Cache)**
+  - Tên quy tắc: `Cache Uploads Images`
+  - Biểu thức (Rule): `When incoming requests match: URI Path starts with "/uploads/"`
+  - Hành động (Cache eligibility): **Eligible for cache**
+  - Cài đặt bổ sung:
+    - **Edge TTL**: *Ignore cache-control header and use TTL: 1 month* (hoặc 1 year)
+    - **Browser TTL**: *Respect origin (origin trả 1 năm)*
+    - **Serve stale content**: *Enable*
+- **Quy tắc 2: Không cache các route quản trị và API động (Bypass)**
+  - Tên quy tắc: `Bypass Dynamic Routes`
+  - Biểu thức (Rule): `URI Path starts with "/api/" OR URI Path starts with "/admin/"`
+  - Hành động: **Bypass cache**
+
+> ⚠️ **Lưu ý quan trọng về SSE (Server-Sent Events)**:
+> Đường dẫn thông báo đơn `/api/sse/*` và `/api/customer/orders/sse` hoạt động tốt trên Cloudflare Proxy. Không bật tính năng *Auto Minify* hoặc *Rocket Loader* cho các URL API để tránh ngắt quãng luồng SSE.
+
+---
+
 ## 💾 Cơ Chế Sao Lưu & Khôi Phục Dữ Liệu
+
+> 💡 **Lưu ý về sao lưu tệp ảnh**:
+> - **Khi dùng Local Storage (`STORAGE_DRIVER=local`)**: Thư mục ảnh nằm trong Docker Volume `uploads_data`, được tự động nén định kỳ thành file `.tar.gz` kèm database.
+> - **Khi dùng S3 / Cloudflare R2 (`STORAGE_DRIVER=s3`)**: Toàn bộ tệp ảnh được lưu trữ an toàn trên đám mây. Bạn nên bật tính năng **Bucket Object Versioning** và **Lifecycle Rules** trực tiếp trên bảng điều khiển của AWS S3 / Cloudflare R2 mà không cần tốn dung lượng ổ đĩa VPS để sao lưu volume local.
 
 ### 1. Tự động sao lưu định kỳ
 Container `qrorder_prod_backup` tự động chạy 24 giờ một lần:
 - Xuất bản sao lưu cơ sở dữ liệu: `/backups/qrorder_db_YYYYMMDD_HHMMSS.sql.gz`
-- Đóng gói toàn bộ hình ảnh tải lên: `/backups/qrorder_uploads_YYYYMMDD_HHMMSS.tar.gz`
+- Đóng gói toàn bộ hình ảnh tải lên: `/backups/qrorder_uploads_YYYYMMDD_HHMMSS.tar.gz` (nếu dùng local)
 - Tự động duy trì 14 bản sao lưu mới nhất và dọn dẹp các bản cũ hơn.
 
 ### 2. Kích hoạt sao lưu thủ công tức thì
