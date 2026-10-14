@@ -361,6 +361,11 @@ export function FloorPlanMap({
                 <feGaussianBlur stdDeviation="8" result="blur" />
                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>
+
+              {/* Bộ lọc phát sáng Glow neon cyan cho bàn khi hover */}
+              <filter id="hoverGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#38BDF8" floodOpacity="0.85" />
+              </filter>
             </defs>
 
             {/* Sàn tổng thể (Venue Floor Base) */}
@@ -707,8 +712,8 @@ export function FloorPlanMap({
               const tableWidth = isStool ? 28 : 34;
               const tableHeight = isStool ? 28 : 34;
 
-              // Hit box cố định 54x54 px để bắt chuột mượt mà, triệt tiêu hoàn toàn hiện tượng rung nhấp nháy
-              const hitBoxSize = 54;
+              // Hit box cố định 52x52 px để bắt chuột mượt mà, bao trùm toàn bộ bàn + ghế
+              const hitBoxSize = 52;
 
               // Màu sắc theo trạng thái
               let fillColor = '#181C26';
@@ -731,10 +736,15 @@ export function FloorPlanMap({
                 textColor = '#DBEAFE';
               }
 
+              // Khi hover: Đổi màu viền sáng và áp bộ lọc neon, không co giãn vật lý để không bị rung giật
               if (isSelected) {
                 strokeColor = '#F59E0B';
               } else if (isHovered) {
-                strokeColor = '#38BDF8'; // Viền sáng cyan nổi bật khi hover
+                strokeColor = '#38BDF8';
+                glowFilter = 'url(#hoverGlow)';
+                if (!isOccupied && !isPending && !isPreparing) {
+                  fillColor = '#1E293B';
+                }
               }
 
               return (
@@ -743,11 +753,9 @@ export function FloorPlanMap({
                   transform={`translate(${item.x}, ${item.y})`}
                   className="cursor-pointer"
                   onClick={() => {
-                    // Nếu đã có trong DB thì mở drawer tương ứng
                     if (item.dbTable) {
                       onSelectTable(item.dbTable);
                     } else {
-                      // Tạo object giả lập nếu bàn đang ở dạng blueprint
                       onSelectTable({
                         id: item.id,
                         name: item.name,
@@ -769,22 +777,20 @@ export function FloorPlanMap({
                   onMouseEnter={() => setHoveredTableId(item.id)}
                   onMouseLeave={() => setHoveredTableId((prev) => (prev === item.id ? null : prev))}
                 >
-                  {/* Vùng cảm ứng chuột cố định (Hit area) che toàn bộ bàn + ghế: Bắt chuột 100% ổn định, triệt tiêu nhấp nháy */}
+                  {/* Vùng cảm ứng chuột cố định (Hit-Box SVG): dùng fill đen mờ 0.001 với pointerEvents="all"
+                      theo đúng chuẩn W3C SVG để bắt sự kiện chuột vững chắc 100%, không bị lọt xuyên */}
                   <rect
                     x={-hitBoxSize / 2}
                     y={-hitBoxSize / 2}
                     width={hitBoxSize}
                     height={hitBoxSize}
-                    fill="transparent"
+                    fill="#000000"
+                    opacity="0.001"
+                    pointerEvents="all"
                   />
 
-                  {/* Toàn bộ hình khối đồ họa bàn ghế đặt trong nhóm pointer-events-none để không làm đứt quãng sự kiện chuột */}
-                  <g
-                    className="pointer-events-none transition-transform duration-150"
-                    style={{
-                      transform: isHovered ? 'scale(1.12)' : 'scale(1)',
-                    }}
-                  >
+                  {/* Toàn bộ đồ họa đặt trong nhóm pointerEvents="none" và KHÔNG scale để giữ vững tọa độ tuyệt đối */}
+                  <g pointerEvents="none">
                     {/* Vòng lan tỏa (ping ring) nếu có đơn mới */}
                     {isPending && (
                       <circle
@@ -795,6 +801,7 @@ export function FloorPlanMap({
                         stroke="#FB923C"
                         strokeWidth="2.5"
                         className="animate-ping opacity-75"
+                        pointerEvents="none"
                       />
                     )}
 
@@ -808,6 +815,7 @@ export function FloorPlanMap({
                         stroke={strokeColor}
                         strokeWidth={isSelected ? 3.5 : isHovered ? 3 : 2}
                         style={{ filter: glowFilter }}
+                        pointerEvents="none"
                       />
                     ) : (
                       <rect
@@ -820,16 +828,17 @@ export function FloorPlanMap({
                         stroke={strokeColor}
                         strokeWidth={isSelected ? 3.5 : isHovered ? 3 : 2}
                         style={{ filter: glowFilter }}
+                        pointerEvents="none"
                       />
                     )}
 
                     {/* Chấm hiển thị ghế xung quanh cho bàn vuông */}
                     {!isStool && (
-                      <g opacity={isHovered ? 0.7 : 0.4}>
-                        <rect x="-10" y={-tableHeight / 2 - 4} width="20" height="3" rx="1.5" fill={strokeColor} />
-                        <rect x="-10" y={tableHeight / 2 + 1} width="20" height="3" rx="1.5" fill={strokeColor} />
-                        <rect x={-tableWidth / 2 - 4} y="-10" width="3" height="20" rx="1.5" fill={strokeColor} />
-                        <rect x={tableWidth / 2 + 1} y="-10" width="3" height="20" rx="1.5" fill={strokeColor} />
+                      <g opacity={isHovered ? 0.75 : 0.4} pointerEvents="none">
+                        <rect x="-10" y={-tableHeight / 2 - 4} width="20" height="3" rx="1.5" fill={strokeColor} pointerEvents="none" />
+                        <rect x="-10" y={tableHeight / 2 + 1} width="20" height="3" rx="1.5" fill={strokeColor} pointerEvents="none" />
+                        <rect x={-tableWidth / 2 - 4} y="-10" width="3" height="20" rx="1.5" fill={strokeColor} pointerEvents="none" />
+                        <rect x={tableWidth / 2 + 1} y="-10" width="3" height="20" rx="1.5" fill={strokeColor} pointerEvents="none" />
                       </g>
                     )}
 
@@ -842,6 +851,7 @@ export function FloorPlanMap({
                       fontSize={item.code.length > 5 ? '8' : '9'}
                       fontWeight="900"
                       className="font-mono tracking-tight"
+                      pointerEvents="none"
                     >
                       {item.code}
                     </text>
@@ -855,6 +865,7 @@ export function FloorPlanMap({
                         fill="#EA580C"
                         stroke="#FFFFFF"
                         strokeWidth="1.5"
+                        pointerEvents="none"
                       />
                     )}
                     {isPending && (
@@ -865,6 +876,7 @@ export function FloorPlanMap({
                         fill="#FFFFFF"
                         fontSize="7"
                         fontWeight="900"
+                        pointerEvents="none"
                       >
                         !
                       </text>
@@ -881,12 +893,16 @@ export function FloorPlanMap({
               style={{
                 left: `${(activeHovered.x / 1000) * 100}%`,
                 top: `${(activeHovered.y / 1100) * 100}%`,
+                pointerEvents: 'none',
               }}
-              className={`absolute -translate-x-1/2 pointer-events-none select-none z-30 transition-all duration-150 ${
-                activeHovered.y < 180 ? 'translate-y-6' : '-translate-y-[calc(100%+14px)]'
+              className={`absolute -translate-x-1/2 select-none z-30 transition-opacity duration-150 ${
+                activeHovered.y < 180 ? 'translate-y-7' : '-translate-y-[calc(100%+16px)]'
               }`}
             >
-              <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl p-3 shadow-2xl text-xs w-48 space-y-1.5 text-slate-200 pointer-events-none">
+              <div
+                style={{ pointerEvents: 'none' }}
+                className="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl p-3 shadow-2xl text-xs w-48 space-y-1.5 text-slate-200"
+              >
                 <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
                   <span className="font-extrabold text-white text-sm">
                     {activeHovered.dbTable?.name || activeHovered.blueprint?.name}
