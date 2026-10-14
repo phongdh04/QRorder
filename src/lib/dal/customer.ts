@@ -1,4 +1,14 @@
 import { prisma } from '@/lib/prisma';
+import { getStorageAdapter } from '@/lib/storage';
+
+export interface CustomerPublicImage {
+  thumbUrl: string;
+  mediumUrl: string;
+  largeUrl: string;
+  blurDataUrl: string;
+  width: number;
+  height: number;
+}
 
 export interface CustomerPublicItem {
   id: string;
@@ -6,6 +16,7 @@ export interface CustomerPublicItem {
   description: string | null;
   price: number;
   imageUrl: string | null;
+  image?: CustomerPublicImage | null;
   isAvailable: boolean;
 }
 
@@ -49,6 +60,7 @@ export interface CustomerPublicMenuData {
     logoUrl?: string | null;
     coverImageUrl?: string | null;
     theme?: Record<string, any> | null;
+    menuDisplayMode: 'photo' | 'minimal';
   };
   activeSession?: CustomerActiveSessionData | null;
   categories: CustomerPublicCategory[];
@@ -78,6 +90,7 @@ export async function customerGetPublicMenuByToken(
           name: true,
           logo_url: true,
           theme: true,
+          menu_display_mode: true,
         },
       },
       table_sessions: {
@@ -116,6 +129,9 @@ export async function customerGetPublicMenuByToken(
         where: {
           restaurant_id: restaurantId,
         },
+        include: {
+          image: true,
+        },
         orderBy: {
           sort_order: 'asc',
         },
@@ -123,18 +139,35 @@ export async function customerGetPublicMenuByToken(
     },
   });
 
+  const storage = getStorageAdapter();
+
   // 3. Chuẩn hóa payload sạch sẽ cho Client, lọc bỏ hoàn toàn các trường nội bộ thừa
   const cleanCategories: CustomerPublicCategory[] = categories.map((cat, catIndex) => ({
     id: `cat-${catIndex}-${cat.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
     name: cat.name,
-    items: cat.menu_items.map((item) => ({
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      price: item.price,
-      imageUrl: item.image_url,
-      isAvailable: item.is_available,
-    })),
+    items: cat.menu_items.map((item) => {
+      let imageObj: CustomerPublicImage | null = null;
+      if (item.image) {
+        imageObj = {
+          thumbUrl: storage.getPublicUrl(item.image.key_thumb),
+          mediumUrl: storage.getPublicUrl(item.image.key_medium),
+          largeUrl: storage.getPublicUrl(item.image.key_large),
+          blurDataUrl: item.image.blur_data_url,
+          width: item.image.width,
+          height: item.image.height,
+        };
+      }
+
+      return {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        imageUrl: imageObj ? imageObj.mediumUrl : item.image_url,
+        image: imageObj,
+        isAvailable: item.is_available,
+      };
+    }),
   }));
 
   const themeObj = (table.restaurant.theme as Record<string, any>) || {};
@@ -150,6 +183,8 @@ export async function customerGetPublicMenuByToken(
       logoUrl: table.restaurant.logo_url,
       coverImageUrl: themeObj.cover_image_url || null,
       theme: themeObj,
+      menuDisplayMode:
+        (table.restaurant.menu_display_mode as 'photo' | 'minimal') || 'photo',
     },
     activeSession: activeSession
       ? {

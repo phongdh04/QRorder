@@ -10,6 +10,8 @@ import {
   Wine,
   Palette,
   UploadCloud,
+  Image as ImageIcon,
+  AlignLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ImageUploadField } from '@/components/admin/ImageUploadField';
@@ -33,6 +35,7 @@ export default function AdminStorePage() {
   const [name, setName] = useState('');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [accentColor, setAccentColor] = useState('#f59e0b');
+  const [menuDisplayMode, setMenuDisplayMode] = useState<'photo' | 'minimal'>('photo');
 
   // Fetch current store info
   const fetchStoreInfo = async () => {
@@ -46,6 +49,9 @@ export default function AdminStorePage() {
           setLogoUrl(rest.logo_url || null);
           if (rest.theme && rest.theme.accent) {
             setAccentColor(rest.theme.accent);
+          }
+          if (rest.menu_display_mode) {
+            setMenuDisplayMode(rest.menu_display_mode);
           }
         }
       }
@@ -79,6 +85,7 @@ export default function AdminStorePage() {
           name: name.trim(),
           logo_url: logoUrl || null,
           accentColor: accentColor,
+          menu_display_mode: menuDisplayMode,
         }),
       });
 
@@ -232,6 +239,81 @@ export default function AdminStorePage() {
                     className="w-28 px-2.5 py-1 text-xs font-mono bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white uppercase"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Chế Độ Hiển Thị Thực Đơn (Menu Display Mode) */}
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>Chế độ hiển thị thực đơn khách</span>
+                </label>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                  Chọn phong cách trình bày thực đơn khi khách quét mã QR tại bàn.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Option 1: Có ảnh */}
+                <button
+                  type="button"
+                  onClick={() => setMenuDisplayMode('photo')}
+                  className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-3 ${
+                    menuDisplayMode === 'photo'
+                      ? 'border-blue-500 bg-blue-500/10 shadow-sm'
+                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-700 bg-slate-50 dark:bg-slate-800/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
+                      <ImageIcon className="w-5 h-5" />
+                    </div>
+                    {menuDisplayMode === 'photo' && (
+                      <span className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center">
+                        <Check className="w-3 h-3 stroke-[3]" />
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                      Chế độ Có ảnh (Photo)
+                    </h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Hiển thị ảnh món WebP 4:3 sắc nét, hiệu ứng blur-up và Bottom Sheet chi tiết.
+                    </p>
+                  </div>
+                </button>
+
+                {/* Option 2: Tối giản */}
+                <button
+                  type="button"
+                  onClick={() => setMenuDisplayMode('minimal')}
+                  className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-3 ${
+                    menuDisplayMode === 'minimal'
+                      ? 'border-purple-500 bg-purple-500/10 shadow-sm'
+                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-700 bg-slate-50 dark:bg-slate-800/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400">
+                      <AlignLeft className="w-5 h-5" />
+                    </div>
+                    {menuDisplayMode === 'minimal' && (
+                      <span className="w-5 h-5 rounded-full bg-purple-500 text-white flex items-center justify-center">
+                        <Check className="w-3 h-3 stroke-[3]" />
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                      Chế độ Tối giản (Minimal)
+                    </h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Thực đơn thẻ chữ thanh lịch phong cách bar cổ điển, không tải ảnh, tốc độ tức thì.
+                    </p>
+                  </div>
+                </button>
               </div>
             </div>
           </div>

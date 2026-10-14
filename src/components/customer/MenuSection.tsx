@@ -7,6 +7,7 @@ import { MenuCard } from './MenuCard';
 interface MenuSectionProps {
   category: CustomerPublicCategory;
   isFirstCategory: boolean;
+  menuDisplayMode?: 'photo' | 'minimal';
   onSelectItem: (item: CustomerPublicItem) => void;
   onQuickAdd?: (item: CustomerPublicItem) => void;
 }
@@ -14,6 +15,7 @@ interface MenuSectionProps {
 export function MenuSection({
   category,
   isFirstCategory,
+  menuDisplayMode = 'photo',
   onSelectItem,
   onQuickAdd,
 }: MenuSectionProps) {
@@ -56,6 +58,7 @@ export function MenuSection({
                 item={item}
                 isFeatured={isFeatured}
                 priority={priority}
+                menuDisplayMode={menuDisplayMode}
                 onSelect={onSelectItem}
                 onQuickAdd={onQuickAdd}
               />

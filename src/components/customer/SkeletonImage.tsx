@@ -12,6 +12,8 @@ interface SkeletonImageProps {
   sizes?: string;
   aspectRatio?: '4/3' | '5/4' | '1/1' | '16/9';
   grayscale?: boolean;
+  blurDataURL?: string | null;
+  unoptimized?: boolean;
 }
 
 const FALLBACK_SRC = '/placeholder-cocktail.svg';
@@ -25,6 +27,8 @@ export function SkeletonImage({
   sizes = '(max-width: 480px) 100vw, 480px',
   aspectRatio = '4/3',
   grayscale = false,
+  blurDataURL,
+  unoptimized = true,
 }: SkeletonImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -57,6 +61,9 @@ export function SkeletonImage({
         sizes={sizes}
         priority={priority}
         loading={priority ? 'eager' : 'lazy'}
+        unoptimized={unoptimized}
+        placeholder={blurDataURL ? 'blur' : 'empty'}
+        blurDataURL={blurDataURL || undefined}
         onLoad={() => setIsLoaded(true)}
         onError={() => {
           setHasError(true);

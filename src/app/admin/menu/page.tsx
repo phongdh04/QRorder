@@ -668,6 +668,14 @@ export default function AdminMenuPage() {
                             >
                               {item.is_available ? 'Còn hàng' : 'Hết hàng'}
                             </span>
+                            {!item.image_url && quota?.displayMode === 'photo' && (
+                              <span
+                                className="text-[10px] px-1.5 py-0.5 rounded-md font-medium bg-amber-500/10 text-amber-400/90 border border-amber-500/20"
+                                title="Quán đang ở chế độ 'Có ảnh' nhưng món này chưa có hình ảnh minh họa"
+                              >
+                                Chưa có ảnh
+                              </span>
+                            )}
                           </div>
                           {item.description && (
                             <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
@@ -860,14 +868,25 @@ export default function AdminMenuPage() {
               </div>
 
               {/* Upload ảnh với Sharp WebP resize */}
-              <div>
+              <div className="space-y-2">
                 <ImageUploadField
                   value={itemImageUrl}
                   onChange={(url) => setItemImageUrl(url)}
-                  label="Hình ảnh minh họa"
-                  sublabel="Tải lên ảnh JPG, PNG, WebP &le; 5MB. Hệ thống tự resize 3 kích thước và chuyển WebP."
-                  aspect="square"
+                  label="Hình ảnh món ăn"
+                  sublabel="Tải lên ảnh JPG, PNG, WebP ≤ 10MB. Hệ thống tự động cắt tỉ lệ chuẩn 4:3 và tối ưu 3 kích thước WebP."
+                  aspect="4:3"
+                  menuItemId={editingItem?.id}
                 />
+
+                {/* Cảnh báo nhẹ (gợi ý) khi món chưa có ảnh mà quán đang ở chế độ 'photo' */}
+                {!itemImageUrl && quota?.displayMode === 'photo' && (
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] leading-relaxed">
+                    <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                    <span>
+                      <b>Gợi ý:</b> Quán đang chọn chế độ <b>&quot;Có ảnh&quot;</b>. Bạn có thể tải thêm ảnh minh họa để thực đơn trông hấp dẫn hơn (chỉ gợi ý, không bắt buộc).
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Trạng thái Còn hàng */}

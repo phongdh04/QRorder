@@ -262,6 +262,7 @@ export function CustomerView({ data }: CustomerViewProps) {
                 key={cat.id}
                 category={cat}
                 isFirstCategory={idx === 0}
+                menuDisplayMode={data.restaurant.menuDisplayMode}
                 onSelectItem={(item) => setSelectedItem(item)}
                 onQuickAdd={handleQuickAdd}
               />
@@ -287,6 +288,7 @@ export function CustomerView({ data }: CustomerViewProps) {
         {/* Bottom Sheet: Chi tiết món */}
         <ItemSheet
           item={selectedItem}
+          menuDisplayMode={data.restaurant.menuDisplayMode}
           onClose={() => setSelectedItem(null)}
           onAddToCart={handleDetailAdd}
         />

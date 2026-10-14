@@ -9,18 +9,20 @@ interface ImageUploadFieldProps {
   onChange: (url: string | null) => void;
   label?: string;
   sublabel?: string;
-  aspect?: 'square' | 'landscape' | 'circle';
+  aspect?: 'square' | 'landscape' | 'circle' | '4:3';
+  menuItemId?: string | null;
 }
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_SIZE_MB = 5;
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
+const MAX_SIZE_MB = 10;
 
 export function ImageUploadField({
   value,
   onChange,
   label = 'Hình ảnh',
-  sublabel = 'Chấp nhận JPG, PNG, WebP (Tối đa 5MB). Hệ thống tự tối ưu và chuyển WebP.',
-  aspect = 'square',
+  sublabel = 'Chấp nhận JPG, PNG, WebP (Tối đa 10MB). Hệ thống tự cắt 4:3 và tối ưu WebP 3 kích thước.',
+  aspect = '4:3',
+  menuItemId,
 }: ImageUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,28 +32,28 @@ export function ImageUploadField({
   const handleFile = async (file: File) => {
     setError(null);
 
-    // 1. Kiểm tra MIME type
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      setError('Định dạng không được hỗ trợ. Chỉ nhận file ảnh JPG, PNG hoặc WebP.');
-      return;
-    }
-
-    // 2. Kiểm tra dung lượng
+    // 1. Kiểm tra dung lượng
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      setError(`Dung lượng ảnh vượt quá ${MAX_SIZE_MB}MB.`);
+      setError(`Dung lượng ảnh vượt quá giới hạn ${MAX_SIZE_MB}MB.`);
       return;
     }
 
-    // 3. Upload lên server
+    // 2. Upload lên server
     setIsUploading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
-      if (value && value.startsWith('/uploads/')) {
+
+      // Nếu có menuItemId, gọi API riêng cho món ăn (lưu vào menu_images)
+      const uploadUrl = menuItemId
+        ? `/api/admin/menu-items/${menuItemId}/image`
+        : '/api/admin/upload';
+
+      if (!menuItemId && value && value.startsWith('/uploads/')) {
         formData.append('oldImageUrl', value);
       }
 
-      const res = await fetch('/api/admin/upload', {
+      const res = await fetch(uploadUrl, {
         method: 'POST',
         body: formData,
       });
@@ -62,12 +64,30 @@ export function ImageUploadField({
       }
 
       // Trả về URL tiêu chuẩn (chuẩn WebP)
-      onChange(data.url);
+      const newUrl = data.image?.url || data.url;
+      onChange(newUrl);
     } catch (err: any) {
       setError(err?.message || 'Không thể tải ảnh lên.');
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleRemove = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setError(null);
+
+    if (menuItemId) {
+      try {
+        await fetch(`/api/admin/menu-items/${menuItemId}/image`, {
+          method: 'DELETE',
+        });
+      } catch (err) {
+        console.warn('Lỗi khi xóa ảnh món:', err);
+      }
+    }
+
+    onChange(null);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,17 +110,13 @@ export function ImageUploadField({
     }
   };
 
-  const handleRemove = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onChange(null);
-    setError(null);
-  };
-
   const aspectClass =
     aspect === 'circle'
       ? 'w-28 h-28 rounded-full'
       : aspect === 'landscape'
       ? 'w-full h-40 rounded-xl'
+      : aspect === '4:3'
+      ? 'w-full max-w-[280px] aspect-[4/3] rounded-xl'
       : 'w-36 h-36 rounded-xl';
 
   return (

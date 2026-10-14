@@ -9,6 +9,7 @@ const updateStoreSchema = z.object({
   logo_url: z.string().optional().nullable(),
   accentColor: z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, 'Mã màu HEX không hợp lệ').optional(),
   theme: z.record(z.string(), z.any()).optional(),
+  menu_display_mode: z.enum(['photo', 'minimal']).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -31,6 +32,7 @@ export async function GET(request: NextRequest) {
         slug: restaurant.slug,
         logo_url: restaurant.logo_url,
         theme: restaurant.theme,
+        menu_display_mode: restaurant.menu_display_mode || 'photo',
       },
       user: {
         id: user.userId,
@@ -71,6 +73,7 @@ export async function PATCH(request: NextRequest) {
         slug: updated.slug,
         logo_url: updated.logo_url,
         theme: updated.theme,
+        menu_display_mode: updated.menu_display_mode || 'photo',
       },
     });
   } catch (error: any) {

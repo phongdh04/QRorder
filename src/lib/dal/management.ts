@@ -324,6 +324,7 @@ export async function adminUpdateStoreInfo(
     logo_url?: string | null;
     accentColor?: string;
     theme?: Record<string, any>;
+    menu_display_mode?: 'photo' | 'minimal';
   }
 ) {
   const restaurant = await prisma.restaurant.findUnique({
@@ -343,6 +344,7 @@ export async function adminUpdateStoreInfo(
     data: {
       ...(data.name ? { name: data.name.trim() } : {}),
       ...(data.logo_url !== undefined ? { logo_url: data.logo_url } : {}),
+      ...(data.menu_display_mode ? { menu_display_mode: data.menu_display_mode } : {}),
       theme: updatedTheme,
     },
   });

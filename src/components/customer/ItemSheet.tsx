@@ -8,11 +8,17 @@ import { CustomerPublicItem } from '@/lib/dal/customer';
 
 interface ItemSheetProps {
   item: CustomerPublicItem | null;
+  menuDisplayMode?: 'photo' | 'minimal';
   onClose: () => void;
   onAddToCart?: (item: CustomerPublicItem, quantity: number, note?: string) => void;
 }
 
-export function ItemSheet({ item, onClose, onAddToCart }: ItemSheetProps) {
+export function ItemSheet({
+  item,
+  menuDisplayMode = 'photo',
+  onClose,
+  onAddToCart,
+}: ItemSheetProps) {
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState('');
   const [isAddedFeedback, setIsAddedFeedback] = useState(false);
@@ -112,15 +118,19 @@ export function ItemSheet({ item, onClose, onAddToCart }: ItemSheetProps) {
 
             {/* Sheet Content Scrollable Area */}
             <div className="overflow-y-auto px-5 pb-6 space-y-4">
-              {/* Main Image */}
-              <div className="rounded-2xl overflow-hidden border border-[var(--border)] mt-1">
-                <SkeletonImage
-                  src={item.imageUrl}
-                  alt={item.name}
-                  aspectRatio="4/3"
-                  grayscale={!item.isAvailable}
-                />
-              </div>
+              {/* Main Image (chỉ hiển thị khi quán ở chế độ 'photo' và món CÓ ảnh) */}
+              {menuDisplayMode === 'photo' && (item.image?.largeUrl || item.imageUrl) && (
+                <div className="rounded-2xl overflow-hidden border border-[var(--border)] mt-1 aspect-[4/3]">
+                  <SkeletonImage
+                    src={item.image?.largeUrl || item.imageUrl}
+                    alt={item.name}
+                    aspectRatio="4/3"
+                    blurDataURL={item.image?.blurDataUrl}
+                    sizes="(max-width: 480px) 100vw, 480px"
+                    grayscale={!item.isAvailable}
+                  />
+                </div>
+              )}
 
               {/* Title & Status */}
               <div>
