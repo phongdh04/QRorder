@@ -431,6 +431,36 @@ export default function AdminTablesAndOrdersPage() {
     }
   };
 
+  // Hoàn thành tất cả các đơn hàng đang chờ phục vụ của một bàn
+  const handleCompleteTableOrders = async (tableId: string, orderIds: string[]) => {
+    if (!orderIds || orderIds.length === 0) return;
+    const previousTables = [...tables];
+    const previousQueue = [...kitchenQueue];
+
+    // Cập nhật lạc quan trên Kitchen Queue
+    setKitchenQueue((prev) => prev.filter((item) => !orderIds.includes(item.orderId)));
+
+    try {
+      await Promise.all(
+        orderIds.map((orderId) =>
+          fetch(`/api/admin/orders/${orderId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'served' }),
+          })
+        )
+      );
+
+      // Cập nhật lại danh sách bàn và hàng đợi
+      await Promise.all([fetchTables(), fetchKitchenQueue()]);
+      addToast('success', 'Đã phục vụ xong', 'Đã đánh dấu hoàn thành tất cả món của bàn.');
+    } catch (err: any) {
+      setTables(previousTables);
+      setKitchenQueue(previousQueue);
+      addToast('error', 'Lỗi thao tác', err?.message || 'Không thể cập nhật trạng thái đơn.');
+    }
+  };
+
   // 7. Thanh toán bàn (Checkout Session)
   const handlePaySession = async (
     sessionId: string,
@@ -587,6 +617,7 @@ export default function AdminTablesAndOrdersPage() {
           <KitchenQueue
             items={kitchenQueue}
             onSelectTableById={(tableId) => setSelectedTableId(tableId)}
+            onCompleteTableOrders={handleCompleteTableOrders}
             isLoading={isLoading}
           />
         </div>

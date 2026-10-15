@@ -11,7 +11,7 @@ export interface TableItemData {
   token: string;
   is_active: boolean;
   statusType: TableStatusType;
-  colorStatus?: 'gray' | 'green' | 'yellow' | 'orange' | 'red';
+  colorStatus?: 'gray' | 'green' | 'yellow' | 'orange' | 'red' | 'blue';
   unservedCount: number;
   totalAmount: number;
   openedAt: string | Date | null;
@@ -56,7 +56,7 @@ export function TableCard({ table, isSelected = false, onClick }: TableCardProps
   const elapsed = formatElapsed(table.openedAt);
   const color = table.colorStatus || (table.statusType === 'empty' ? 'gray' : table.statusType === 'pending' ? 'orange' : table.statusType === 'preparing' ? 'yellow' : 'green');
 
-  // Themes based on 5 standard color statuses: Red > Orange > Yellow > Green > Gray
+  // Themes based on standard color statuses: Red > Orange > Yellow > Blue > Green > Gray
   const colorThemes = {
     red: {
       card: 'bg-red-500/10 border-red-500 hover:border-red-400 ring-2 ring-red-500/50 animate-pulse text-red-100',
@@ -79,10 +79,17 @@ export function TableCard({ table, isSelected = false, onClick }: TableCardProps
       header: 'text-amber-400 font-bold',
       totalText: 'text-amber-300 font-bold',
     },
+    blue: {
+      card: 'bg-blue-500/10 border-blue-500/60 hover:border-blue-400 text-blue-100',
+      badge: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+      badgeText: 'Đang xem menu',
+      header: 'text-blue-300 font-bold',
+      totalText: 'text-blue-300 font-bold',
+    },
     green: {
       card: 'bg-emerald-500/10 border-emerald-500/60 hover:border-emerald-400 text-emerald-100',
       badge: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
-      badgeText: 'Đã phục vụ',
+      badgeText: 'Đã lên đủ món',
       header: 'text-emerald-300 font-bold',
       totalText: 'text-emerald-300 font-bold',
     },

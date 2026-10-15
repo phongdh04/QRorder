@@ -361,6 +361,8 @@ export function TableDrawer({
                         ? 'bg-orange-500/20 text-orange-400 border-orange-500/40 animate-pulse'
                         : table.colorStatus === 'yellow'
                         ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                        : table.colorStatus === 'blue'
+                        ? 'bg-blue-500/20 text-blue-400 border-blue-500/40'
                         : table.colorStatus === 'green'
                         ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
                         : 'bg-slate-800 text-slate-400 border-slate-700'
@@ -372,8 +374,10 @@ export function TableDrawer({
                       ? '⏱ Chờ Nhận'
                       : table.colorStatus === 'yellow'
                       ? '🟡 Đang Xử Lý'
+                      : table.colorStatus === 'blue'
+                      ? '🔵 Đang Xem Menu'
                       : table.colorStatus === 'green'
-                      ? '🟢 Đã Phục Vụ'
+                      ? '🟢 Đã Lên Đủ Món'
                       : 'Bàn Trống'}
                   </span>
                 </div>
@@ -584,6 +588,23 @@ export function TableDrawer({
                             <span className="text-[11px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold">
                               ⚡ {dishSummary.totalPending} chờ duyệt
                             </span>
+                          )}
+                          {(dishSummary.totalPreparing > 0 || dishSummary.totalPending > 0) && (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const activeOrders = orders.filter(
+                                  (o) => o.status === 'pending' || o.status === 'preparing'
+                                );
+                                await Promise.all(
+                                  activeOrders.map((o) => onUpdateOrderStatus(o.id, 'served'))
+                                );
+                              }}
+                              className="ml-auto px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>✓ Ra đủ tất cả món</span>
+                            </button>
                           )}
                         </div>
                       </div>

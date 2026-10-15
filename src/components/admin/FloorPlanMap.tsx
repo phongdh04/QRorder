@@ -214,16 +214,20 @@ export function FloorPlanMap({
   // Thống kê trạng thái bàn
   const statusStats = useMemo(() => {
     let pendingCount = 0;
-    let occupiedCount = 0;
+    let preparingCount = 0;
+    let menuBrowsingCount = 0;
+    let servedCount = 0;
     let emptyCount = 0;
 
     mappedTables.forEach((t) => {
-      if (t.statusType === 'pending') pendingCount++;
-      else if (t.statusType === 'occupied' || t.statusType === 'preparing') occupiedCount++;
+      if (t.colorStatus === 'orange' || t.statusType === 'pending') pendingCount++;
+      else if (t.colorStatus === 'yellow' || t.statusType === 'preparing') preparingCount++;
+      else if (t.colorStatus === 'blue') menuBrowsingCount++;
+      else if (t.colorStatus === 'green' || t.statusType === 'occupied') servedCount++;
       else emptyCount++;
     });
 
-    return { pendingCount, occupiedCount, emptyCount };
+    return { pendingCount, preparingCount, menuBrowsingCount, servedCount, emptyCount };
   }, [mappedTables]);
 
   // Xử lý zoom
@@ -314,7 +318,12 @@ export function FloorPlanMap({
 
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-xs bg-blue-600 border border-blue-400" />
-              <span>Có khách ({statusStats.occupiedCount})</span>
+              <span>Đang xem menu ({statusStats.menuBrowsingCount})</span>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-xs bg-emerald-600 border border-emerald-400" />
+              <span>Đã lên đủ món ({statusStats.servedCount})</span>
             </div>
 
             <div className="flex items-center gap-1.5">
@@ -326,7 +335,7 @@ export function FloorPlanMap({
 
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-xs bg-amber-500 border border-amber-300" />
-              <span>Đang pha chế</span>
+              <span>Đang pha chế ({statusStats.preparingCount})</span>
             </div>
           </div>
 
@@ -798,6 +807,10 @@ export function FloorPlanMap({
                 fillColor = '#854D0E';
                 strokeColor = '#FACC15';
                 textColor = '#FFFFFF';
+              } else if (color === 'blue') {
+                fillColor = '#1E3A8A';
+                strokeColor = '#3B82F6';
+                textColor = '#BFDBFE';
               } else if (color === 'green') {
                 fillColor = '#064E3B';
                 strokeColor = '#10B981';
@@ -1037,21 +1050,33 @@ export function FloorPlanMap({
                       : '👑 VIP / Trong nhà';
 
                   const statusLabel =
-                    activeHovered.dbTable?.statusType === 'pending'
+                    activeHovered.dbTable?.colorStatus === 'red'
+                      ? '🚨 Khẩn cấp'
+                      : activeHovered.dbTable?.colorStatus === 'orange'
+                      ? '⏱ Khách gọi / Có việc'
+                      : activeHovered.dbTable?.statusType === 'pending'
                       ? 'Có đơn mới gọi'
                       : activeHovered.dbTable?.statusType === 'preparing'
                       ? 'Đang làm đồ'
-                      : activeHovered.dbTable?.statusType === 'occupied'
-                      ? 'Đang phục vụ'
+                      : activeHovered.dbTable?.colorStatus === 'blue'
+                      ? '🔵 Đang xem menu'
+                      : activeHovered.dbTable?.colorStatus === 'green' || activeHovered.dbTable?.statusType === 'occupied'
+                      ? '🟢 Đã lên đủ món'
                       : 'Bàn trống';
 
                   const statusColor =
-                    activeHovered.dbTable?.statusType === 'pending'
+                    activeHovered.dbTable?.colorStatus === 'red'
+                      ? '#EF4444'
+                      : activeHovered.dbTable?.colorStatus === 'orange'
                       ? '#FB923C'
-                      : activeHovered.dbTable?.statusType === 'occupied'
-                      ? '#60A5FA'
+                      : activeHovered.dbTable?.statusType === 'pending'
+                      ? '#FB923C'
                       : activeHovered.dbTable?.statusType === 'preparing'
                       ? '#FBBF24'
+                      : activeHovered.dbTable?.colorStatus === 'blue'
+                      ? '#60A5FA'
+                      : activeHovered.dbTable?.colorStatus === 'green' || activeHovered.dbTable?.statusType === 'occupied'
+                      ? '#34D399'
                       : '#94A3B8';
 
                   return (

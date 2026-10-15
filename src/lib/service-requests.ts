@@ -1,7 +1,7 @@
 import { prisma } from './prisma';
 import { broadcastQrEvent } from './events';
 
-export type TableColor = 'red' | 'orange' | 'yellow' | 'green' | 'gray';
+export type TableColor = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'gray';
 export type TableColorStatus = TableColor;
 
 export interface MinimalRequest {

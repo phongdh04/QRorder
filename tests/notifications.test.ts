@@ -73,7 +73,7 @@ describe('Part 4 - Notification Channels & Web Push System', () => {
     // Giả lập webpush.sendNotification ném lỗi 410 Gone
     const sendNotificationSpy = vi
       .spyOn(webpush, 'sendNotification')
-      .mockRejectedValueOnce({
+      .mockRejectedValue({
         statusCode: 410,
         message: 'Endpoint is no longer valid',
       });

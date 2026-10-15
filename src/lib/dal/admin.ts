@@ -370,8 +370,20 @@ export async function adminGetTables(restaurantId: string) {
       statusType = 'preparing'; // Có món đang làm (vàng)
     }
 
+    // Phân biệt trạng thái màu:
+    // Nếu colorStatus đang là 'green' (không còn yêu cầu phục vụ pending)
+    // nhưng bàn CHƯA GỌI MÓN NÀO (validOrders = 0):
+    // => Chuyển sang màu 'blue' (Đang xem menu / Chưa gọi món) thay vì 'green' (Đã lên đủ món)
+    const validOrders = orders.filter((o) => o.status !== 'cancelled');
+    const hasValidOrders = validOrders.length > 0;
+    let finalColorStatus = colorStatus;
+    if (colorStatus === 'green' && !hasValidOrders) {
+      finalColorStatus = 'blue';
+    }
+
     return {
       ...baseTableData,
+      colorStatus: finalColorStatus,
       statusType,
       unservedCount,
       totalAmount: calculatedTotal,
