@@ -1,0 +1,1179 @@
+[
+  {
+    "id": "1ccd193c-dc78-415e-b118-3f3c4cddec74",
+    "name": "Gỏi / Salad",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "c31ad70b-8651-4dae-af0a-23a8a7ccd9f5",
+        "name": "Khổ Qua Chà Bông \"Sung Sướng\"",
+        "description": "Mướp đắng ướp đá giòn lạnh phủ chà bông hảo hạng, món nhắm thanh mát giải nhiệt",
+        "price": 79000,
+        "imageUrl": "/dishes/kho-qua-cha-bong.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "09f2b1b8-333b-4462-8a33-91e3081a4e8e",
+        "name": "Nộm Sứa Hải Hậu",
+        "description": "Sứa đỏ giòn sần sật bóp thấu rau củ tươi, lạc rang thơm bùi và nước mắm chua ngọt",
+        "price": 119000,
+        "imageUrl": "/dishes/nom-sua-hai-hau.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "5ec4c061-e08d-4362-b12b-79a21d80df27",
+        "name": "Salad Thăn Ngoại Xông Khói Sốt Chanh Leo",
+        "description": "Thăn ngoại bò xông khói gỗ sồi thái lát mỏng, rau xanh tươi mát cùng sốt chanh leo chua ngọt",
+        "price": 139000,
+        "imageUrl": "/dishes/salad-than-ngoai-xong-khoi.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "3cded4e1-a75d-4b61-bde8-1adc9fe4f5db",
+        "name": "Salad Rong Biển Trứng Sốt Mè Rang",
+        "description": "Rong biển tươi giòn kết hợp trứng non và sốt mè rang béo ngậy chuẩn phong vị Á Đông",
+        "price": 140000,
+        "imageUrl": "/dishes/salad-rong-bien-trung.jpg",
+        "sortOrder": 4
+      },
+      {
+        "id": "27061227-b017-4cdb-a2fa-05631f37657d",
+        "name": "Somtum Hải Sản",
+        "description": "Gỏi đu đủ giòn cay nồng vị Thái Lan hòa quyện cùng tôm mực tươi rói đậm đà",
+        "price": 150000,
+        "imageUrl": "/dishes/somtum-hai-san.jpg",
+        "sortOrder": 5
+      },
+      {
+        "id": "e7d53576-e95e-47b3-9d32-fbcabadbd961",
+        "name": "Gỏi Xoài Cá Lăng \"Trống Đồng\"",
+        "description": "Cá lăng giòn thơm phối cùng xoài xanh bào sợi vị chua cay đậm đà công thức Trống Đồng",
+        "price": 159000,
+        "imageUrl": "/dishes/goi-xoai-ca-lang.jpg",
+        "sortOrder": 6
+      },
+      {
+        "id": "f5115bbd-4105-4a63-8694-e957012bc632",
+        "name": "Gỏi Má Heo Sốt Namchimcheo",
+        "description": "Má heo nướng giòn sần sật bóp sốt chẩm chéo Tây Bắc cay tê kích thích vị giác",
+        "price": 159000,
+        "imageUrl": "/dishes/goi-ma-heo-namchimcheo.jpg",
+        "sortOrder": 7
+      },
+      {
+        "id": "9b17853e-06dd-4312-8fc4-6182538b4ddc",
+        "name": "Nộm Rau Má Bắp Bò",
+        "description": "Rau má non tươi xanh trộn cùng bắp bò hoa chần tái, nước cốt chanh tỏi ớt thơm lừng",
+        "price": 169000,
+        "imageUrl": "/dishes/nom-rau-ma-bap-bo.jpg",
+        "sortOrder": 8
+      },
+      {
+        "id": "5509a072-57fd-45e6-9fa5-b5265199145e",
+        "name": "Gỏi Bò Bóp Thấu",
+        "description": "Thịt bò tái chanh chua thanh, chuối chát, khế chua, vừng rang và hành phi giòn rụm",
+        "price": 169000,
+        "imageUrl": "/dishes/goi-bo-bop-thau.jpg",
+        "sortOrder": 9
+      },
+      {
+        "id": "0477411a-34eb-4f25-baf2-b829d69571e1",
+        "name": "Gỏi Bò \"Trống Đồng\"",
+        "description": "Món gỏi đặc trưng của quán với bắp bò thượng hạng sốt gia truyền trứ danh",
+        "price": 179000,
+        "imageUrl": "/dishes/goi-bo-trong-dong.jpg",
+        "sortOrder": 10
+      },
+      {
+        "id": "6bd5aef1-1b87-45c7-be0e-c1b63deeab41",
+        "name": "Salad Cá Hồi Áp Chảo Sốt Chanh Leo",
+        "description": "Cá hồi Nauy tươi áp chảo xém cạnh sốt chanh leo vàng óng thượng hạng, món Signature nổi bật",
+        "price": 250000,
+        "imageUrl": "/dishes/salad-ca-hoi-chanh-leo.jpg",
+        "sortOrder": 11
+      }
+    ]
+  },
+  {
+    "id": "85cb865f-a039-45d6-9b64-2b0baf1a475b",
+    "name": "Sashimi Tươi Sống",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "3934362c-5ea4-4b19-a30f-a5c0edf3876b",
+        "name": "Thuyền Sashimi Tổng Hợp",
+        "description": "Thuyền sashimi thượng hạng bài trí nghệ thuật: cá hồi Nauy, cá trích ép trứng, bạch tuộc tươi ngon",
+        "price": 459000,
+        "imageUrl": "/dishes/thuyen-sashimi-tong-hop.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "b540d09d-46ca-4b9f-8323-d08476691b6a",
+        "name": "Sashimi Cá Trích Ép Trứng",
+        "description": "Cá trích ngâm giấm vàng giòn bùi béo kết hợp trứng cá chuồn giòn nổ lách tách",
+        "price": 390000,
+        "imageUrl": "/dishes/sashimi-ca-trich-ep-trung.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "9f9a6914-aa6c-4063-8ce8-3e8fef0e257b",
+        "name": "Sashimi Cá Hồi",
+        "description": "Phi lê cá hồi tươi sống vân mỡ cẩm thạch béo mềm tan trong miệng kèm mù tạt cay nồng",
+        "price": 499000,
+        "imageUrl": "/dishes/sashimi-ca-hoi.jpg",
+        "sortOrder": 3
+      }
+    ]
+  },
+  {
+    "id": "91700ca9-605e-4cde-9ce3-733c0baabaa3",
+    "name": "Khai Đạo & Nhâm Nhi",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "10b63218-857b-48d6-9bfe-d7723f449cdf",
+        "name": "Cá Trứng Chiên Giòn Sốt Me",
+        "description": "Cá trứng Nauy chiên vàng giòn rụm ngập sốt me chua ngọt đậm đà, món nhắm khoái khẩu",
+        "price": 179000,
+        "imageUrl": "/dishes/ca-trung-chien-gion-sot-me.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "20db1225-54ae-41d2-a7f8-9fd29ebda30b",
+        "name": "Đậu Tẩm Hành Hà Thành",
+        "description": "Đậu hũ mơ lướt ván nhúng đẫm mắm hành chuẩn vị phố cổ Hà Nội béo ngậy",
+        "price": 79000,
+        "imageUrl": "/dishes/dau-tam-hanh-ha-thanh.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "25fde6e5-b94b-478c-85e1-ff70eb7351d6",
+        "name": "Khoai Lang Kén Mật Ong",
+        "description": "Khoai lang kén vàng ươm thơm lừng mật ong rừng nguyên chất ngọt ngào",
+        "price": 79000,
+        "imageUrl": "/dishes/khoai-lang-ken-mat-ong.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "f1568311-4aa3-46b6-a1d0-e70c39865b5f",
+        "name": "Đậu Hũ Xóc Sả Ớt",
+        "description": "Đậu hũ ngoài giòn trong mềm xóc sả ớt tươi cay nồng dậy mùi hấp dẫn",
+        "price": 79000,
+        "imageUrl": "/dishes/dau-hu-xoc-sa-ot.jpg",
+        "sortOrder": 4
+      },
+      {
+        "id": "7a6bd861-0968-4cec-8059-09a7f14c4907",
+        "name": "Khoai Tây Chiên Lắc Phomai",
+        "description": "Khoai tây cắt sợi chiên vàng ruộm lắc đẫm bột phô mai béo thơm ngậy",
+        "price": 89000,
+        "imageUrl": "/dishes/khoai-tay-chien-lac-phomai.jpg",
+        "sortOrder": 5
+      },
+      {
+        "id": "7216edda-be4a-431e-92cd-5ac99e61840e",
+        "name": "Nấm Hải Sản Xóc Muối Tomyum",
+        "description": "Nấm chiên giòn xóc muối vị chua cay Tomyum Thái Lan bùng nổ hương vị",
+        "price": 99000,
+        "imageUrl": "/dishes/nam-hai-san-xoc-muoi-tomyum.jpg",
+        "sortOrder": 6
+      },
+      {
+        "id": "cd15219f-a234-435b-93c7-fdb6f725d21b",
+        "name": "Đậu Hũ Sốt Tứ Xuyên",
+        "description": "Đậu non mềm mịn quyện sốt cay tê Tứ Xuyên và thịt băm thơm nồng",
+        "price": 139000,
+        "imageUrl": "/dishes/dau-hu-sot-tu-xuyen.jpg",
+        "sortOrder": 7
+      },
+      {
+        "id": "7b39b12b-0f67-4de0-bbd3-6d5ec6a33a6d",
+        "name": "Ghẹ Sữa Rim Tỏi Ớt",
+        "description": "Ghẹ sữa nguyên con giòn tan thấm đều nước mắm tỏi ớt kẹo đậm đà",
+        "price": 139000,
+        "imageUrl": "/dishes/ghe-sua-rim-toi-ot.jpg",
+        "sortOrder": 8
+      },
+      {
+        "id": "5533041e-ae37-4268-a2de-b99552b12a2f",
+        "name": "Thăn Ngoại Xông Khói Sốt Hồng",
+        "description": "Thăn ngoại bò thượng hạng xông khói gỗ sốt hồng kem mịn sang trọng",
+        "price": 169000,
+        "imageUrl": "/dishes/than-ngoai-xong-khoi-sot-hong.jpg",
+        "sortOrder": 9
+      },
+      {
+        "id": "2e4ec857-bff4-4694-a9f8-cf9fdd0b777b",
+        "name": "Trâu Xé Tay",
+        "description": "Thịt trâu gác bếp ngọt mềm từng thớ chấm tương ớt Mường Khương cay nồng",
+        "price": 180000,
+        "imageUrl": "/dishes/trau-xe-tay.jpg",
+        "sortOrder": 10
+      },
+      {
+        "id": "7aa27404-94a5-49b8-ac64-bad46e7d14e5",
+        "name": "Bắp Bò Xông Mầm Cuộn Cải Xanh",
+        "description": "Bắp bò hoa thái mỏng cuộn mầm cải xanh chấm sốt mù tạt thơm nồng",
+        "price": 199000,
+        "imageUrl": "/dishes/bap-bo-xong-mam-cuon-cai.jpg",
+        "sortOrder": 11
+      },
+      {
+        "id": "9b218630-2d08-41f3-bbe0-53ec6ca7e796",
+        "name": "Sụn Gà Rang Muối Hồng Kông",
+        "description": "Sụn gà giòn sần sật phủ muối rang hạt Hong Kong thơm lừng sả chiên",
+        "price": 209000,
+        "imageUrl": "/dishes/sun-ga-rang-muoi-hk.jpg",
+        "sortOrder": 12
+      },
+      {
+        "id": "2583d0bc-4242-4e55-8e50-87457fcbd891",
+        "name": "Khô Mực Xé Tay",
+        "description": "Mực câu đảo nướng than hoa thơm phức xé sợi tơi xốp ngọt thanh tự nhiên",
+        "price": 349000,
+        "imageUrl": "/dishes/kho-muc-xe-tay.jpg",
+        "sortOrder": 13
+      },
+      {
+        "id": "2a80e8f2-c9eb-4311-84e6-7af79af31018",
+        "name": "Dồi Sụn Sốt Xí Muội",
+        "description": "Dồi sụn nướng than hoa giòn sần sật sốt xí muội chua ngọt đưa đẩy ly bia",
+        "price": 149000,
+        "imageUrl": "/dishes/doi-sun-sot-xi-muoi.jpg",
+        "sortOrder": 14
+      },
+      {
+        "id": "1552aa58-59d1-4a95-945b-561c023f4c8e",
+        "name": "Hến Xúc Phồng Tôm",
+        "description": "Hến sông xào sả ớt rau răm đậm đà xúc cùng bánh phồng tôm giòn tan",
+        "price": 159000,
+        "imageUrl": "/dishes/hen-xuc-phong-tom.jpg",
+        "sortOrder": 15
+      },
+      {
+        "id": "ec2c060d-d165-412e-9820-7174e37d7ab5",
+        "name": "Chả Ốc Tây Hồ",
+        "description": "Ốc nhồi băm giòn sần sật cuốn lá lốt nướng xém cạnh chuẩn hương vị Hà Nội",
+        "price": 160000,
+        "imageUrl": "/dishes/cha-oc-tay-ho.jpg",
+        "sortOrder": 16
+      },
+      {
+        "id": "ff413927-d5b6-4c75-949e-f4590a949ea2",
+        "name": "Lườn Vây Cá Hồi Xóc Muối HK",
+        "description": "Vây cá hồi giòn rụm béo ngậy xóc muối rang Hong Kong đậm vị",
+        "price": 179000,
+        "imageUrl": "/dishes/luon-vay-ca-hoi-xoc-muoi.jpg",
+        "sortOrder": 17
+      },
+      {
+        "id": "41301d0e-3398-430d-bd90-9a625ef7d764",
+        "name": "Lườn Vây Cá Hồi Chiên Nước Mắm",
+        "description": "Vây cá béo ngậy ngào sốt nước mắm nhĩ tỏi ớt kẹo sệt bóng bẩy",
+        "price": 179000,
+        "imageUrl": "/dishes/luon-vay-ca-hoi-chien-mam.jpg",
+        "sortOrder": 18
+      },
+      {
+        "id": "1aefa548-b98b-49bb-8c05-95839b9ba2bb",
+        "name": "Khô Cá Lim Kim Cháy Mắm Tỏi",
+        "description": "Cá lim kim biển chiên giòn rụm cháy mắm tỏi thơm nức mũi",
+        "price": 179000,
+        "imageUrl": "/dishes/kho-ca-lim-kim-chay-mam.jpg",
+        "sortOrder": 19
+      },
+      {
+        "id": "022624d3-348c-4745-b93a-af7609ffcc98",
+        "name": "Cồi Điệp Xào Bắp Bơ",
+        "description": "Cồi sò điệp tươi ngọt xào bắp ngọt quyện bơ Pháp thơm nồng béo ngậy",
+        "price": 179000,
+        "imageUrl": "/dishes/coi-diep-xao-bap-bo.jpg",
+        "sortOrder": 20
+      },
+      {
+        "id": "b7f8588b-7243-4c36-a40f-e7195e762189",
+        "name": "Sò Gạo Xúc Phồng Tôm",
+        "description": "Sò gạo béo ngọt xào lăn rau răm xúc bánh phồng tôm giòn rụm",
+        "price": 199000,
+        "imageUrl": "/dishes/so-gao-xuc-phong-tom.jpg",
+        "sortOrder": 21
+      },
+      {
+        "id": "d5d0f902-bf7e-4581-a0f0-07a883bf72b7",
+        "name": "Lưỡi Vịt Sapo + Bánh Mỳ",
+        "description": "Lưỡi vịt om tiêu đen nồi đất sền sệt đậm đà ăn kèm bánh mỳ nướng bơ giòn",
+        "price": 219000,
+        "imageUrl": "/dishes/luoi-vit-sapo-banh-my.jpg",
+        "sortOrder": 22
+      },
+      {
+        "id": "9e7aa1d4-73bc-4a4d-826c-8c24d2586667",
+        "name": "Gà Bay Pháp Xúc Phồng Tôm",
+        "description": "Chim bồ câu Pháp băm nhỏ xào rau thơm, tiêu rừng xúc bánh phồng tôm",
+        "price": 269000,
+        "imageUrl": "/dishes/ga-bay-phap-xuc-phong-tom.jpg",
+        "sortOrder": 23
+      },
+      {
+        "id": "8f3869f5-ed5b-4bec-a32f-be8878dac36c",
+        "name": "Bò Tơ Tái Chanh",
+        "description": "Bò tơ tươi mềm tái chanh thái mỏng cuốn bánh tráng rau rừng tươi mát",
+        "price": 289000,
+        "imageUrl": "/dishes/bo-to-tai-chanh.jpg",
+        "sortOrder": 24
+      }
+    ]
+  },
+  {
+    "id": "aa6575bc-e801-4690-ab9f-f0b3e3b09495",
+    "name": "Set Tổng Hợp",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "a651e1a1-ef2b-4423-8454-914130c50a39",
+        "name": "Set Nướng Mỹ Vị Trống Đồng",
+        "description": "Đại tiệc nướng trọn vẹn: tôm càng, bò tơ, dải heo và sườn cọng sốt đặc chế Trống Đồng",
+        "price": 639000,
+        "imageUrl": "/dishes/set-nuong-my-vi-trong-dong.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "085dbdd5-c14b-412c-bc9a-493028416dbb",
+        "name": "Set Thịt Nguội Tổng Hợp",
+        "description": "Khay Cold Cuts cao cấp kiểu Âu: giăm bông, salami, xúc xích nướng, phô mai và ô liu",
+        "price": 399000,
+        "imageUrl": "/dishes/set-thit-nguoi-tong-hop.jpg",
+        "sortOrder": 2
+      }
+    ]
+  },
+  {
+    "id": "3997f566-f1de-4c4d-b67f-279a00190171",
+    "name": "Bò & Trâu Thượng Hạng",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "61ffbbf5-be66-495f-b024-a609ad83fff6",
+        "name": "Thăn Ngoại Bò Mỹ Sốt Đặc Biệt",
+        "description": "Thăn ngoại bò Mỹ đút lò sốt bí truyền đỉnh cao phục vụ trên thớt gỗ nướng rau củ",
+        "price": 269000,
+        "imageUrl": "/dishes/than-ngoai-bo-my-sot-dac-biet.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "60377501-87ad-44b9-ab8c-0bfa6cf5ddc3",
+        "name": "Bò Lúc Lắc Khoai Tây Chiên",
+        "description": "Bò phi lê thái quân cờ xào tiêu ớt chuông mọng nước trên chảo gang kèm khoai tây chiên",
+        "price": 299000,
+        "imageUrl": "/dishes/bo-luc-lac-khoai-tay-chien.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "defe43ae-9e5a-4cf0-972e-6e245882dee7",
+        "name": "Trâu Cháy Tỏi",
+        "description": "Thịt trâu tươi xào cháy cạnh tỏi cô đơn thơm lừng, thịt ngọt mềm đậm vị",
+        "price": 249000,
+        "imageUrl": "/dishes/trau-chay-toi.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "340865e2-c546-42d4-9caa-86876643edba",
+        "name": "Trâu Cháy Tiêu Xanh",
+        "description": "Thịt trâu mềm ngọt cay nồng hạt tiêu xanh Phú Quốc thơm lựng chảo gang",
+        "price": 259000,
+        "imageUrl": "/dishes/trau-chay-tieu-xanh.jpg",
+        "sortOrder": 4
+      },
+      {
+        "id": "05519968-698b-4b82-ac09-e05d61e4bcdf",
+        "name": "Bò Tơ Cháy Tỏi",
+        "description": "Bò tơ non mềm xèo xèo cùng tỏi ta giòn rụm bốc khói nghi ngút",
+        "price": 259000,
+        "imageUrl": "/dishes/bo-to-chay-toi.jpg",
+        "sortOrder": 5
+      },
+      {
+        "id": "7aaafb21-40a6-4941-bc2c-5ba457a16c55",
+        "name": "Bò Cháy Tỏi Phán Gang",
+        "description": "Bò thượng hạng đảo đều trên bản gang giữ trọn vẹn độ mọng nước tự nhiên",
+        "price": 269000,
+        "imageUrl": "/dishes/bo-chay-toi-phan-gang.jpg",
+        "sortOrder": 6
+      },
+      {
+        "id": "c50f6a3b-5cfc-4947-8b35-01c75ad89b41",
+        "name": "Bò Tơ Chao Lá Mắc Mật",
+        "description": "Bò tơ chao dầu giòn bì hòa quyện hương lá mắc mật Lạng Sơn ngây ngất",
+        "price": 269000,
+        "imageUrl": "/dishes/bo-to-chao-la-mac-mat.jpg",
+        "sortOrder": 7
+      },
+      {
+        "id": "e3662a90-f98c-47db-9553-79008e12d33d",
+        "name": "Thăn Bò Mỹ Áp Chảo Sốt Teriyaki",
+        "description": "Thăn bò Mỹ mềm tan sốt ngọt mặn Teriyaki Nhật Bản mè rang thơm phức",
+        "price": 279000,
+        "imageUrl": "/dishes/than-bo-my-ap-chao-teriyaki.jpg",
+        "sortOrder": 8
+      }
+    ]
+  },
+  {
+    "id": "d2e3372e-570a-4853-9680-8e45c72ce6e9",
+    "name": "Gà Đồi & Chim Bay",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "f30d6035-9a32-43b7-bb72-57be5059bc91",
+        "name": "Cánh Gà Chiên Nước Mắm",
+        "description": "Cánh gà giòn tan ngập sốt nước mắm tỏi ớt kẹo vàng óng thơm nức mũi",
+        "price": 159000,
+        "imageUrl": "/dishes/canh-ga-chien-nuoc-mam.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "63693b46-cfca-4822-acc8-672af939eb12",
+        "name": "Gà Quay Lu",
+        "description": "Gà đồi nguyên con quay lu đất da giòn bóng bẩy, thịt mềm ngọt mọng nước",
+        "price": 289000,
+        "imageUrl": "/dishes/ga-quay-lu.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "5435932a-26d7-4711-9597-331a0445fe19",
+        "name": "Gà Bay Pháp Quay",
+        "description": "Chim câu Pháp quay da giòn rụm bóng bẩy, thịt mềm ngọt thơm thảo mộc",
+        "price": 219000,
+        "imageUrl": "/dishes/ga-bay-phap-quay.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "c69c5ac4-7d44-4de2-89a3-6260d93e2981",
+        "name": "Chân Gà Sốt Cay Hàn Quốc",
+        "description": "Chân gà rút xương thấm đẫm sốt cay đỏ Hàn Quốc rắc mè rang thơm lừng",
+        "price": 150000,
+        "imageUrl": "/dishes/chan-ga-sot-cay-hq.jpg",
+        "sortOrder": 4
+      },
+      {
+        "id": "606b6eb7-d9f8-428c-8b97-b64441dc793d",
+        "name": "Cánh Gà Sốt Cay Hàn Quốc",
+        "description": "Cánh gà chiên giòn phủ sốt gochujang cay ngọt đậm vị kích thích vị giác",
+        "price": 159000,
+        "imageUrl": "/dishes/canh-ga-sot-cay-hq.jpg",
+        "sortOrder": 5
+      },
+      {
+        "id": "15fa89a4-efff-4e9a-91dd-40672e34fcfe",
+        "name": "Gà Ri Rang Muối",
+        "description": "Gà ri đồi thả vườn thịt săn chắc rang muối sả giòn rụm thơm lừng",
+        "price": 279000,
+        "imageUrl": "/dishes/ga-ri-rang-muoi.jpg",
+        "sortOrder": 6
+      },
+      {
+        "id": "a02a6327-4801-4626-8c83-cf848b49bde1",
+        "name": "Gà Chiên Mắm",
+        "description": "Gà ta chặt miếng chiên vàng ngào sốt mắm nhĩ thơm phức đậm đà",
+        "price": 279000,
+        "imageUrl": "/dishes/ga-chien-mam.jpg",
+        "sortOrder": 7
+      },
+      {
+        "id": "e8cbf7bd-e3fd-49d6-a4c1-ae54316aab25",
+        "name": "Cánh Gà Nướng Muối Xanh",
+        "description": "Cánh gà ướp sốt muối ớt xanh Nha Trang nướng the cay độc đáo",
+        "price": 150000,
+        "imageUrl": "/dishes/canh-ga-nuong-muoi-xanh.jpg",
+        "sortOrder": 8
+      },
+      {
+        "id": "d770e7fa-c662-47d0-98c9-73ccbe93f74f",
+        "name": "Cánh Gà Nướng Muối Ớt",
+        "description": "Cánh gà nướng than hoa vàng ươm muối ớt cay nồng đậm vị",
+        "price": 150000,
+        "imageUrl": "/dishes/canh-ga-nuong-muoi-ot.jpg",
+        "sortOrder": 9
+      },
+      {
+        "id": "9ec0c13e-0c74-4700-8b22-28e77bbc7d80",
+        "name": "Gà Xào Cay Tứ Xuyên",
+        "description": "Thịt gà xào hoa tiêu và ớt khô cay nồng tê tái đầu lưỡi",
+        "price": 189000,
+        "imageUrl": "/dishes/ga-xao-cay-tu-xuyen.jpg",
+        "sortOrder": 10
+      },
+      {
+        "id": "500528da-4a8c-490b-85b3-aec125f81810",
+        "name": "Gà Bay Pháp Xào Cả",
+        "description": "Chim câu Pháp xào hành răm và thảo mộc thơm ngào ngạt",
+        "price": 259000,
+        "imageUrl": "/dishes/ga-bay-phap-xao-ca.jpg",
+        "sortOrder": 11
+      }
+    ]
+  },
+  {
+    "id": "98041c02-4596-461b-b4b7-debc934f5f7b",
+    "name": "Heo & Đảo Sườn Cay",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "400b94da-8d9b-4e5b-b125-249340ce3bb9",
+        "name": "Đảo Sườn Cay Kiểu Thái",
+        "description": "Tháp sườn cay khổng lồ ninh mềm rưới đẫm nước sốt ớt hiểm chanh sả cay bùng nổ",
+        "price": 349000,
+        "imageUrl": "/dishes/dao-suon-cay-kieu-thai.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "40d1078b-afae-415a-a6c3-587ca366ff99",
+        "name": "Lão Trư Tắm Nắng Vườn Chanh",
+        "description": "Thịt heo cuốn rau rừng tắm sốt chanh tươi thanh mát bùi béo",
+        "price": 169000,
+        "imageUrl": "/dishes/lao-tru-tam-nang-vuon-chanh.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "729748a2-eab8-458a-a800-1424780c1e36",
+        "name": "Thịt Dải Cháy Mắm Tỏi",
+        "description": "Dải heo giòn sần sật cháy tỏi mắm dậy vị thơm lừng bàn nhậu",
+        "price": 179000,
+        "imageUrl": "/dishes/thit-dai-chay-mam-toi.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "7ffce9fc-d280-4275-8c7d-8a9001ec9342",
+        "name": "Sườn Heo Chiên Tam Vị",
+        "description": "Sườn non chiên giòn quyện ba tầng hương vị chua cay mặn ngọt hài hòa",
+        "price": 229000,
+        "imageUrl": "/dishes/suon-heo-chien-tam-vi.jpg",
+        "sortOrder": 4
+      },
+      {
+        "id": "47d9cdfa-449a-4748-98c5-f8f5ab6374dc",
+        "name": "Đuôi Lão Trư Rang Muối",
+        "description": "Đuôi heo chiên giòn bì phủ muối rang thơm bùi sần sật nhai vui miệng",
+        "price": 229000,
+        "imageUrl": "/dishes/duoi-lao-tru-rang-muoi.jpg",
+        "sortOrder": 5
+      },
+      {
+        "id": "518115e0-abd0-466c-b430-71f41c401037",
+        "name": "Đuôi Lão Trư Chiên Nước Mắm",
+        "description": "Đuôi heo giòn sần sật rim sốt nước mắm tỏi ớt kẹo sệt đậm đà",
+        "price": 229000,
+        "imageUrl": "/dishes/duoi-lao-tru-chien-mam.jpg",
+        "sortOrder": 6
+      },
+      {
+        "id": "58d61340-a425-4f69-a813-fd4738cdd115",
+        "name": "Lão Trư Xào Cải Chua",
+        "description": "Thịt heo xào dưa cải muối chua giòn đưa bia cực đỉnh",
+        "price": 249000,
+        "imageUrl": "/dishes/lao-tru-xao-cai-chua.jpg",
+        "sortOrder": 7
+      },
+      {
+        "id": "bca03721-66ba-46c6-9b1d-8ff6cb99e808",
+        "name": "Lão Trư Xào Cay Tứ Xuyên",
+        "description": "Thịt heo thái mỏng xào cay sốt hoa tiêu Tứ Xuyên nồng ấm",
+        "price": 249000,
+        "imageUrl": "/dishes/lao-tru-xao-cay-tu-xuyen.jpg",
+        "sortOrder": 8
+      },
+      {
+        "id": "600d667d-a4da-4199-a8da-fcca864d354b",
+        "name": "Lão Trư Xào Nấm",
+        "description": "Thịt heo xào nấm tươi thanh ngọt bổ dưỡng thơm lừng dầu hào",
+        "price": 249000,
+        "imageUrl": "/dishes/lao-tru-xao-nam.jpg",
+        "sortOrder": 9
+      },
+      {
+        "id": "da9f35eb-547d-4703-bc23-3495bc010ab1",
+        "name": "Giò Heo Muối Nổ Bì Da",
+        "description": "Chân giò ủ muối chiên phồng nổ bì giòn tan chuẩn phong cách bia Đức",
+        "price": 329000,
+        "imageUrl": "/dishes/gio-heo-muoi-no-bi-da.jpg",
+        "sortOrder": 10
+      }
+    ]
+  },
+  {
+    "id": "d02ac4a7-5989-4d8f-bc6a-f09e1d9bd773",
+    "name": "Đặc Sản Ếch Đồng",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "27ec1dfb-169b-4246-bd97-8fa40e912d6e",
+        "name": "Ếch Giòn Rang Muối",
+        "description": "Thịt ếch chiên xù phủ muối rang hạt thơm phức kèm lá lốt chiên giòn rụm",
+        "price": 179000,
+        "imageUrl": "/dishes/ech-gion-rang-muoi.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "9c80a0ca-8449-431c-a476-dd2a6f502ac3",
+        "name": "Ếch Chiên Mắm",
+        "description": "Đùi ếch béo ngậy chiên nước mắm tỏi ớt kẹo sệt thơm nức mũi",
+        "price": 179000,
+        "imageUrl": "/dishes/ech-chien-mam.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "3ba46464-c403-48c4-a446-ffc4d20666bf",
+        "name": "Ếch Xào Măng Cay",
+        "description": "Ếch đồng xào măng chua ớt hiểm cay nồng đậm đà khó cưỡng",
+        "price": 199000,
+        "imageUrl": "/dishes/ech-xao-mang-cay.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "ad37ab47-302a-40e8-aad1-05db58436d67",
+        "name": "Ếch Xào Cà Xanh",
+        "description": "Ếch om cà pháo xanh và tía tô đậm vị dân dã miền quê",
+        "price": 199000,
+        "imageUrl": "/dishes/ech-xao-ca-xanh.jpg",
+        "sortOrder": 4
+      },
+      {
+        "id": "fcbba642-a34a-4f4a-8a95-1efb84fa1d59",
+        "name": "Ếch Sapo + Bánh Mỳ",
+        "description": "Ếch om niêu đất sốt tương đậm đặc sền sệt chấm bánh mỳ nướng giòn",
+        "price": 219000,
+        "imageUrl": "/dishes/ech-sapo-banh-my.jpg",
+        "sortOrder": 5
+      }
+    ]
+  },
+  {
+    "id": "825bb6b9-b719-4649-a02c-8916aab5226f",
+    "name": "Hải Sản Cao Cấp",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "5dda69bc-2049-4f99-acb0-abd40146d65e",
+        "name": "Ốc Hương Hoàng Kim + Bánh Mỳ",
+        "description": "Ốc hương tươi giòn sốt trứng muối hoàng kim béo bùi chấm bánh mỳ nướng bơ giòn",
+        "price": 369000,
+        "imageUrl": "/dishes/oc-huong-hoang-kim.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "1593faba-bbc6-4089-aa1f-4c134f4ab04f",
+        "name": "Mực Trứng Chiên Mắm",
+        "description": "Mực trứng béo ngậy chiên giòn sốt mắm tỏi ớt kẹo vàng óng óng ả",
+        "price": 399000,
+        "imageUrl": "/dishes/muc-trung-chien-mam.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "4996ae93-24b1-4f15-ad8c-63a3485a55f3",
+        "name": "Tôm Nướng Mọi",
+        "description": "Tôm sú tươi sống nướng than hồng giữ trọn vị ngọt tự nhiên của biển",
+        "price": 239000,
+        "imageUrl": "/dishes/tom-nuong-moi.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "1a0381a9-b602-411b-bfd7-92066445f968",
+        "name": "Tôm Nướng Muối Ớt",
+        "description": "Tôm sú nướng than hoa phết muối ớt Tây Ninh cay nồng đậm vị",
+        "price": 239000,
+        "imageUrl": "/dishes/tom-nuong-muoi-ot.jpg",
+        "sortOrder": 4
+      },
+      {
+        "id": "b3bb67c7-f65c-47dd-b587-f5007eaa54f7",
+        "name": "Bạch Tuộc Xào Cay Tứ Xuyên",
+        "description": "Bạch tuộc giòn sần sật xào sốt sa tế Tứ Xuyên nồng cay kích thích",
+        "price": 279000,
+        "imageUrl": "/dishes/bach-tuoc-xao-cay-tu-xuyen.jpg",
+        "sortOrder": 5
+      },
+      {
+        "id": "05ff7b51-5ea3-4a5c-87fc-e3963b9ef839",
+        "name": "Cá Hồi Áp Chảo Sốt Teriyaki",
+        "description": "Phi lê cá hồi Nauy áp chảo sốt ngọt mặn Nhật Bản béo ngậy",
+        "price": 279000,
+        "imageUrl": "/dishes/ca-hoi-ap-chao-teriyaki.jpg",
+        "sortOrder": 6
+      },
+      {
+        "id": "af3daf36-6a54-4ea6-8e8f-562d8dbe6cf3",
+        "name": "Cá Hồi Áp Chảo Sốt Chanh Leo",
+        "description": "Cá hồi áp chảo sốt chanh leo chua thanh tươi mát ăn kèm rau củ",
+        "price": 279000,
+        "imageUrl": "/dishes/ca-hoi-ap-chao-chanh-leo.jpg",
+        "sortOrder": 7
+      },
+      {
+        "id": "653022e5-d6d4-4cfc-8081-2696453ea6d2",
+        "name": "Cá Lóc Rang Muối Hồng Kông",
+        "description": "Cá lóc đồng phi lê giòn rụm phủ lớp muối Hong Kong thơm ngậy",
+        "price": 279000,
+        "imageUrl": "/dishes/ca-loc-rang-muoi-hk.jpg",
+        "sortOrder": 8
+      },
+      {
+        "id": "88a7413b-3245-4096-88b7-a5299ab495d4",
+        "name": "Cá Diêu Hồng Sốt Ớt Thái",
+        "description": "Cá diêu hồng chiên xù rưới sốt ba vị chua cay ngọt kiểu Thái Lan",
+        "price": 289000,
+        "imageUrl": "/dishes/ca-dieu-hong-sot-ot-thai.jpg",
+        "sortOrder": 9
+      },
+      {
+        "id": "41817082-c98b-420d-afd0-ad478cce7c37",
+        "name": "Ốc Hương Hấp Chanh Sả",
+        "description": "Ốc hương tươi giòn ngọt hấp sả cây và lá chanh nồng nàn thơm phức",
+        "price": 339000,
+        "imageUrl": "/dishes/oc-huong-hap-chanh-sa.jpg",
+        "sortOrder": 10
+      },
+      {
+        "id": "636271e6-3d68-4f02-9cc3-19892e303f7b",
+        "name": "Mực Ống Sốt Chanh Kiểu Thái",
+        "description": "Mực ống hấp sốt chanh ớt ngò rí cay tê bùng nổ vị giác",
+        "price": 389000,
+        "imageUrl": "/dishes/muc-ong-sot-chanh-thai.jpg",
+        "sortOrder": 11
+      },
+      {
+        "id": "64d47f11-1dc8-4226-85c7-a5942882a43f",
+        "name": "Mực Trứng Chiên Lá Lốt",
+        "description": "Mực trứng căng tròn chiên thơm lừng lá lốt giòn rụm",
+        "price": 399000,
+        "imageUrl": "/dishes/muc-trung-chien-la-lot.jpg",
+        "sortOrder": 12
+      },
+      {
+        "id": "84c2bb65-c6a1-43ed-afc3-763decffccbf",
+        "name": "Cá Bò Da Nướng Muối Ớt Size Trung",
+        "description": "Cá bò da biển tươi nướng than hồng muối ớt thơm phức cuốn bánh tráng",
+        "price": 579000,
+        "imageUrl": "/dishes/ca-bo-da-nuong-muoi-ot.jpg",
+        "sortOrder": 13
+      }
+    ]
+  },
+  {
+    "id": "0bdc21b5-a730-4921-9d99-ad38a497c9e3",
+    "name": "Nướng Thả Ga & Xiên Que",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "6b3f698b-e9af-4da8-af7f-d712a5234947",
+        "name": "Hàu Bỏ Lò Phomai",
+        "description": "Hàu sữa tươi đút lò phô mai Mozzarella kéo sợi thơm lừng béo ngậy",
+        "price": 38000,
+        "imageUrl": "/dishes/hau-bo-lo-phomai.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "879f9ae2-5bed-408d-b4f7-5d9be197d095",
+        "name": "Hàu Nướng Mỡ Hành",
+        "description": "Hàu sữa tươi nướng than hoa mỡ hành lạc rang bùi béo ngọt nước",
+        "price": 26000,
+        "imageUrl": "/dishes/hau-nuong-mo-hanh.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "7b504860-e1b3-48d9-a67a-eca065d33967",
+        "name": "Heo Nướng Xiên Mỹ Vị",
+        "description": "Xiên thịt heo ướp gia vị Trống Đồng nướng than hoa thơm lừng xém cạnh",
+        "price": 149000,
+        "imageUrl": "/dishes/heo-nuong-xien-my-vi.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "514c007e-406d-478a-86bc-1639dbf199f2",
+        "name": "Thịt Dải Nướng Mật Ong",
+        "description": "Dải heo nướng mật ong rừng vàng óng thơm ngọt mọng nước",
+        "price": 179000,
+        "imageUrl": "/dishes/thit-dai-nuong-mat-ong.jpg",
+        "sortOrder": 4
+      },
+      {
+        "id": "c48b64cb-c148-47bb-9eaf-06be363daf7b",
+        "name": "Sườn Cây Nướng Mật Ong",
+        "description": "Sườn cọng nướng than hoa phết sốt mật ong thơm lừng mút ngón tay",
+        "price": 179000,
+        "imageUrl": "/dishes/suon-cay-nuong-mat-ong.jpg",
+        "sortOrder": 5
+      },
+      {
+        "id": "ded635a4-1610-4676-85ce-5d25ef3e7bc4",
+        "name": "Xiên Gà Nướng Pattaya",
+        "description": "Gà xiên que nướng sốt ớt Pattaya the cay phong cách đường phố Thái",
+        "price": 179000,
+        "imageUrl": "/dishes/xien-ga-nuong-pattaya.jpg",
+        "sortOrder": 6
+      },
+      {
+        "id": "14e5a118-b6c0-45b0-b199-74913bbe5a43",
+        "name": "Xiên Heo Nướng Riềng Mẻ",
+        "description": "Thịt heo nướng riềng mẻ chua thanh thơm nức mũi chuẩn vị Bắc",
+        "price": 179000,
+        "imageUrl": "/dishes/xien-heo-nuong-rieng-me.jpg",
+        "sortOrder": 7
+      },
+      {
+        "id": "d1b880c4-520a-459a-91b3-33cd028e85df",
+        "name": "Thịt Dải Nướng Ngũ Vị",
+        "description": "Dải heo ướp ngũ vị hương đậm đà nướng than hồng thơm ngát",
+        "price": 189000,
+        "imageUrl": "/dishes/thit-dai-nuong-ngu-vi.jpg",
+        "sortOrder": 8
+      },
+      {
+        "id": "a74f6417-c542-4d8f-b338-533e2c9c6993",
+        "name": "Thịt Dải Nướng Tê Cay",
+        "description": "Dải heo ướp sốt ớt tê cay Tứ Xuyên kích thích đầu lưỡi",
+        "price": 189000,
+        "imageUrl": "/dishes/thit-dai-nuong-te-cay.jpg",
+        "sortOrder": 9
+      },
+      {
+        "id": "6ef247ba-c6af-440e-96c8-d186a01c44b6",
+        "name": "Xiên Bò Nướng Rau Củ",
+        "description": "Thịt bò xiên ớt chuông, hành tây nướng mọng nước mềm tan",
+        "price": 219000,
+        "imageUrl": "/dishes/xien-bo-nuong-rau-cu.jpg",
+        "sortOrder": 10
+      },
+      {
+        "id": "cf03e77c-0866-4ee8-96b2-eac3d5f090d9",
+        "name": "Ốc Hương Nướng Mọi",
+        "description": "Ốc hương nướng mọi thơm giòn chấm muối tiêu chanh chuẩn biển",
+        "price": 359000,
+        "imageUrl": "/dishes/oc-huong-nuong-moi.jpg",
+        "sortOrder": 11
+      },
+      {
+        "id": "054a226e-c9b6-41e0-a174-08303537812d",
+        "name": "Mực Nướng Muối Ớt",
+        "description": "Mực nướng than muối ớt cay giòn sần sật mồi nhậu số một",
+        "price": 399000,
+        "imageUrl": "/dishes/muc-nuong-muoi-ot.jpg",
+        "sortOrder": 12
+      }
+    ]
+  },
+  {
+    "id": "9f39e977-e53a-4634-8886-7ccf3692c264",
+    "name": "Vườn Rau Sau Hè",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "724c646c-8390-41ec-8107-ba08598d93d9",
+        "name": "Củ Quả Chấm Kho Quẹt",
+        "description": "Củ quả luộc ngũ sắc tươi giòn chấm niêu kho quẹt tôm thịt tóp mỡ đậm đà",
+        "price": 99000,
+        "imageUrl": "/dishes/cu-qua-cham-kho-quet.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "53086219-7429-4397-b4a7-6a39f362df00",
+        "name": "Bí Nụ Cháy Tỏi",
+        "description": "Bí bao tử non ngọt giòn xào cháy tỏi cô đơn thơm lừng xanh mướt",
+        "price": 139000,
+        "imageUrl": "/dishes/bi-nu-chay-toi.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "0f1422ca-b7e4-44b0-9548-be5b07085707",
+        "name": "Đậu Hũ Hải Sản Khói Lửa",
+        "description": "Đậu hũ non cùng tôm mực bọc giấy bạc xèo xèo khói lửa thơm lừng sốt hải vị",
+        "price": 199000,
+        "imageUrl": "/dishes/dau-hu-hai-san-khoi-lua.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "6713c46e-52b1-4614-8424-9838f7ccfa69",
+        "name": "Dưa Chuột Chẻ",
+        "description": "Dưa chuột tươi mát ướp lạnh giòn tan chấm muối ớt Tây Ninh",
+        "price": 36000,
+        "imageUrl": "/dishes/dua-chuot-che.jpg",
+        "sortOrder": 4
+      },
+      {
+        "id": "3f62ff5d-bbcb-4fb0-8e5a-c8cbf8a6a644",
+        "name": "Rau Muống Đỏ Lửa",
+        "description": "Rau muống xào tỏi trên ngọn lửa lớn xanh mướt giòn sần sật",
+        "price": 69000,
+        "imageUrl": "/dishes/rau-muong-do-lua.jpg",
+        "sortOrder": 5
+      },
+      {
+        "id": "3957d0fc-c3dd-4c49-bf01-602ee981f8af",
+        "name": "Cải Ngồng Xào Tỏi",
+        "description": "Cải ngồng non ngọt thanh xào tỏi ta dậy mùi thơm hấp dẫn",
+        "price": 89000,
+        "imageUrl": "/dishes/cai-ngong-xao-toi.jpg",
+        "sortOrder": 6
+      },
+      {
+        "id": "d7e363dc-c3e8-4fb7-a032-612972281b65",
+        "name": "Đậu Que Xào Ruốc Tôm",
+        "description": "Đậu que xanh giòn xào cùng ruốc tôm thơm bùi đậm vị",
+        "price": 89000,
+        "imageUrl": "/dishes/dau-que-xao-ruoc-tom.jpg",
+        "sortOrder": 7
+      },
+      {
+        "id": "397ade2c-954e-4ddd-bca7-55080fc970d1",
+        "name": "Ngồng Tỏi Xào Bắp Bò",
+        "description": "Ngồng tỏi giòn ngọt xào bắp bò hoa mọng nước ngọt thanh",
+        "price": 199000,
+        "imageUrl": "/dishes/ngong-toi-xao-bap-bo.jpg",
+        "sortOrder": 8
+      },
+      {
+        "id": "813b9051-2631-47bb-85e8-ef2a745ce571",
+        "name": "Măng Trúc Xào Bắp Bò",
+        "description": "Măng trúc Yên Tử giòn sần sật xào bắp bò tươi thơm phức",
+        "price": 199000,
+        "imageUrl": "/dishes/mang-truc-xao-bap-bo.jpg",
+        "sortOrder": 9
+      }
+    ]
+  },
+  {
+    "id": "fe5e7411-2a7f-4ae5-97a3-91d240950801",
+    "name": "Đổ Bê Tông (Cơm & Mỳ)",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "c81093d1-9954-4e86-8c47-3f60dd3310aa",
+        "name": "Cơm Chiên Hải Sản",
+        "description": "Cơm chiên hạt ngọc vàng ươm cùng tôm, mực, rau củ và trứng muối bùi béo",
+        "price": 129000,
+        "imageUrl": "/dishes/com-chien-hai-san.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "2efa3fd0-0c3d-47bf-84d9-70e1b0a9b378",
+        "name": "Cơm Chiên Dưa Bò",
+        "description": "Cơm hạt tơi giòn xào bắp bò ngọt thịt cùng dưa cải muối chua rắc hành phi",
+        "price": 119000,
+        "imageUrl": "/dishes/com-chien-dua-bo.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "b5b077f6-3d0d-4b89-b39e-1e85e9974976",
+        "name": "Pad Thái / Hủ Tiếu Xào Hải Sản",
+        "description": "Sợi bánh dai dai xào hải sản sốt me chua cay, đậu phộng rang giòn",
+        "price": 129000,
+        "imageUrl": "/dishes/pad-thai-hu-tieu-xao.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "e6065b7f-2e14-48c0-844a-087153e59b7c",
+        "name": "Mỳ Xào Bò",
+        "description": "Mỳ trứng sợi dai xào bò tươi, cải ngọt thơm lừng nước sốt",
+        "price": 129000,
+        "imageUrl": "/dishes/my-xao-bo.jpg",
+        "sortOrder": 4
+      },
+      {
+        "id": "5f468e0f-fcca-4d55-a0cb-0a5554a10507",
+        "name": "Mỳ Xào Hải Sản",
+        "description": "Mỳ xào mực giòn, tôm sú và rau củ tươi xốt dầu hào thơm ngậy",
+        "price": 149000,
+        "imageUrl": "/dishes/my-xao-hai-san.jpg",
+        "sortOrder": 5
+      }
+    ]
+  },
+  {
+    "id": "d3c7b962-d415-4973-af5c-6660da940962",
+    "name": "Giải Rượu & Canh Cháo",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "f6db0bad-278d-4347-9a94-784db81c70cb",
+        "name": "Cháo Hàu",
+        "description": "Cháo hàu sữa ninh nhừ ngọt thơm, tiêu đen hành tía tô bồi bổ giải rượu",
+        "price": 149000,
+        "imageUrl": "/dishes/chao-hau.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "14c41222-d16f-488f-b228-d1843b45bb04",
+        "name": "Canh Ngao Chua",
+        "description": "Ngao hoa nấu chua dứa, cà chua và thì là thanh mát giải rượu ấm lòng",
+        "price": 89000,
+        "imageUrl": "/dishes/canh-ngao-chua.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "a73fdd23-dd85-4e2c-8859-6c10bc9b36ca",
+        "name": "Canh Chua Thịt Băm",
+        "description": "Canh sấu / me thịt băm chua thanh dịu nhẹ, giải nhiệt đưa cơm",
+        "price": 99000,
+        "imageUrl": "/dishes/canh-chua-thit-bam.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "bd5502e6-830e-4034-8000-5033a0b35746",
+        "name": "Cháo Bò Băm",
+        "description": "Cháo hoa ninh nhừ bò băm thơm mùi hành hoa và tiêu hạt nóng hổi",
+        "price": 149000,
+        "imageUrl": "/dishes/chao-bo-bam.jpg",
+        "sortOrder": 4
+      }
+    ]
+  },
+  {
+    "id": "79100102-a7e1-4aa1-b3ff-f9101e33a9aa",
+    "name": "Đồ Uống (Bia Hơi & Giải Khát)",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "f4203f3f-c974-4c40-991d-45f8c8d94e61",
+        "name": "Bia Hơi Hà Nội (Tháp)",
+        "description": "Tháp bia hơi Hà Nội mát lạnh sảng khoái với lớp bọt dày mịn cho cả bàn",
+        "price": 150000,
+        "imageUrl": "/dishes/bia-hoi-ha-noi-thap.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "772cc6d5-c98c-4587-9361-03f5e59ddb20",
+        "name": "Bia Hơi Hà Nội (Cốc)",
+        "description": "Cốc bia hơi Hà Nội truyền thống mát lạnh vàng óng tươi mới",
+        "price": 15000,
+        "imageUrl": "/dishes/bia-hoi-ha-noi-coc.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "921a53f4-508d-47d7-9d77-9fa54ba21762",
+        "name": "Bia Tươi Sao Vàng (Tháp)",
+        "description": "Tháp bia tươi Sao Vàng đậm đà hương hoa bia lúa mạch thượng hạng",
+        "price": 150000,
+        "imageUrl": "/dishes/bia-tuoi-sao-vang-thap.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "a6684950-9396-4e57-8fe8-94a9939ffaff",
+        "name": "Bia Sao Vàng Gold",
+        "description": "Bia lon Sao Vàng Gold ướp lạnh tinh tế, vị êm dịu",
+        "price": 20000,
+        "imageUrl": "/dishes/bia-sao-vang-gold.jpg",
+        "sortOrder": 4
+      },
+      {
+        "id": "d840deb1-f204-48ac-ac49-c9126041c6cb",
+        "name": "Sao Vàng Ultra Light",
+        "description": "Dòng bia nhẹ thanh lọc sảng khoái uống êm không đau đầu",
+        "price": 28000,
+        "imageUrl": "/dishes/sao-vang-ultra-light.jpg",
+        "sortOrder": 5
+      },
+      {
+        "id": "0c9317fe-7704-454a-86be-402c3d2616b8",
+        "name": "Heineken Bạc Lùn",
+        "description": "Heineken Silver lon lùn sảng khoái mát lạnh thượng lưu",
+        "price": 28000,
+        "imageUrl": "/dishes/heineken-bac-lun.jpg",
+        "sortOrder": 6
+      },
+      {
+        "id": "b4edd1a9-2e71-481e-a038-da62068a6c80",
+        "name": "Tiger Bạc Lùn",
+        "description": "Tiger Crystal lon lùn sảng khoái tinh thể băng mát rượi",
+        "price": 25000,
+        "imageUrl": "/dishes/tiger-bac-lun.jpg",
+        "sortOrder": 7
+      },
+      {
+        "id": "e7da3c92-a36e-4d5c-b90d-3e76a04a7e67",
+        "name": "Nước Suối Tinh Khiết",
+        "description": "Nước suối đóng chai mát lạnh tinh khiết",
+        "price": 14000,
+        "imageUrl": "/dishes/nuoc-suoi-tinh-khiet.jpg",
+        "sortOrder": 8
+      },
+      {
+        "id": "385438c8-ac7e-4b48-a2dd-ac4864091bd8",
+        "name": "Pepsi Lon",
+        "description": "Nước ngọt có gas Pepsi ướp lạnh mát rượi",
+        "price": 21000,
+        "imageUrl": "/dishes/pepsi-lon.jpg",
+        "sortOrder": 9
+      },
+      {
+        "id": "fd28af23-c12c-4514-bb6d-d9a6e3ee5618",
+        "name": "Twister Cam Lon",
+        "description": "Nước cam ép Twister tép cam tươi thơm ngọt giàu vitamin C",
+        "price": 21000,
+        "imageUrl": "/dishes/twister-cam-lon.jpg",
+        "sortOrder": 10
+      },
+      {
+        "id": "1a1c6c7b-1ea3-47a1-8012-86f956bfbc17",
+        "name": "7UP Lon",
+        "description": "Nước ngọt 7UP chanh thanh mát sảng khoái",
+        "price": 21000,
+        "imageUrl": "/dishes/7up-lon.jpg",
+        "sortOrder": 11
+      },
+      {
+        "id": "c0d651a2-2539-4bf4-bfd4-1c2e000a43cb",
+        "name": "Nước Tăng Lực Redbull",
+        "description": "Bò húc Redbull Thái Lan nạp năng lượng tức thì",
+        "price": 24000,
+        "imageUrl": "/dishes/nuoc-tang-luc-redbull.jpg",
+        "sortOrder": 12
+      }
+    ]
+  },
+  {
+    "id": "ed81ee2e-b3ec-4d06-9d23-8d2d6ab53fa8",
+    "name": "Món Gọi Thêm",
+    "icon": "utensils",
+    "items": [
+      {
+        "id": "f84af406-80a2-4539-b366-487b1ddb9abe",
+        "name": "Phồng Tôm Giòn Tan",
+        "description": "Bánh phồng tôm chiên phồng xốp giòn tan ăn kèm các món gỏi",
+        "price": 36000,
+        "imageUrl": "/dishes/phong-tom-gion-tan.jpg",
+        "sortOrder": 1
+      },
+      {
+        "id": "f701adfd-975e-4944-a5d6-7890bafdfdce",
+        "name": "Lạc Sấy",
+        "description": "Đĩa lạc sấy giòn bùi ngậy khai vị cùng cốc bia mát",
+        "price": 20000,
+        "imageUrl": "/dishes/lac-say.jpg",
+        "sortOrder": 2
+      },
+      {
+        "id": "7589b71b-350d-45c9-968d-cb1131a42c7b",
+        "name": "Ruốc Bông",
+        "description": "Ruốc thịt heo thơm mềm bùi béo ăn kèm",
+        "price": 46000,
+        "imageUrl": "/dishes/ruoc-bong.jpg",
+        "sortOrder": 3
+      },
+      {
+        "id": "34d953ca-79bb-4bae-8e58-02a2181d1277",
+        "name": "Đĩa Rau Sashimi Tổng Hợp",
+        "description": "Rau tía tô xanh, củ cải trắng bào sợi và gừng hồng muối Nhật Bản",
+        "price": 49000,
+        "imageUrl": "/dishes/dia-rau-sashimi-tong-hop.jpg",
+        "sortOrder": 4
+      },
+      {
+        "id": "66d6524b-94c3-4ee2-a228-4724a5b47765",
+        "name": "Khăn Lạnh Cao Cấp",
+        "description": "Khăn ướt tiệt trùng ướp hương thơm dịu mát cao cấp",
+        "price": 8000,
+        "imageUrl": "/dishes/khan-lanh-cao-cap.jpg",
+        "sortOrder": 5
+      }
+    ]
+  }
+]
