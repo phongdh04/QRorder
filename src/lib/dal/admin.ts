@@ -362,23 +362,41 @@ export async function adminGetTables(restaurantId: string) {
         );
       }, 0);
 
-    // Xác định loại trạng thái hiển thị
-    let statusType: 'pending' | 'preparing' | 'occupied' | 'empty' = 'occupied';
-    if (hasPending) {
-      statusType = 'pending'; // Có đơn mới chờ xác nhận (cam nhấp nháy)
-    } else if (hasPreparing) {
-      statusType = 'preparing'; // Có món đang làm (vàng)
-    }
-
-    // Phân biệt trạng thái màu:
-    // Nếu colorStatus đang là 'green' (không còn yêu cầu phục vụ pending)
-    // nhưng bàn CHƯA GỌI MÓN NÀO (validOrders = 0):
-    // => Chuyển sang màu 'blue' (Đang xem menu / Chưa gọi món) thay vì 'green' (Đã lên đủ món)
     const validOrders = orders.filter((o) => o.status !== 'cancelled');
     const hasValidOrders = validOrders.length > 0;
-    let finalColorStatus = colorStatus;
-    if (colorStatus === 'green' && !hasValidOrders) {
+    const hasPendingOrders = orders.some((o) => o.status === 'pending');
+    const hasPreparingOrders = orders.some((o) => o.status === 'preparing');
+
+    const hasEscalatedRequests = activeRequests.some(
+      (r) => r.status === 'pending' && r.escalated_at != null
+    );
+    const hasPendingRequests = activeRequests.some((r) => r.status === 'pending');
+
+    // Xác định loại trạng thái hiển thị:
+    let statusType: 'pending' | 'preparing' | 'occupied' | 'empty' = 'occupied';
+    if (hasPendingOrders || hasPendingRequests) {
+      statusType = 'pending'; // Có đơn mới chờ duyệt HOẶC khách đang bấm gọi phục vụ (cam)
+    } else if (hasPreparingOrders) {
+      statusType = 'preparing'; // Thực sự có món đang làm ở bar/bếp (vàng)
+    }
+
+    // Xác định màu sắc hiển thị trên sơ đồ bàn (colorStatus):
+    // 1. ĐỎ: Khẩn cấp (yêu cầu gọi quá hạn chưa ai nhận)
+    // 2. CAM: Có đơn mới gọi từ QR HOẶC có tín hiệu khách gọi chưa ai nhận
+    // 3. VÀNG: CHỈ KHI thực sự có món đang pha chế tại quầy bar/bếp (hasPreparingOrders)
+    // 4. XANH DƯƠNG: Có khách mở bàn nhưng chưa gọi món (hoặc đang xem menu/đang được nhân viên hỗ trợ)
+    // 5. XANH LÁ: Đã có đơn và toàn bộ món ăn đã được phục vụ ra bàn
+    let finalColorStatus: 'red' | 'orange' | 'yellow' | 'blue' | 'green' = 'green';
+    if (hasEscalatedRequests) {
+      finalColorStatus = 'red';
+    } else if (hasPendingOrders || hasPendingRequests) {
+      finalColorStatus = 'orange';
+    } else if (hasPreparingOrders) {
+      finalColorStatus = 'yellow';
+    } else if (!hasValidOrders) {
       finalColorStatus = 'blue';
+    } else {
+      finalColorStatus = 'green';
     }
 
     return {
