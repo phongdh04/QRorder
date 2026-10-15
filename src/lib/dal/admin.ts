@@ -9,7 +9,7 @@ import { getTableColorStatus, TableColorStatus } from '@/lib/service-requests';
 
 // Định nghĩa luồng chuyển trạng thái hợp lệ (State Machine)
 const VALID_ORDER_TRANSITIONS: Record<string, string[]> = {
-  pending: ['preparing', 'cancelled'],
+  pending: ['preparing', 'served', 'cancelled'],
   preparing: ['served', 'cancelled'],
   served: [], // Trạng thái cuối, không thể quay ngược lại
   cancelled: [], // Trạng thái cuối

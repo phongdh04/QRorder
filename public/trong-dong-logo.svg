@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="goldGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FBF3D5" />
+      <stop offset="45%" stop-color="#D4AF37" />
+      <stop offset="85%" stop-color="#997316" />
+      <stop offset="100%" stop-color="#4A3608" />
+    </radialGradient>
+    <linearGradient id="metalGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDF4DC" />
+      <stop offset="25%" stop-color="#E5C378" />
+      <stop offset="50%" stop-color="#D4AF37" />
+      <stop offset="75%" stop-color="#AA822A" />
+      <stop offset="100%" stop-color="#F5DA8A" />
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Ring with notched luxury border -->
+  <circle cx="100" cy="100" r="95" fill="none" stroke="url(#metalGold)" stroke-width="2.5" opacity="0.9" />
+  <circle cx="100" cy="100" r="91" fill="none" stroke="url(#metalGold)" stroke-width="1" stroke-dasharray="2,3" opacity="0.6" />
+  <circle cx="100" cy="100" r="84" fill="none" stroke="url(#metalGold)" stroke-width="1.8" opacity="0.85" />
+
+  <!-- Dong Son bird flight ring (simplified stylized feathers & birds) -->
+  <g opacity="0.75" stroke="url(#metalGold)" stroke-width="1.2" fill="none">
+    <circle cx="100" cy="100" r="74" stroke-dasharray="6,4" />
+    <circle cx="100" cy="100" r="65" stroke-width="1.5" />
+    <circle cx="100" cy="100" r="56" stroke-dasharray="3,3" />
+  </g>
+
+  <!-- Inner sacred circle -->
+  <circle cx="100" cy="100" r="48" fill="#14161C" stroke="url(#metalGold)" stroke-width="1.5" />
+  <circle cx="100" cy="100" r="44" fill="none" stroke="url(#metalGold)" stroke-width="1" stroke-dasharray="1.5,2.5" opacity="0.6" />
+
+  <!-- 14-pointed Central Bronze Drum Sun (Trống Đồng Ngôi Sao 14 Cánh) -->
+  <g fill="url(#metalGold)" stroke="none">
+    <!-- Star rays pointing outward from center -->
+    <polygon points="100,56 103,92 100,88 97,92" />
+    <polygon points="100,144 103,108 100,112 97,108" />
+    <polygon points="56,100 92,103 88,100 92,97" />
+    <polygon points="144,100 108,103 112,100 108,97" />
+    
+    <polygon points="69,69 94,91 91,88 88,94" />
+    <polygon points="131,131 106,109 109,112 112,106" />
+    <polygon points="131,69 109,94 112,91 106,88" />
+    <polygon points="69,131 91,106 88,109 94,112" />
+
+    <polygon points="119,60 105,94 102,90 100,96" opacity="0.9" />
+    <polygon points="81,140 95,106 98,110 100,104" opacity="0.9" />
+    <polygon points="60,81 94,105 90,102 96,100" opacity="0.9" />
+    <polygon points="140,119 106,95 110,98 104,100" opacity="0.9" />
+
+    <polygon points="81,60 95,94 98,90 100,96" opacity="0.9" />
+    <polygon points="119,140 105,106 102,110 100,104" opacity="0.9" />
+    <polygon points="60,119 94,95 90,98 96,100" opacity="0.9" />
+    <polygon points="140,81 106,105 110,102 104,100" opacity="0.9" />
+  </g>
+
+  <!-- Central core pearl -->
+  <circle cx="100" cy="100" r="9" fill="url(#goldGlow)" />
+  <circle cx="100" cy="100" r="4" fill="#08090C" />
+  <circle cx="100" cy="100" r="2" fill="#FDF4DC" />
+</svg>

@@ -3,31 +3,41 @@
 @tailwind utilities;
 
 :root {
-  --bg: #0B0B0C;
-  --surface: #151517;
-  --surface-2: #1D1D20;
-  --border: rgba(255, 255, 255, 0.08);
-  --text: #F3EFE6;
-  --muted: #A49F94;
-  --accent: #C9A96A;
-  --accent-soft: rgba(201, 169, 106, 0.14);
+  --bg: #08090C;
+  --surface: #111318;
+  --surface-2: #181B22;
+  --surface-3: #222631;
+  --border: rgba(212, 175, 55, 0.18);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --text: #F7F4EB;
+  --muted: #A8A295;
+  --accent: #D4AF37;
+  --accent-gold: #F3C766;
+  --accent-light: #FBF0D2;
+  --accent-soft: rgba(212, 175, 55, 0.12);
+  --accent-glow: rgba(212, 175, 55, 0.28);
 }
 
 html {
   background-color: var(--bg);
   color: var(--text);
-  scroll-padding-top: 5rem;
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
 }
 
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: var(--font-sans), Inter, sans-serif;
+  font-family: var(--font-sans), Inter, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
   overflow-x: clip;
   -webkit-overflow-scrolling: touch;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.04) 0%, transparent 50%);
+  background-attachment: fixed;
 }
 
 /* Tối ưu hiệu năng render cuộn mượt cho danh sách món ăn */
@@ -36,21 +46,72 @@ body {
   contain-intrinsic-size: 1px 120px;
 }
 
+/* Luxury text gradients */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #FFF1D0 0%, #F3C766 40%, #D4AF37 75%, #AA822A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gold-champagne {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F5DEB3 50%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Luxury metallic border and glow */
+.gold-border {
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.05);
+}
+
+.gold-glow {
+  box-shadow: 0 4px 20px -2px rgba(212, 175, 55, 0.25);
+}
+
+.gold-glow-lg {
+  box-shadow: 0 10px 30px -4px rgba(212, 175, 55, 0.35);
+}
+
+/* Glassmorphism Luxury Panel */
+.glass-panel-luxury {
+  background: rgba(17, 19, 24, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+}
+
 /* Subtle luxury card effect */
 .luxury-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  transition: border-color 0.25s ease, background-color 0.25s ease;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .luxury-card:hover {
-  border-color: rgba(201, 169, 106, 0.25);
+  border-color: rgba(212, 175, 55, 0.45);
+  background: rgba(24, 27, 34, 0.95);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.6), 0 0 20px -2px rgba(212, 175, 55, 0.12);
 }
 
-/* Thin champagne decorative line */
+/* Thin champagne decorative lines */
 .divider-champagne {
   height: 1px;
-  background: linear-gradient(90deg, rgba(201, 169, 106, 0.3) 0%, rgba(201, 169, 106, 0.05) 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.4) 30%, rgba(243, 199, 102, 0.6) 50%, rgba(212, 175, 55, 0.4) 70%, transparent 100%);
+}
+
+.divider-gold-left {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.5) 0%, rgba(212, 175, 55, 0.1) 70%, transparent 100%);
+}
+
+/* Background watermark motif */
+.bg-trong-dong-pattern {
+  background-image: url('/trong-dong-watermark.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 550px;
 }
 
 /* Hide scrollbar */

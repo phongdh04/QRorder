@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <defs>
+    <radialGradient id="wmGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.18" />
+      <stop offset="50%" stop-color="#D4AF37" stop-opacity="0.06" />
+      <stop offset="100%" stop-color="#D4AF37" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <circle cx="300" cy="300" r="290" fill="url(#wmGlow)" />
+  <circle cx="300" cy="300" r="280" fill="none" stroke="#D4AF37" stroke-width="1.5" stroke-opacity="0.25" />
+  <circle cx="300" cy="300" r="260" fill="none" stroke="#D4AF37" stroke-width="1" stroke-dasharray="3,4" stroke-opacity="0.2" />
+  <circle cx="300" cy="300" r="240" fill="none" stroke="#D4AF37" stroke-width="2" stroke-dasharray="12,6" stroke-opacity="0.2" />
+  <circle cx="300" cy="300" r="210" fill="none" stroke="#D4AF37" stroke-width="1" stroke-opacity="0.15" />
+  <circle cx="300" cy="300" r="180" fill="none" stroke="#D4AF37" stroke-width="1.5" stroke-dasharray="6,4" stroke-opacity="0.2" />
+  <circle cx="300" cy="300" r="140" fill="none" stroke="#D4AF37" stroke-width="1" stroke-opacity="0.2" />
+  <circle cx="300" cy="300" r="100" fill="none" stroke="#D4AF37" stroke-width="1.5" stroke-opacity="0.25" />
+
+  <!-- Solar Rays in center -->
+  <g fill="#D4AF37" fill-opacity="0.15">
+    <polygon points="300,170 307,280 300,270 293,280" />
+    <polygon points="300,430 307,320 300,330 293,320" />
+    <polygon points="170,300 280,307 270,300 280,293" />
+    <polygon points="430,300 320,307 330,300 320,293" />
+
+    <polygon points="208,208 285,280 278,272 272,285" />
+    <polygon points="392,392 315,320 322,328 328,315" />
+    <polygon points="392,208 320,285 328,278 315,272" />
+    <polygon points="208,392 280,315 272,322 285,328" />
+
+    <polygon points="350,180 310,285 305,275 300,290" />
+    <polygon points="250,420 290,315 295,325 300,310" />
+    <polygon points="180,350 285,310 275,305 290,300" />
+    <polygon points="420,250 315,290 325,295 310,300" />
+
+    <polygon points="250,180 290,285 295,275 300,290" />
+    <polygon points="350,420 310,315 305,325 300,310" />
+    <polygon points="180,250 285,290 275,295 290,300" />
+    <polygon points="420,350 315,310 325,305 310,300" />
+  </g>
+
+  <circle cx="300" cy="300" r="28" fill="#D4AF37" fill-opacity="0.12" />
+  <circle cx="300" cy="300" r="14" fill="#D4AF37" fill-opacity="0.2" />
+</svg>

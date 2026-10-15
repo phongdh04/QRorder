@@ -17,8 +17,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "The Velvet Lounge • QR Order",
-  description: "Hệ thống gọi món và phục vụ cao cấp",
+  title: "TRỐNG ĐỒNG STATION • Thực Đơn Thượng Hạng",
+  description: "Ẩm thực đương đại & Không gian ẩm thực Lounge đẳng cấp • Trống Đồng Station",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/icons/icon-192.png",

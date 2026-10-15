@@ -14,6 +14,9 @@ const config: Config = {
         sans: ["var(--font-sans)", "Inter", "sans-serif"],
       },
       colors: {
+        slate: {
+          850: "#161f30",
+        },
         bg: "var(--bg)",
         surface: "var(--surface)",
         "surface-2": "var(--surface-2)",

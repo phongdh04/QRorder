@@ -552,7 +552,7 @@ export default function RevenuePage() {
                 className={`px-2.5 py-1 rounded-lg transition-all ${
                   topDishSort === 'revenue'
                     ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900'
+                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                 }`}
               >
                 Doanh thu
@@ -563,7 +563,7 @@ export default function RevenuePage() {
                 className={`px-2.5 py-1 rounded-lg transition-all ${
                   topDishSort === 'quantity'
                     ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900'
+                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                 }`}
               >
                 Số lượng
@@ -582,7 +582,7 @@ export default function RevenuePage() {
               <p className="text-xs text-slate-400 text-center py-8">Chưa có dữ liệu món trong khoảng này</p>
             ) : (
               sortedTopItems.map((item, index) => (
-                <div key={index} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-850/60 border border-slate-200/60 dark:border-slate-800 space-y-1.5 text-xs">
+                <div key={index} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/60 space-y-1.5 text-xs">
                   <div className="flex items-start justify-between gap-2">
                     <span className="font-bold text-slate-900 dark:text-white truncate">
                       #{index + 1}. {item.name}
@@ -598,7 +598,7 @@ export default function RevenuePage() {
                   </div>
 
                   {/* Progress bar */}
-                  <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                  <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-700/70 overflow-hidden">
                     <div
                       style={{ width: `${Math.min(100, item.percentOfTotal)}%` }}
                       className="bg-blue-600 h-full rounded-full"
@@ -649,7 +649,7 @@ export default function RevenuePage() {
                 {isLoadingBills ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="h-12 animate-pulse">
-                      <td colSpan={5} className="py-2.5 bg-slate-50 dark:bg-slate-850/40 rounded-lg" />
+                      <td colSpan={5} className="py-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-lg" />
                     </tr>
                   ))
                 ) : bills.length === 0 ? (
@@ -660,7 +660,7 @@ export default function RevenuePage() {
                   </tr>
                 ) : (
                   bills.map((bill) => (
-                    <tr key={bill.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors">
+                    <tr key={bill.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/50 transition-colors">
                       <td className="py-3 font-bold text-slate-900 dark:text-white">
                         {bill.tableName}
                         <span className="block text-[10px] text-slate-400 font-mono font-normal">

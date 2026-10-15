@@ -211,14 +211,14 @@ model Order {
 model OrderItem {
   id             String  @id @default(uuid())
   order_id       String
-  menu_item_id   String
+  menu_item_id   String?
   name_snapshot  String
   price_snapshot Int
   quantity       Int
   note           String?
 
-  order     Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
-  menu_item MenuItem @relation(fields: [menu_item_id], references: [id], onDelete: Restrict)
+  order     Order     @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  menu_item MenuItem? @relation(fields: [menu_item_id], references: [id], onDelete: SetNull)
 
   @@index([order_id])
   @@index([menu_item_id])

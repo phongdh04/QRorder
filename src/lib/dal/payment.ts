@@ -129,6 +129,17 @@ export async function adminPayTableSession(
       },
     });
 
+    // 6. Tự động hoàn tất tất cả các món đang chờ/đang làm thành 'served' khi bill đã thanh toán
+    await tx.order.updateMany({
+      where: {
+        session_id: sessionId,
+        status: { in: ['pending', 'preparing'] },
+      },
+      data: {
+        status: 'served',
+      },
+    });
+
     return {
       session: updatedSession,
       items: Array.from(itemMap.values()),

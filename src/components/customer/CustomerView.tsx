@@ -7,6 +7,7 @@ import { useTableRealtime } from '@/hooks/useTableRealtime';
 import { Header } from './Header';
 import { CategoryNav } from './CategoryNav';
 import { MenuSection } from './MenuSection';
+import { MenuCard } from './MenuCard';
 import { ItemSheet } from './ItemSheet';
 import { FloatingCartBar } from './FloatingCartBar';
 import { CartSheet } from './CartSheet';
@@ -27,11 +28,14 @@ export function CustomerView({ data }: CustomerViewProps) {
   const [activeCategoryId, setActiveCategoryId] = useState<string>(
     categories[0]?.id || ''
   );
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTag, setSelectedTag] = useState<string>('all');
   const [selectedItem, setSelectedItem] = useState<CustomerPublicItem | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isOrdersSheetOpen, setIsOrdersSheetOpen] = useState(false);
   const [orderSuccessData, setOrderSuccessData] = useState<any | null>(null);
   const [isThankYouOpen, setIsThankYouOpen] = useState(false);
+  const [staffCalledNotice, setStaffCalledNotice] = useState(false);
 
   // Dữ liệu đơn hàng & tổng tiền của phiên hiện tại (khởi tạo ngay từ data.activeSession)
   const [sessionOrders, setSessionOrders] = useState<any[]>(data.activeSession?.orders || []);
@@ -80,17 +84,15 @@ export function CustomerView({ data }: CustomerViewProps) {
     fetchTableSessionData();
   }, [fetchTableSessionData]);
 
-  // 3. Xử lý sự kiện Realtime qua SSE (Server-Sent Events)
+  // 3. Xử lý sự kiện Realtime qua SSE
   const handleRealtimeEvent = useCallback(
     (event: any) => {
       if (event.type === 'order_created') {
-        // Đơn hàng mới được tạo -> cập nhật tổng tiền và tải lại danh sách đơn
         if (typeof event.total === 'number') {
           setSessionTotal(event.total);
         }
         fetchTableSessionData();
       } else if (event.type === 'order_status_changed') {
-        // Trạng thái đơn thay đổi (đang pha chế / đã phục vụ / đã hủy)
         setSessionOrders((prev) =>
           prev.map((order) => {
             if (order.id === event.orderId) {
@@ -104,7 +106,6 @@ export function CustomerView({ data }: CustomerViewProps) {
           })
         );
       } else if (event.type === 'session_closed') {
-        // Bàn vừa được thanh toán xong -> bắt đầu phiên mới
         setSessionOrders([]);
         setSessionTotal(0);
         setIsThankYouOpen(true);
@@ -114,7 +115,6 @@ export function CustomerView({ data }: CustomerViewProps) {
     [fetchTableSessionData, cart]
   );
 
-  // Kết nối SSE Realtime tự động kết nối lại khi mất mạng và đồng bộ dữ liệu
   const { isConnected, isReconnecting } = useTableRealtime(
     tableToken,
     handleRealtimeEvent,
@@ -123,7 +123,7 @@ export function CustomerView({ data }: CustomerViewProps) {
 
   // 4. IntersectionObserver: Tự động cập nhật chip danh mục đang xem khi cuộn trang
   useEffect(() => {
-    if (typeof window === 'undefined' || categories.length === 0) return;
+    if (typeof window === 'undefined' || categories.length === 0 || searchQuery.trim() !== '') return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -156,11 +156,12 @@ export function CustomerView({ data }: CustomerViewProps) {
     });
 
     return () => observer.disconnect();
-  }, [categories]);
+  }, [categories, searchQuery]);
 
   // Cuộn mượt tới nhóm khi bấm vào chip
   const handleSelectCategory = (id: string) => {
     setActiveCategoryId(id);
+    setSearchQuery('');
     isClickScrollingRef.current = true;
 
     const el = document.getElementById(id);
@@ -202,6 +203,14 @@ export function CustomerView({ data }: CustomerViewProps) {
     }
   };
 
+  // Gọi nhân viên phục vụ
+  const handleCallStaff = () => {
+    setStaffCalledNotice(true);
+    setTimeout(() => {
+      setStaffCalledNotice(false), 3500;
+    }, 3500);
+  };
+
   // Xử lý khi đặt đơn thành công
   const handleOrderSuccess = (orderResult: any) => {
     setOrderSuccessData(orderResult);
@@ -211,21 +220,59 @@ export function CustomerView({ data }: CustomerViewProps) {
     fetchTableSessionData();
   };
 
-  // Hỗ trợ ghi đè màu từ theme quán nếu có
-  const theme = data.restaurant.theme || {};
+  // Tìm kiếm món ăn
+  const searchResults = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return [];
+
+    const results: CustomerPublicItem[] = [];
+    categories.forEach((cat) => {
+      cat.items.forEach((item) => {
+        if (
+          item.name.toLowerCase().includes(q) ||
+          (item.description && item.description.toLowerCase().includes(q))
+        ) {
+          results.push(item);
+        }
+      });
+    });
+    return results;
+  }, [categories, searchQuery]);
+
+  // Theme styles
   const customStyles: React.CSSProperties = {
-    ...(theme.bg ? { '--bg': theme.bg } : {}),
-    ...(theme.surface ? { '--surface': theme.surface } : {}),
-    ...(theme.accent ? { '--accent': theme.accent } : {}),
+    '--bg': '#08090C',
+    '--surface': '#111318',
+    '--surface-2': '#181B22',
+    '--accent': '#D4AF37',
+    '--border': 'rgba(212, 175, 55, 0.18)',
+    '--text': '#F7F4EB',
+    '--muted': '#A8A295',
   } as React.CSSProperties;
 
   return (
     <div
       style={customStyles}
-      className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex justify-center selection:bg-[var(--accent)] selection:text-[#0B0B0C] pb-24"
+      className="min-h-screen bg-[#08090C] text-[#F7F4EB] flex justify-center selection:bg-[#D4AF37] selection:text-[#08090C] pb-28 relative"
     >
-      {/* Mobile container: Tối ưu 360-430px, max 480px trên desktop */}
-      <div className="w-full max-w-[480px] bg-[var(--bg)] min-h-screen relative flex flex-col shadow-2xl border-x border-[var(--border)]">
+      {/* Background ambient lighting */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-b from-[#D4AF37]/10 via-[#F3C766]/5 to-transparent blur-3xl pointer-events-none -z-10" />
+
+      {/* Toast thông báo gọi phục vụ */}
+      {staffCalledNotice && (
+        <div className="fixed top-4 inset-x-4 max-w-sm mx-auto z-50 bg-[#181B22] border border-[#D4AF37] text-[#F7F4EB] p-3.5 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="w-8 h-8 rounded-full bg-[#D4AF37] text-[#08090C] flex items-center justify-center font-bold shrink-0">
+            ✓
+          </div>
+          <div className="text-xs">
+            <p className="font-bold text-[#F3C766]">Đã Gửi Yêu Cầu!</p>
+            <p className="text-[#A8A295]">Nhân viên phục vụ đang tới {data.table.name}.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile container: Tối ưu 360-480px */}
+      <div className="w-full max-w-[500px] bg-[#08090C] min-h-screen relative flex flex-col shadow-2xl border-x border-[rgba(212,175,55,0.15)]">
         {/* Header quán bar & phím tắt xem đơn của bàn */}
         <Header
           restaurantName={data.restaurant.name}
@@ -234,13 +281,47 @@ export function CustomerView({ data }: CustomerViewProps) {
           coverImageUrl={data.restaurant.coverImageUrl}
           ordersCount={orderedItemsCount > 0 ? orderedItemsCount : sessionOrders.length}
           onOpenOrders={() => setIsOrdersSheetOpen(true)}
+          onCallStaff={handleCallStaff}
         />
 
         {/* Nút hành động nhanh: Gọi nhân viên & Yêu cầu thanh toán */}
         <QuickServiceActions tableToken={tableToken} />
 
-        {/* Sticky Category Navigation kèm nút xem đơn ghim cố định */}
-        {categories.length > 0 && (
+        {/* Search input bar */}
+        <div className="px-4 py-3 bg-[#08090C] border-b border-[rgba(212,175,55,0.15)] sticky top-0 z-30 backdrop-blur-md">
+          <div className="relative">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="w-4 h-4 text-[#D4AF37] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Tìm món ngon: Thăn bò, cánh gà, hàu nướng, bia..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full text-xs bg-[#111318] border border-[rgba(212,175,55,0.2)] rounded-xl pl-10 pr-9 py-2.5 text-[#F7F4EB] placeholder-[#A8A295]/60 focus:outline-none focus:border-[#D4AF37] transition-all"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                aria-label="Xóa tìm kiếm"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#A8A295] hover:text-[#F7F4EB] p-1"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Sticky Category Navigation */}
+        {!searchQuery && categories.length > 0 && (
           <CategoryNav
             categories={categories.map((c) => ({ id: c.id, name: c.name }))}
             activeId={activeCategoryId}
@@ -253,11 +334,42 @@ export function CustomerView({ data }: CustomerViewProps) {
 
         {/* Menu Sections List */}
         <main className="px-4 flex-1">
-          {categories.length === 0 ? (
+          {searchQuery.trim() !== '' ? (
+            <div className="pt-6 space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-[rgba(212,175,55,0.2)]">
+                <span className="text-xs uppercase tracking-wider text-[#A8A295]">
+                  Kết quả tìm kiếm cho &ldquo;{searchQuery}&rdquo;
+                </span>
+                <span className="text-xs font-bold text-[#F3C766]">
+                  {searchResults.length} món
+                </span>
+              </div>
+
+              {searchResults.length === 0 ? (
+                <div className="py-16 text-center space-y-2 rounded-2xl bg-[#111318] border border-[rgba(212,175,55,0.15)] p-6">
+                  <p className="font-serif text-base text-[#F7F4EB]">Không tìm thấy món phù hợp</p>
+                  <p className="text-xs text-[#A8A295]">
+                    Quý khách vui lòng thử tìm bằng từ khóa khác hoặc xem toàn bộ danh mục thực đơn.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3.5">
+                  {searchResults.map((item) => (
+                    <MenuCard
+                      key={item.id}
+                      item={item}
+                      onSelect={(it) => setSelectedItem(it)}
+                      onQuickAdd={handleQuickAdd}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : categories.length === 0 ? (
             <div className="py-20 text-center space-y-2">
-              <p className="font-serif text-lg text-[var(--text)]">Thực Đơn Đang Chuẩn Bị</p>
-              <p className="text-xs text-[var(--muted)]">
-                Quầy bar đang hoàn thiện danh mục đồ uống.
+              <p className="font-serif text-lg text-[#F7F4EB]">Thực Đơn Đang Chuẩn Bị</p>
+              <p className="text-xs text-[#A8A295]">
+                Quán đang hoàn thiện danh mục món ăn và đồ uống.
               </p>
             </div>
           ) : (
