@@ -16,7 +16,7 @@ export default async function HomePage() {
         tables: {
           where: { is_active: true },
           orderBy: { name: 'asc' },
-          take: 10,
+          take: 80,
         },
       },
     });
