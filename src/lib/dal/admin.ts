@@ -408,6 +408,9 @@ export async function adminGetKitchenQueue(restaurantId: string) {
     where: {
       restaurant_id: restaurantId,
       status: { in: ['pending', 'preparing'] },
+      session: {
+        status: 'open',
+      },
     },
     include: {
       table: {

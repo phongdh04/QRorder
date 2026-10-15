@@ -104,7 +104,17 @@ export async function adminPayTableSession(
 
     const now = new Date();
 
-    // 5. Cập nhật phiên thành 'paid'
+    // 5. Cập nhật phiên thành 'paid' và hoàn thành các đơn còn treo
+    await tx.order.updateMany({
+      where: {
+        session_id: sessionId,
+        status: { in: ['pending', 'preparing'] },
+      },
+      data: {
+        status: 'served',
+      },
+    });
+
     const updatedSession = await tx.tableSession.update({
       where: { id: sessionId },
       data: {
